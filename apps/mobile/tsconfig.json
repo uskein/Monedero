@@ -6,10 +6,11 @@
     "noEmit": true,
     "types": ["react", "jest"],
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@monedero/tokens": ["../../shared/tokens/src/index.ts"],
       "@monedero/export-contract": ["../../shared/export-contract/src/index.ts"]
     }
   },
-  "include": ["src", "tests", "App.tsx"]
+  "include": ["src", "tests"]
 }
