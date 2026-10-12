@@ -9,6 +9,7 @@
     "node": ">=20.11.0"
   },
   "scripts": {
+    "postinstall": "node tools/postinstall-rn-shim.mjs",
     "dev:mobile": "pnpm --filter @monedero/mobile start",
     "dev:web": "pnpm --filter @monedero/web dev",
     "build": "turbo run build",
