@@ -14,6 +14,7 @@ export const enUS: Dictionary = {
   'common.delete': 'Delete',
   'common.undo': 'Undo',
   'common.error.generic': 'Something went wrong. Please try again.',
+  'common.currency': 'Currency',
   'nav.sections': 'Sections',
 
   'home.lead': 'Local expense tracker — your data never leaves your device.',

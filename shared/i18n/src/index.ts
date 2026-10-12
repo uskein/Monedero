@@ -18,6 +18,7 @@ export {
 export {
   formatMoney,
   formatMoneySigned,
+  formatAmountLive,
   formatMonthLabel,
   monthKeyOf,
   previousMonthKey,

@@ -17,6 +17,7 @@ export const esCO = {
   'common.delete': 'Eliminar',
   'common.undo': 'Deshacer',
   'common.error.generic': 'Algo salió mal. Inténtalo de nuevo.',
+  'common.currency': 'Moneda',
   'nav.sections': 'Secciones',
 
   // ── Dashboard / inicio BP-03 — HU-08·09·12 ──

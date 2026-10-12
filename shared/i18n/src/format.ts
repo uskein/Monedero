@@ -76,6 +76,45 @@ export function formatMoneySigned(
   return isIncome ? `+ ${abs}` : `− ${abs}`;
 }
 
+/**
+ * Formatea el importe MIENTRAS se escribe (MoneyInput, HU-18).
+ * Regla conservadora y reversible con parseAmountToCents:
+ *  - agrupa miles con el separador del locale ('25.000' es / '25,000' en);
+ *  - el separador escrito por el usuario solo se trata como DECIMAL si lleva
+ *    1–2 dígitos tras él (mismos límites que el parser: '25.000,' → sigue
+ *    siendo miles; '25.000,5' → decimal);
+ *  - COP sin decimales; USD/EUR con hasta 2.
+ * Devuelve SIEMPRE una cadena que el parser lee de vuelta igual (round-trip).
+ */
+export function formatAmountLive(raw: string, currency: CurrencyCode, locale: Locale): string {
+  const decimals = decimalsFor(currency);
+  const decimalSep = locale === 'es-CO' ? ',' : '.';
+  const groupSep = locale === 'es-CO' ? '.' : ',';
+
+  const cleaned = raw.replace(/[^\d.,]/g, '');
+  if (cleaned === '') return '';
+
+  const lastSep = Math.max(cleaned.lastIndexOf(','), cleaned.lastIndexOf('.'));
+  let intDigits: string;
+  let decDigits = '';
+  if (lastSep >= 0 && decimals > 0) {
+    const after = cleaned.slice(lastSep + 1);
+    if (after.length <= 2) {
+      intDigits = cleaned.slice(0, lastSep).replace(/[.,]/g, '');
+      decDigits = after;
+    } else {
+      intDigits = cleaned.replace(/[.,]/g, '');
+    }
+  } else {
+    intDigits = cleaned.replace(/[.,]/g, '');
+  }
+  intDigits = intDigits.replace(/^0+(?=\d)/, ''); // '007' → '7'
+  if (intDigits === '' && decDigits === '') return '';
+
+  const grouped = intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, groupSep);
+  return decDigits ? `${grouped}${decimalSep}${decDigits}` : grouped;
+}
+
 /** Clave de mes 'YYYY-MM' de una fecha local (BP-03 · HU-09). */
 export function monthKeyOf(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
