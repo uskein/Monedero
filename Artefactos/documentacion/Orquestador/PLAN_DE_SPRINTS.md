@@ -166,13 +166,13 @@ gantt
 
 | Sprint | Módulo | Estado | % acumulado |
 |--------|--------|--------|-------------|
-| S1 | M0 Cimientos | ⏳ Pendiente | 0% |
-| S2 | M1 Bóveda | ⏳ | 12% |
-| S3 | M2a Movimientos | ⏳ | 37% |
-| S4 | M2b Dashboard | ⏳ | 50% (🎯 hito) |
-| S5 | M3 Presupuestos | ⏳ | 62% |
-| S6 | M4a Reportes/ajustes | ⏳ | 75% |
-| S7 | M4b Export/Import | ⏳ | 87% |
-| S8 | M5 Release | ⏳ | 100% (🎯 certificación) |
+| S1 | M0 Cimientos | ✅ Entregado | 12% |
+| S2 | M1 Bóveda | ✅ Entregado | 37% |
+| S3 | M2a Movimientos | ✅ Entregado | 50% |
+| S4 | M2b Dashboard | ✅ Aprobado por el usuario (🎯 hito) | 62% |
+| S5 | M3 Presupuestos | ✅ Entregado (Gate S5 certificado) | 75% |
+| S6 | M4a Reportes/ajustes | ⏳ Siguiente | 87% |
+| S7 | M4b Export/Import | ⏳ Pendiente | 95% |
+| S8 | M5 Release | ⏳ Pendiente | 100% (🎯 certificación) |
 
 > El % refleja valor entregado por módulo (peso acorde a HU y criticidad). El Orquestador actualizará esta tabla tras cada sprint y mantendrá `memoriaOrquestador.estadoProyecto` sincronizada.
