@@ -13,6 +13,7 @@ import '../design-system/components.css';
 import { VaultGate } from '../features/vault/VaultGate';
 import { DashboardScreen } from '../features/dashboard/DashboardScreen';
 import { TransactionsScreen } from '../features/transactions/TransactionsScreen';
+import { SettingsScreen } from '../features/settings/SettingsScreen';
 
 function Hero({ reducedMotion }: { reducedMotion: boolean }) {
   const t = useT();
@@ -75,7 +76,7 @@ function Hero({ reducedMotion }: { reducedMotion: boolean }) {
  */
 function AppShell() {
   const t = useT();
-  const [tab, setTab] = useState<'home' | 'tx'>('home');
+  const [tab, setTab] = useState<'home' | 'tx' | 'settings'>('home');
   const [addSignal, setAddSignal] = useState(0);
 
   return (
@@ -85,6 +86,7 @@ function AppShell() {
         options={[
           { value: 'home', label: t('home.title') },
           { value: 'tx', label: t('tx.list.title') },
+          { value: 'settings', label: t('settings.title') },
         ]}
         value={tab}
         onChange={setTab}
@@ -101,6 +103,9 @@ function AppShell() {
       </div>
       <div hidden={tab !== 'tx'}>
         <TransactionsScreen currency="COP" addSignal={addSignal} />
+      </div>
+      <div hidden={tab !== 'settings'}>
+        <SettingsScreen />
       </div>
     </div>
   );
