@@ -161,7 +161,9 @@ CREATE TABLE transactions (
   deleted_at      TEXT,
   CHECK ((type = 'transfer') = (to_account_id IS NOT NULL)),
   CHECK (type <> 'transfer' OR category_id IS NULL),
-  CHECK (account_id <> COALESCE(to_account_id, account_id))
+  -- Corrección (auditoría M2a): la forma original `account_id <> COALESCE(to_account_id, account_id)`
+  -- evaluaba acc <> acc = FALSE para todo gasto/ingreso y bloqueaba filas no-transferencia.
+  CHECK (to_account_id IS NULL OR account_id <> to_account_id)
 );
 
 CREATE TABLE tags (
