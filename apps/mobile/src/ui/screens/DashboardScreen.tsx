@@ -8,6 +8,7 @@
  */
 import { useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import { formatMonthLabel, monthKeyOf, previousMonthKey } from '@monedero/i18n';
 import type { TranslationKey } from '@monedero/i18n';
@@ -16,6 +17,7 @@ import { Button, Card } from '../design-system';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useCountUp } from '../hooks/useCountUp';
 import { CATEGORY_NAMES } from './catalog';
+import { shortDate } from './TransactionList';
 import { useDashboardStore, type DashboardRepo } from '../../state/dashboard.store';
 import type { Transaction, TxType } from '../../core/domain/transaction';
 
@@ -38,11 +40,11 @@ const TYPE_LABEL: Record<'expense' | 'income' | 'transfer', TranslationKey> = {
   transfer: 'tx.type.transfer',
 };
 
-function typeIcon(type: TxType): string {
-  if (type === 'income') return '↑';
-  if (type === 'transfer') return '⇄';
-  return '↓';
-}
+const TYPE_ICON: Record<TxType, keyof typeof Ionicons.glyphMap> = {
+  expense: 'arrow-up',
+  income: 'arrow-down',
+  transfer: 'swap-horizontal',
+};
 
 function categoryLabel(tx: Transaction, t: (key: TranslationKey) => string): string {
   if (tx.categoryId) return CATEGORY_NAMES[tx.categoryId] ?? tx.categoryId;
@@ -152,20 +154,31 @@ export function DashboardScreen({ repo, currency = 'COP', onAddFirst, onSeeAll }
               </Text>
               {onSeeAll ? <Button label={t('tx.list.title')} variant="ghost" onPress={onSeeAll} /> : null}
             </View>
-            {latest.map((tx) => (
-              <View key={tx.id} style={styles.txRow}>
-                <View style={styles.txIcon}>
-                  <Text>{typeIcon(tx.type)}</Text>
+            {latest.map((tx) => {
+              // Mismo lenguaje visual que las filas de Movimientos (BP-04).
+              const meta = [categoryLabel(tx, t), shortDate(tx.date, locale)].join(' · ');
+              return (
+                <View key={tx.id} style={styles.txRow}>
+                  <View
+                    accessibility-hidden="true"
+                    style={[styles.txIcon, tx.type === 'income' && styles.txIconIncome]}
+                  >
+                    <Ionicons
+                      name={TYPE_ICON[tx.type]}
+                      size={20}
+                      color={tx.type === 'income' ? csColors.primary : csColors.textPrimary}
+                    />
+                  </View>
+                  <View style={styles.txBody}>
+                    <Text style={styles.txTitle}>{tx.payee ?? t('tx.form.payee')}</Text>
+                    <Text style={styles.muted}>{meta}</Text>
+                  </View>
+                  <Text style={[styles.txAmount, tx.type === 'income' && styles.income]}>
+                    {moneySigned(tx.amountCents, currency, tx.type === 'income')}
+                  </Text>
                 </View>
-                <View style={styles.txBody}>
-                  <Text style={styles.txTitle}>{tx.payee ?? t('tx.form.payee')}</Text>
-                  <Text style={styles.muted}>{categoryLabel(tx, t)}</Text>
-                </View>
-                <Text style={[styles.txAmount, tx.type === 'income' && styles.income]}>
-                  {moneySigned(tx.amountCents, currency, tx.type === 'income')}
-                </Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </>
       )}
@@ -210,18 +223,33 @@ const styles = StyleSheet.create({
   reportAmount: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
   latestBlock: { gap: csSpace.s2 },
   latestHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: csSpace.s3 },
-  txRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s2, paddingVertical: csSpace.s3 },
+  txRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: csSpace.s3,
+    paddingVertical: csSpace.s2,
+    paddingHorizontal: csSpace.s3,
+    marginVertical: csSpace.s1,
+    backgroundColor: csColors.surface,
+    borderRadius: csRadius.card,
+    shadowColor: 'rgb(60, 50, 40)',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
   txIcon: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: csRadius.pill,
     backgroundColor: csColors.surfaceSunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  txBody: { flex: 1 },
+  txIconIncome: { backgroundColor: csColors.primarySoft },
+  txBody: { flex: 1, gap: 2 },
   txTitle: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
-  txAmount: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
+  txAmount: { fontSize: 15, fontWeight: '700', color: csColors.textPrimary },
   income: { color: csColors.primary },
   emptyTitle: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 18, color: csColors.textPrimary },
 });

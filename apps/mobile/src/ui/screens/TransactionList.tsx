@@ -44,7 +44,7 @@ export interface TransactionListProps {
 }
 
 /** Fecha corta local ('05 oct') segura para 'YYYY-MM-DD' (sin deriva UTC). */
-function shortDate(isoDate: string, locale: string): string {
+export function shortDate(isoDate: string, locale: string): string {
   const [y, m, d] = isoDate.split('-').map(Number);
   if (!y || !m || !d) return isoDate;
   return new Intl.DateTimeFormat(locale === 'es-CO' ? 'es-CO' : 'en-US', {

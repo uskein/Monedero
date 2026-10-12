@@ -226,9 +226,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: csSpace.s3,
     borderRadius: csRadius.pill,
     backgroundColor: csColors.surfaceSunken,
+    // Los nombres largos nunca se cortan: el chip encoge y el texto fluye.
+    flexShrink: 1,
+    maxWidth: '100%',
   },
   chipSelected: { backgroundColor: csColors.primary },
-  chipLabel: { fontSize: 14, color: csColors.textPrimary },
+  chipLabel: { fontSize: 14, color: csColors.textPrimary, flexShrink: 1 },
   chipLabelSelected: { color: csColors.textOnPrimary, fontWeight: '600' },
   error: { fontSize: 13, color: csColors.danger },
 });
