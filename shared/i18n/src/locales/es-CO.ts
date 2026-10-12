@@ -88,6 +88,31 @@ export const esCO = {
   'tx.list.undo.cta': 'Deshacer',
   'tx.list.search': 'Buscar por concepto o nota',
   'tx.list.count': '{count} movimientos',
+
+  // ── Ajustes BP-08 (raíz) + sub Categorías — HU-10 ──
+  'settings.title': 'Ajustes',
+  'settings.subtitle': 'Organiza Monedero a tu manera.',
+  'settings.categories': 'Categorías',
+  'settings.categories.copy': 'Crea, renombra y archiva tus categorías.',
+
+  'categories.title': 'Categorías',
+  'categories.add': 'Nueva categoría',
+  'categories.form.name': 'Nombre',
+  'categories.form.name.placeholder': 'Ej. Alquiler, Viajes…',
+  'categories.form.color': 'Color',
+  'categories.form.type': 'Tipo',
+  'categories.save': 'Guardar categoría',
+  'categories.edit': 'Editar',
+  'categories.archive': 'Archivar',
+  'categories.empty.title': 'Aún no hay categorías',
+  'categories.empty.copy': 'Crea la primera para organizar tus movimientos.',
+  'categories.error': 'No se pudieron cargar las categorías.',
+  'categories.error.name': 'Escribe un nombre de 1 a 50 caracteres.',
+  'categories.error.duplicate': 'Ya existe una categoría con ese nombre.',
+  'categories.error.delete': 'Tiene movimientos: se archiva en lugar de borrarse.',
+  'categories.group.expense': 'Gastos',
+  'categories.group.income': 'Ingresos',
+  'categories.back': 'Volver a Ajustes',
 } as const;
 
 export type TranslationKey = keyof typeof esCO;
