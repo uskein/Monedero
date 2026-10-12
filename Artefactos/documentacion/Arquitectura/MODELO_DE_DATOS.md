@@ -47,7 +47,7 @@ erDiagram
     }
     CATEGORIES {
         TEXT id PK "uuid v4"
-        TEXT name
+        TEXT name "UNIQUE COLLATE NOCASE entre activas (002)"
         TEXT type "CHECK: income|expense"
         TEXT parent_id FK "self-ref nullable"
         TEXT icon
@@ -215,6 +215,10 @@ CREATE INDEX idx_tx_payee    ON transactions(payee);
 CREATE INDEX idx_cat_parent  ON categories(parent_id);
 CREATE INDEX idx_budget_period ON budgets(period);
 CREATE INDEX idx_tt_tag      ON transaction_tags(tag_id);
+
+-- 002_categories_name_unique.sql (HU-10)
+CREATE UNIQUE INDEX ux_categories_name
+  ON categories(name COLLATE NOCASE) WHERE deleted_at IS NULL;
 ```
 
 ---
@@ -229,6 +233,7 @@ CREATE INDEX idx_tt_tag      ON transaction_tags(tag_id);
 | **Merge import/export (LWW)** | `idx_tx_updated` | barrido incremental por `updated_at` |
 | Presupuestos del mes | `idx_budget_period` + `UNIQUE(category_id,period)` | upsert idempotente |
 | Búsqueda de payee | `idx_tx_payee` | LIKE prefix |
+| Alta de categoría (HU-10) | `ux_categories_name` (002) | NOCASE parcial: duplicado → `INTEGRITY_VIOLATION`; archivar libera |
 
 ---
 

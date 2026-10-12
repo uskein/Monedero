@@ -111,9 +111,16 @@ CREATE INDEX idx_budget_period ON budgets(period);
 CREATE INDEX idx_tt_tag      ON transaction_tags(tag_id);
 `;
 
+/** 002 — HU-10: unicidad de nombre de categoría NOCASE entre activas. */
+export const SQL_002_CATEGORIES_NAME_UNIQUE = `
+CREATE UNIQUE INDEX ux_categories_name
+  ON categories(name COLLATE NOCASE) WHERE deleted_at IS NULL;
+`;
+
 /** Lista ordenada por versión (forward-only). */
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: '001_init', sql: SQL_001_INIT },
+  { version: 2, name: '002_categories_name_unique', sql: SQL_002_CATEGORIES_NAME_UNIQUE },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;

@@ -33,14 +33,14 @@ beforeAll(() => {
 });
 
 describe('runner de migraciones (MODELO §6)', () => {
-  it('aplica 001_init y fija user_version = 1', async () => {
+  it('aplica 001_init y 002 y fija user_version = 2', async () => {
     const db = freshDb();
     const result = await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
     expect(result.from).toBe(0);
-    expect(result.to).toBe(1);
-    expect(result.applied).toEqual(['001_init']);
+    expect(result.to).toBe(2);
+    expect(result.applied).toEqual(['001_init', '002_categories_name_unique']);
     const version = db.exec('PRAGMA user_version');
-    expect(Number(version[0]?.values[0]?.[0])).toBe(1);
+    expect(Number(version[0]?.values[0]?.[0])).toBe(2);
   });
 
   it('es idempotente: re-ejecutar no vuelve a aplicar nada', async () => {
@@ -48,7 +48,7 @@ describe('runner de migraciones (MODELO §6)', () => {
     await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
     const second = await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
     expect(second.applied).toEqual([]);
-    expect(second.to).toBe(1);
+    expect(second.to).toBe(2);
   });
 
   it('falla transaccional: script inválido deja la BD SIN cambios (sin tablas a medias)', async () => {
@@ -171,6 +171,17 @@ describe('esquema v1 — 8 tablas (MODELO §3)', () => {
     expect(() => budget('b1')).not.toThrow();
     expect(() => budget('b2')).toThrow(); // duplicado category+period
   });
+
+  it('HU-10: nombre de categoría único NOCASE entre activas (002) — archivar libera', () => {
+    const cat = (id: string, name: string) =>
+      db.run(
+        `INSERT INTO categories (id,name,type,created_at,updated_at) VALUES ('${id}','${name}','expense','2026-10-01T00:00:00Z','2026-10-01T00:00:00Z')`,
+      );
+    expect(() => cat('cat-v1', 'Viaje')).not.toThrow();
+    expect(() => cat('cat-v2', 'viaje')).toThrow(); // NOCASE: 'Viaje' ya existe
+    db.run("UPDATE categories SET deleted_at = '2026-10-02T00:00:00Z' WHERE id = 'cat-v1'");
+    expect(() => cat('cat-v3', 'VIAJE')).not.toThrow(); // archivada → el nombre se libera
+  });
 });
 
 describe('paridad SQL embebido ↔ fichero .sql (gate de divergencia)', () => {
@@ -185,6 +196,19 @@ describe('paridad SQL embebido ↔ fichero .sql (gate de divergencia)', () => {
         .replace(/\s+/g, ' ')
         .trim();
     expect(normalize(MIGRATIONS[0]!.sql)).toBe(normalize(fileSql));
+  });
+
+  it('SQL_002_CATEGORIES_NAME_UNIQUE es idéntico a su fichero .sql', () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+    const fileSql = readFileSync(join(root, 'sql/002_categories_name_unique.sql'), 'utf8');
+    const normalize = (s: string) =>
+      s
+        .split('\n')
+        .filter((l) => !l.trim().startsWith('--'))
+        .join('\n')
+        .replace(/\s+/g, ' ')
+        .trim();
+    expect(normalize(MIGRATIONS[1]!.sql)).toBe(normalize(fileSql));
   });
 
   it('LATEST_VERSION coincide con la última migración', () => {
