@@ -6,7 +6,7 @@
  * Al añadir el módulo nativo, se sustituye por un adaptador SqlDbPort sobre SQLCipher
  * y esta fábrica desaparece; la UI y el store no cambian (hexagonal).
  */
-import initSqlJs from 'sql.js';
+import initSqlJs from './sqlasm'; // asm.js: Metro/Expo Go no resuelven node:fs del build wasm
 import type { Database } from 'sql.js';
 import { MIGRATIONS, runMigrations } from '@monedero/db';
 import { sqlJsMigrationExecutor } from '@monedero/db/sqljs';

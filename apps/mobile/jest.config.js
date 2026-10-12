@@ -27,6 +27,9 @@ module.exports = {
     '^@monedero/i18n$': '<rootDir>/../../shared/i18n/src/index.ts',
     '^@monedero/db$': '<rootDir>/../../shared/db/src/index.ts',
     '^@monedero/db/sqljs$': '<rootDir>/../../shared/db/src/sqljs.ts',
+    // El móvil corre el build asm.js en el dispositivo (Metro no resuelve
+    // node:fs del build wasm): jest ejercita el MISMO motor que Expo Go.
+    '^sql\\.js$': 'sql.js/dist/sql-asm.js',
   },
   // pnpm aloja paquetes bajo .pnpm/<pkg>@v/node_modules/<pkg> y Windows usa "\":
   // el patrón debe admitir ambos separadores y el prefijo .pnpm/ para no ignorarlos.
