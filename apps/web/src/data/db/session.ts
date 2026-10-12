@@ -11,12 +11,15 @@ import type { Database } from 'sql.js';
 import { openDb, resetDbSingleton } from './open';
 import { SqlJsTransactionRepository } from '../repo/tx.repo.sqljs';
 import { SqlJsCategoryRepository } from '../repo/categories.repo.sqljs';
+import { SqlJsBudgetRepository } from '../repo/budgets.repo.sqljs';
 
 let dbPending: Promise<Database> | null = null;
 let repo: SqlJsTransactionRepository | null = null;
 let repoPending: Promise<SqlJsTransactionRepository> | null = null;
 let categoriesRepo: SqlJsCategoryRepository | null = null;
 let categoriesPending: Promise<SqlJsCategoryRepository> | null = null;
+let budgetsRepo: SqlJsBudgetRepository | null = null;
+let budgetsPending: Promise<SqlJsBudgetRepository> | null = null;
 
 /** BD singleton de la sesión (la primera llamada la abre). */
 function getDb(): Promise<Database> {
@@ -57,6 +60,21 @@ export function getCategoriesRepo(): Promise<SqlJsCategoryRepository> {
   return categoriesPending;
 }
 
+/** Devuelve el repo de presupuestos de la MISMA sesión (misma BD instance). */
+export function getBudgetsRepo(): Promise<SqlJsBudgetRepository> {
+  if (budgetsRepo) return Promise.resolve(budgetsRepo);
+  budgetsPending ??= getDb()
+    .then((d) => {
+      budgetsRepo = new SqlJsBudgetRepository(d);
+      return budgetsRepo;
+    })
+    .catch((err: unknown) => {
+      budgetsPending = null;
+      throw err;
+    });
+  return budgetsPending;
+}
+
 /** Solo tests: limpia repos + BD singleton para el siguiente caso. */
 export function resetSession(): void {
   dbPending = null;
@@ -64,5 +82,7 @@ export function resetSession(): void {
   repoPending = null;
   categoriesRepo = null;
   categoriesPending = null;
+  budgetsRepo = null;
+  budgetsPending = null;
   resetDbSingleton();
 }
