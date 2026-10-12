@@ -21,6 +21,7 @@ import { createSecureStoreStorage } from './infrastructure/security/secureStoreS
 import { createDevRepository, type DevRepository } from './infrastructure/db/createDevRepository';
 import { VaultGate } from './ui/screens/VaultGate';
 import { AppErrorBoundary } from './ui/AppErrorBoundary';
+import { BusyIndicator } from './ui/design-system';
 import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { TransactionsScreen } from './ui/screens/TransactionsScreen';
 import { BudgetsScreen } from './ui/screens/BudgetsScreen';
@@ -100,11 +101,7 @@ function AppShell() {
   }, []);
 
   if (!dev) {
-    return (
-      <View style={styles.loading} accessibilityLiveRegion="polite">
-        <Text style={styles.loadingText}>{t('common.loading')}</Text>
-      </View>
-    );
+    return <BusyIndicator label={t('common.loading')} />;
   }
 
   return (
@@ -205,8 +202,6 @@ const styles = StyleSheet.create({
   // minHeight: seguro contra colapso de altura en arranques nativos raros
   // (el contenido del VaultGate es flex:1; sin cota mínima quedaría invisible).
   body: { flex: 1, minHeight: 320 },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { fontSize: 15, color: csColors.textMuted },
   shell: { flex: 1 },
   tabs: { flexDirection: 'row', gap: csSpace.s2, paddingHorizontal: csSpace.s4, paddingBottom: csSpace.s2 },
   tab: {

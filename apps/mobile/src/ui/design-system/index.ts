@@ -5,13 +5,15 @@
  * ProgressBar (barras 80/100), Toast (feedback sereno 4000 ms).
  */
 import { Button } from './Button';
+import { BusyIndicator } from './BusyIndicator';
 import { Card } from './Card';
 import { Input } from './Input';
 import { ProgressBar } from './ProgressBar';
 import { Toast } from './Toast';
 
-export { Button, Card, Input, ProgressBar, Toast };
+export { Button, BusyIndicator, Card, Input, ProgressBar, Toast };
 export type { ButtonProps, ButtonVariant } from './Button';
+export type { BusyIndicatorProps } from './BusyIndicator';
 export type { CardProps } from './Card';
 export type { InputProps } from './Input';
 export type { ProgressBarProps } from './ProgressBar';

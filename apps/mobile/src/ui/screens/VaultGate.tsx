@@ -10,7 +10,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@monedero/i18n/react';
 import { csColors, csSpace } from '@monedero/tokens';
-import { Button, Card, Input } from '../design-system';
+import { Button, BusyIndicator, Card, Input } from '../design-system';
 import { Onboarding } from './Onboarding';
 import { useVaultStore } from '../../state/vault.store';
 
@@ -93,19 +93,23 @@ export function VaultGate({ children }: VaultGateProps) {
           disabled={busy}
           error={wrongPassphrase ? t('vault.lock.error.wrong') : undefined}
         />
-        <Button
-          label={busy ? t('vault.lock.busy') : t('vault.lock.submit')}
-          disabled={busy}
-          onPress={() => {
-            void (async () => {
-              const ok = await unlock(pass);
-              if (ok) {
-                setPass('');
-                setJustCreated(false);
-              }
-            })();
-          }}
-        />
+        {busy ? (
+          <BusyIndicator label={t('vault.lock.busy')} copy={t('vault.busy.copy')} />
+        ) : (
+          <Button
+            label={t('vault.lock.submit')}
+            disabled={busy}
+            onPress={() => {
+              void (async () => {
+                const ok = await unlock(pass);
+                if (ok) {
+                  setPass('');
+                  setJustCreated(false);
+                }
+              })();
+            }}
+          />
+        )}
       </Card>
     </ScrollView>
   );

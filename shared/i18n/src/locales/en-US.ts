@@ -33,6 +33,7 @@ export const enUS: Dictionary = {
   'vault.lock.passphrase': 'Master password',
   'vault.lock.submit': 'Unlock',
   'vault.lock.busy': 'Decrypting…',
+  'vault.busy.copy': 'Deriving your key on-device. It only takes a few seconds.',
   'vault.lock.error.wrong': 'Incorrect password. Your data stays protected.',
   'vault.success.title': 'Vault ready!',
   'vault.success.copy': 'Your data is encrypted on this device.',

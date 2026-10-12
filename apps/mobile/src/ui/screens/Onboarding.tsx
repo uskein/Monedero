@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@monedero/i18n/react';
 import { csColors, csRadius, csSpace } from '@monedero/tokens';
-import { Button, Card, Input } from '../design-system';
+import { Button, BusyIndicator, Card, Input } from '../design-system';
 
 export interface OnboardingProps {
   /** Crea la bóveda (store); false si la validación falla (error en el paso). */
@@ -118,11 +118,11 @@ export function Onboarding({ onCreate }: OnboardingProps) {
             />
             <View style={styles.actions}>
               <Button variant="secondary" label={t('common.back')} disabled={busy} onPress={() => setStep(1)} />
-              <Button
-                label={busy ? t('vault.onboarding.busy') : t('vault.onboarding.finish')}
-                disabled={busy}
-                onPress={() => void finish()}
-              />
+              {busy ? (
+                <BusyIndicator label={t('vault.onboarding.busy')} copy={t('vault.busy.copy')} />
+              ) : (
+                <Button label={t('vault.onboarding.finish')} disabled={busy} onPress={() => void finish()} />
+              )}
             </View>
           </View>
         )}

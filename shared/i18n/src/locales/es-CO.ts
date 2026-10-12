@@ -38,6 +38,7 @@ export const esCO = {
   'vault.lock.passphrase': 'Contraseña maestra',
   'vault.lock.submit': 'Desbloquear',
   'vault.lock.busy': 'Descifrando…',
+  'vault.busy.copy': 'Derivando tu clave en el dispositivo. Solo tarda unos segundos.',
   'vault.lock.error.wrong': 'Contraseña incorrecta. Tus datos siguen protegidos.',
   'vault.success.title': '¡Bóveda lista!',
   'vault.success.copy': 'Tus datos están cifrados en este dispositivo.',
