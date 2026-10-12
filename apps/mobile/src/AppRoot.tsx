@@ -18,6 +18,7 @@ import { configureVaultStorage } from './state/vault.store';
 import { createSecureStoreStorage } from './infrastructure/security/secureStoreStorage';
 import { createDevRepository, type DevRepository } from './infrastructure/db/createDevRepository';
 import { VaultGate } from './ui/screens/VaultGate';
+import { AppErrorBoundary } from './ui/AppErrorBoundary';
 import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { TransactionsScreen } from './ui/screens/TransactionsScreen';
 import { BudgetsScreen } from './ui/screens/BudgetsScreen';
@@ -44,9 +45,11 @@ function Shell() {
       <StatusBar style="dark" />
       <Hero />
       <View style={styles.body}>
-        <VaultGate>
-          <AppShell />
-        </VaultGate>
+        <AppErrorBoundary>
+          <VaultGate>
+            <AppShell />
+          </VaultGate>
+        </AppErrorBoundary>
       </View>
     </SafeAreaView>
   );
@@ -84,6 +87,7 @@ function AppShell() {
   useEffect(() => {
     let alive = true;
     void createDevRepository().then((d) => {
+      if (__DEV__) console.warn('[monedero] repo dev listo (sql.js asm)');
       if (alive) setDev(d);
     });
     return () => {
@@ -174,7 +178,9 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     marginTop: csSpace.s3,
   },
-  body: { flex: 1 },
+  // minHeight: seguro contra colapso de altura en arranques nativos raros
+  // (el contenido del VaultGate es flex:1; sin cota mínima quedaría invisible).
+  body: { flex: 1, minHeight: 320 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { fontSize: 15, color: csColors.textMuted },
   shell: { flex: 1 },

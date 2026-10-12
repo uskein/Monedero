@@ -28,6 +28,13 @@ interface VaultState {
 }
 
 const MIN_LEN = 8;
+/**
+ * Watchdog de arranque (Android 16/Keystore): si la lectura de SecureStore
+ * no asienta en 8 s, se trata como «sin bóveda» (onboarding) en lugar de un
+ * spinner eterno silencioso. Espeja la semántica de la PWA (mejor permitir
+ * crear de nuevo que bloquear el arranque). Ver test/validación manual.
+ */
+const BOOT_TIMEOUT_MS = 8000;
 
 let vault: KeyVault | null = null;
 
@@ -53,11 +60,20 @@ export const useVaultStore = create<VaultState>((set) => ({
 
   boot: async () => {
     try {
-      await getVault().load();
-      set({ status: getVault().hasVault() ? 'locked' : 'no-vault', error: null });
+      const load = getVault().load();
+      // Si gana el watchdog, una carga tardía no debe dejar un rechazo sin manejar.
+      load.catch(() => undefined);
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('BOOT_TIMEOUT')), BOOT_TIMEOUT_MS),
+      );
+      await Promise.race([load, timeout]);
+      const status = getVault().hasVault() ? 'locked' : 'no-vault';
+      if (__DEV__) console.warn(`[monedero] vault boot → ${status}`);
+      set({ status, error: null });
     } catch {
-      // Keychain ilegible (rarísimo): mejor permitir crear de nuevo que
-      // quedarse en spinner eterno — espeja la semántica «no hay bóveda».
+      // Keychain ilegible o colgada (rarísimo): mejor permitir crear de nuevo
+      // que quedarse en spinner eterno — espeja la semántica «no hay bóveda».
+      if (__DEV__) console.warn('[monedero] vault boot → no-vault (fallo/timeout)');
       set({ status: 'no-vault', error: 'STORAGE_UNAVAILABLE' });
     }
   },
