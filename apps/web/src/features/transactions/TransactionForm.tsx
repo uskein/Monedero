@@ -8,6 +8,7 @@
 import { useState, type FormEvent } from 'react';
 import { Button, Field, Input, MoneyInput, Segmented, Toast } from '../../design-system';
 import { useI18n, symbolFor } from '@monedero/i18n/react';
+import { parseAmountToCents } from '@monedero/i18n';
 import type { CurrencyCode } from '@monedero/i18n';
 import type { TxInput, TxType } from '../../data/domain/transactions';
 
@@ -31,36 +32,8 @@ export interface TransactionFormProps {
   onSubmit: (input: TxInput) => void;
 }
 
-/** Convierte "18.500,50" / "18,500.50" a centavos enteros; null si es inválido. */
-export function parseAmountToCents(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  const normalized = trimmed.replace(/\s/g, '');
-  // Si tiene dos separadores, el último es decimal; si uno solo, decidimos por dígitos tras él.
-  const lastComma = normalized.lastIndexOf(',');
-  const lastDot = normalized.lastIndexOf('.');
-  let decimalSep = -1;
-  if (lastComma >= 0 && lastDot >= 0) decimalSep = Math.max(lastComma, lastDot);
-  else if (lastComma >= 0 || lastDot >= 0) {
-    const sep = Math.max(lastComma, lastDot);
-    const digitsAfter = normalized.length - sep - 1;
-    // Regla móvil (money.ts): 1–2 dígitos tras el ÚLTIMO separador ⇒ decimal; 3+ ⇒ miles.
-    decimalSep = digitsAfter >= 1 && digitsAfter <= 2 ? sep : -1;
-  }
-  let major: string;
-  let minor = '';
-  if (decimalSep >= 0) {
-    major = normalized.slice(0, decimalSep).replace(/[.,]/g, '');
-    minor = normalized.slice(decimalSep + 1);
-  } else {
-    major = normalized.replace(/[.,]/g, '');
-  }
-  if (!/^\d*$/.test(major) || !/^\d*$/.test(minor)) return null;
-  if (major === '' && minor === '') return null;
-  const cents = Number(major || '0') * 100 + Number((minor + '00').slice(0, 2));
-  if (!Number.isSafeInteger(cents)) return null;
-  return cents;
-}
+/** Convierte "18.500,50" / "18,500.50" a centavos enteros — regla única en @monedero/i18n (HU-18). */
+export { parseAmountToCents };
 
 export function TransactionForm({
   categories,

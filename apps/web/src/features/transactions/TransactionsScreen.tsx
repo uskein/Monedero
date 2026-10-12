@@ -108,9 +108,9 @@ export function TransactionsScreen({ currency, repoOverride }: TransactionsScree
             </Button>
           </div>
         </Card>
-      ) : (
+      ) : status === 'empty' ? null : (
         <Button variant="primary" onClick={() => setShowForm(true)}>
-          {status === 'empty' ? t('tx.list.empty.cta') : t('tx.form.title')}
+          {t('tx.form.title')}
         </Button>
       )}
 
