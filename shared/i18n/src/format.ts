@@ -76,6 +76,35 @@ export function formatMoneySigned(
   return isIncome ? `+ ${abs}` : `− ${abs}`;
 }
 
+/** Clave de mes 'YYYY-MM' de una fecha local (BP-03 · HU-09). */
+export function monthKeyOf(date: Date): string {
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${date.getFullYear()}-${m}`;
+}
+
+/** Mes anterior a una clave 'YYYY-MM' (cambia de año correctamente). */
+export function previousMonthKey(month: string): string {
+  const [y, m] = month.split('-').map(Number);
+  if (!y || !m || m < 1 || m > 12) return month;
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
+}
+
+/**
+ * Etiqueta de periodo regional para el segmented de BP-03:
+ * es-CO → «octubre de 2026» · en-US → «October 2026».
+ * @param month clave 'YYYY-MM'; si es inválida se devuelve tal cual.
+ */
+export function formatMonthLabel(month: string, locale: Locale): string {
+  const [y, m] = month.split('-').map(Number);
+  if (!y || !m || m < 1 || m > 12) return month;
+  const intlLocale = locale === 'es-CO' ? 'es-CO' : 'en-US';
+  // Fecha en hora local: con UTC medianoche, zonas < UTC (es-CO = Bogotá, UTC−5)
+  // desplazarían el día al mes anterior ("octubre" se vería como "septiembre").
+  return new Intl.DateTimeFormat(intlLocale, { month: 'long', year: 'numeric' }).format(
+    new Date(y, m - 1, 1),
+  );
+}
+
 /**
  * Parsea la entrada decimal del usuario a centavos enteros (contrario de formatMoney).
  * ÚNICA regla compartida por PWA y móvil (HU-18: sin drift entre plataformas).

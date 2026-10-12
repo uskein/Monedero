@@ -16,7 +16,15 @@ export const enUS: Dictionary = {
   'common.error.generic': 'Something went wrong. Please try again.',
 
   'home.lead': 'Local expense tracker — your data never leaves your device.',
-  'home.unlocked': 'Vault unlocked — dashboard under construction (S3).',
+  'home.title': 'Home',
+  'home.balance': 'Total balance',
+  'home.period.current': 'This month',
+  'home.period.previous': 'Last month',
+  'home.month.income': 'Income',
+  'home.month.expense': 'Expenses',
+  'home.month.balance': 'Month balance',
+  'home.latest': 'Recent activity',
+  'home.error': 'We could not load your home screen.',
 
   'vault.lock.title': 'Vault locked',
   'vault.lock.copy': 'Enter your master password to decrypt your local data.',

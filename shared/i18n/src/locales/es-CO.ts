@@ -18,9 +18,17 @@ export const esCO = {
   'common.undo': 'Deshacer',
   'common.error.generic': 'Algo salió mal. Inténtalo de nuevo.',
 
-  // ── Dashboard / inicio ──
+  // ── Dashboard / inicio BP-03 — HU-08·09·12 ──
   'home.lead': 'Gestor de gastos local — tus datos nunca salen de tu dispositivo.',
-  'home.unlocked': 'Bóveda desbloqueada — dashboard en construcción (S3).',
+  'home.title': 'Inicio',
+  'home.balance': 'Balance total',
+  'home.period.current': 'Este mes',
+  'home.period.previous': 'Mes anterior',
+  'home.month.income': 'Ingresos',
+  'home.month.expense': 'Gastos',
+  'home.month.balance': 'Balance del mes',
+  'home.latest': 'Últimos movimientos',
+  'home.error': 'No se pudo cargar tu inicio.',
 
   // ── Bóveda BP-01 / BP-02 ──
   'vault.lock.title': 'Bóveda bloqueada',

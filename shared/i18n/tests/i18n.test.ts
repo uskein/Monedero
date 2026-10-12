@@ -4,7 +4,16 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createTranslator, detectLocale, DICTIONARIES, esCO, enUS } from '../src/translator';
-import { formatMoney, formatMoneySigned, parseAmountToCents, decimalsFor, symbolFor } from '../src/format';
+import {
+  formatMoney,
+  formatMoneySigned,
+  formatMonthLabel,
+  monthKeyOf,
+  previousMonthKey,
+  parseAmountToCents,
+  decimalsFor,
+  symbolFor,
+} from '../src/format';
 
 describe('createTranslator', () => {
   const t = createTranslator('es-CO');
@@ -151,5 +160,30 @@ describe('parseAmountToCents — entrada a centavos enteros (regla única PWA/m�
 
   it('ignora espacios de agrupado', () => {
     expect(parseAmountToCents('18 500')).toBe(1850000);
+  });
+});
+
+describe('helpers de periodo BP-03 (HU-09: mes para el informe)', () => {
+  it('monthKeyOf da YYYY-MM con ceros', () => {
+    expect(monthKeyOf(new Date(2026, 0, 31))).toBe('2026-01');
+    expect(monthKeyOf(new Date(2026, 11, 1))).toBe('2026-12');
+  });
+
+  it('previousMonthKey cambia de año en enero', () => {
+    expect(previousMonthKey('2026-03')).toBe('2026-02');
+    expect(previousMonthKey('2026-01')).toBe('2025-12');
+  });
+
+  it('previousMonthKey devuelve la misma clave si es inválida', () => {
+    expect(previousMonthKey('basura')).toBe('basura');
+  });
+
+  it('formatMonthLabel regionaliza el mes (es-CO con "de", en-US sin él)', () => {
+    expect(formatMonthLabel('2026-10', 'es-CO')).toBe('octubre de 2026');
+    expect(formatMonthLabel('2026-10', 'en-US')).toBe('October 2026');
+  });
+
+  it('formatMonthLabel con clave inválida la devuelve tal cual', () => {
+    expect(formatMonthLabel('2026-99', 'es-CO')).toBe('2026-99');
   });
 });

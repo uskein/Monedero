@@ -18,6 +18,9 @@ export {
 export {
   formatMoney,
   formatMoneySigned,
+  formatMonthLabel,
+  monthKeyOf,
+  previousMonthKey,
   parseAmountToCents,
   symbolFor,
   decimalsFor,
