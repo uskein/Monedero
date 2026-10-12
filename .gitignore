@@ -11,6 +11,10 @@ web-build/
 *.tsbuildinfo
 .turbo/
 
+# Nativo generado (expo prebuild) — se formalizará en el sprint del dev-build
+# con SQLCipher; por ahora es solo diagnóstico local (expo run:android).
+apps/mobile/android/
+
 # Entornos
 .env
 .env.local

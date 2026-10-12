@@ -8,7 +8,7 @@
  * Este script lo reescribe tras cada `pnpm install` (idempotente).
  * Alternativa intentada: `pnpm patch` — falla en Windows por límites de ruta.
  */
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createRequire } from 'node:module';
 
@@ -29,4 +29,16 @@ if (!existsSync(target)) {
     ].join('\n'),
   );
   console.log('[postinstall] shim rn-get-polyfills.js instalado en react-native.');
+}
+
+// Además el "exports" de react-native debe exponer la subruta: Node/Metro
+// rechazan require('react-native/rn-get-polyfills') si no está declarada
+// (ERR_PACKAGE_PATH_NOT_EXPORTED), aunque el archivo exista.
+const pkgPath = rnPkgJson;
+const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+if (pkg.exports && !('./rn-get-polyfills' in pkg.exports)) {
+  pkg.exports['./rn-get-polyfills.js'] = './rn-get-polyfills.js';
+  pkg.exports['./rn-get-polyfills'] = './rn-get-polyfills.js';
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  console.log('[postinstall] exports ./rn-get-polyfills añadido a react-native.');
 }
