@@ -1,26 +1,18 @@
 /**
- * Bootstrap de la PWA — I18nProvider + BP-01/BP-02 (vault) + showcase DS en /design-system.
+ * Bootstrap de la PWA — I18nProvider + BP-01/BP-02 (vault) + AppShell
+ * (BP-03 Inicio · BP-04 Movimientos · BP-05 alta) + showcase DS en /design-system.
  * i18n: cero strings hardcodeados → useT() (gate i18n:check).
  * Trazabilidad: ESTRUCTURA_DIRECTORIOS.md → apps/web/src/app/App.tsx
  */
-import { useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { csColors, csLogo } from '@monedero/tokens';
 import { I18nProvider, useT } from '@monedero/i18n/react';
 import Showcase from '../design-system/Showcase';
+import { Segmented, usePrefersReducedMotion } from '../design-system';
 import '../design-system/components.css';
 import { VaultGate } from '../features/vault/VaultGate';
+import { DashboardScreen } from '../features/dashboard/DashboardScreen';
 import { TransactionsScreen } from '../features/transactions/TransactionsScreen';
-
-function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(
-    (cb) => {
-      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-      mq.addEventListener('change', cb);
-      return () => mq.removeEventListener('change', cb);
-    },
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  );
-}
 
 function Hero({ reducedMotion }: { reducedMotion: boolean }) {
   const t = useT();
@@ -74,6 +66,46 @@ function Hero({ reducedMotion }: { reducedMotion: boolean }) {
   );
 }
 
+/**
+ * AppShell — navegación Inicio (BP-03) ↔ Movimientos (BP-04/05) tras el
+ * VaultGate. Ambos paneles quedan MONTADOS (hidden) para conservar el estado
+ * de cada pantalla; comparten la sesión de repo → los eventos 'tx' del alta
+ * actualizan el balance del dashboard (tarea 4.3). El CTA del dashboard abre
+ * el alta mediante addSignal.
+ */
+function AppShell() {
+  const t = useT();
+  const [tab, setTab] = useState<'home' | 'tx'>('home');
+  const [addSignal, setAddSignal] = useState(0);
+
+  return (
+    <div style={{ display: 'grid', gap: 'var(--cs-space-4)' }}>
+      <Segmented
+        label={t('nav.sections')}
+        options={[
+          { value: 'home', label: t('home.title') },
+          { value: 'tx', label: t('tx.list.title') },
+        ]}
+        value={tab}
+        onChange={setTab}
+      />
+      <div hidden={tab !== 'home'}>
+        <DashboardScreen
+          currency="COP"
+          onAddFirst={() => {
+            setTab('tx');
+            setAddSignal((n) => n + 1);
+          }}
+          onSeeAll={() => setTab('tx')}
+        />
+      </div>
+      <div hidden={tab !== 'tx'}>
+        <TransactionsScreen currency="COP" addSignal={addSignal} />
+      </div>
+    </div>
+  );
+}
+
 function Shell() {
   const reducedMotion = usePrefersReducedMotion();
 
@@ -94,7 +126,7 @@ function Shell() {
       <Hero reducedMotion={reducedMotion} />
       <div style={{ width: 'min(440px, 100%)', textAlign: 'left' }}>
         <VaultGate>
-          <TransactionsScreen currency="COP" />
+          <AppShell />
         </VaultGate>
       </div>
     </main>
