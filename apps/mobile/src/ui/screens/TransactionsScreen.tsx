@@ -8,29 +8,12 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useT } from '@monedero/i18n/react';
 import { csColors, csSpace } from '@monedero/tokens';
 import { Button } from '../design-system';
-import { TransactionForm, type Option } from './TransactionForm';
+import { TransactionForm } from './TransactionForm';
 import { TransactionList } from './TransactionList';
+import { CATEGORY_NAMES, DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES } from './catalog';
 import { useTransactionsStore } from '../../state/transactions.store';
 import type { TransactionRepository } from '../../core/ports/TransactionRepository';
 import type { TxInput } from '../../core/domain/transaction';
-
-const DEFAULT_CATEGORIES: Option[] = [
-  { id: 'cat-comida', name: 'Comida' },
-  { id: 'cat-transporte', name: 'Transporte' },
-  { id: 'cat-casa', name: 'Casa' },
-  { id: 'cat-salud', name: 'Salud' },
-  { id: 'cat-ocio', name: 'Ocio' },
-  { id: 'cat-otros', name: 'Otros' },
-  { id: 'cat-salario', name: 'Salario' },
-  { id: 'cat-ingresos-otros', name: 'Otros ingresos' },
-];
-
-const DEFAULT_ACCOUNTS: Option[] = [
-  { id: 'acc-efectivo', name: 'Efectivo' },
-  { id: 'acc-ahorro', name: 'Ahorro' },
-];
-
-const CATEGORY_NAMES: Record<string, string> = Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.id, c.name]));
 
 export interface TransactionsScreenProps {
   repo: TransactionRepository;
