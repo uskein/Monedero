@@ -20,6 +20,7 @@ import { createDevRepository, type DevRepository } from './infrastructure/db/cre
 import { VaultGate } from './ui/screens/VaultGate';
 import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { TransactionsScreen } from './ui/screens/TransactionsScreen';
+import { SettingsScreen } from './ui/screens/SettingsScreen';
 
 // Raíz de composición: el puerto de la bóveda se inyecta al cargar el módulo,
 // ANTES del primer render (VaultGate arranca su boot en un efecto hijo, que se
@@ -75,7 +76,7 @@ function Hero() {
  */
 function AppShell() {
   const t = useT();
-  const [tab, setTab] = useState<'home' | 'tx'>('home');
+  const [tab, setTab] = useState<'home' | 'tx' | 'settings'>('home');
   const [addSignal, setAddSignal] = useState(0);
   const [dev, setDev] = useState<DevRepository | null>(null);
 
@@ -102,6 +103,7 @@ function AppShell() {
       <View style={styles.tabs}>
         <NavTab label={t('home.title')} selected={tab === 'home'} onPress={() => setTab('home')} />
         <NavTab label={t('tx.list.title')} selected={tab === 'tx'} onPress={() => setTab('tx')} />
+        <NavTab label={t('settings.title')} selected={tab === 'settings'} onPress={() => setTab('settings')} />
       </View>
       <View style={[styles.panel, tab !== 'home' && styles.hidden]}>
         <DashboardScreen
@@ -115,6 +117,9 @@ function AppShell() {
       </View>
       <View style={[styles.panel, tab !== 'tx' && styles.hidden]}>
         <TransactionsScreen repo={dev.repo} addSignal={addSignal} />
+      </View>
+      <View style={[styles.panel, tab !== 'settings' && styles.hidden]}>
+        <SettingsScreen categories={dev.categories} />
       </View>
     </View>
   );
