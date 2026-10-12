@@ -18,9 +18,11 @@ import type { TxInput } from '../../core/domain/transaction';
 export interface TransactionsScreenProps {
   repo: TransactionRepository;
   currency?: 'COP' | 'USD' | 'EUR';
+  /** Señal del CTA del dashboard (BP-03→BP-05): al incrementarse, abre el alta. */
+  addSignal?: number;
 }
 
-export function TransactionsScreen({ repo, currency = 'COP' }: TransactionsScreenProps) {
+export function TransactionsScreen({ repo, currency = 'COP', addSignal = 0 }: TransactionsScreenProps) {
   const t = useT();
   const status = useTransactionsStore((s) => s.status);
   const items = useTransactionsStore((s) => s.items);
@@ -38,6 +40,10 @@ export function TransactionsScreen({ repo, currency = 'COP' }: TransactionsScree
   useEffect(() => {
     void init(repo);
   }, [init, repo]);
+
+  useEffect(() => {
+    if (addSignal > 0) setShowForm(true);
+  }, [addSignal]);
 
   async function handleSubmit(input: TxInput) {
     const ok = await add(input);
