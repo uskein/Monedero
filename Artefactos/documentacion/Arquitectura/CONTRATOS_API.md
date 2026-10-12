@@ -36,7 +36,7 @@ interface TransactionRepository {
 }
 ```
 
-### 1.2 AccountRepository · BudgetRepository · TagRepository
+### 1.2 AccountRepository · CategoryRepository · BudgetRepository · TagRepository
 ```ts
 interface AccountRepository {
   list(opts?: { includeArchived?: boolean }): Promise<Account[]>;
@@ -45,10 +45,25 @@ interface AccountRepository {
   update(id: string, patch: AccountPatch): Promise<Account>;
   archive(id: string): Promise<void>;
 }
+interface CategoryRepository {        // HU-10
+  list(opts?: { type?: 'income' | 'expense'; includeArchived?: boolean }): Promise<Category[]>;
+  getById(id: string): Promise<Category | null>;
+  create(input: CategoryInput): Promise<Category>;   // nombre NOCASE duplicado → INTEGRITY_VIOLATION
+  update(id: string, patch: CategoryPatch): Promise<Category>;
+  archive(id: string): Promise<void>;                // tombstone: siempre permitido, libera el nombre
+  remove(id: string): Promise<void>;                 // con movimientos/hijos → INTEGRITY_VIOLATION (archivar)
+  subscribe(cb: (e: { scope: 'category' }) => void): Unsubscribe;
+}
 interface BudgetRepository {
   get(categoryId: string, period: string): Promise<Budget | null>;
+  listByPeriod(period: string): Promise<Budget[]>;   // BP-06: topes del mes
   upsert(input: BudgetInput): Promise<Budget>;           // UNIQUE(category,period) → idempotente
   usage(categoryId: string, period: string): Promise<{ spentCents: MoneyCents; budgetCents: MoneyCents; ratio: number }>;
+}
+interface TagRepository {             // HU-10
+  list(): Promise<Tag[]>;
+  create(input: TagInput): Promise<Tag>;             // nombre NOCASE duplicado → INTEGRITY_VIOLATION
+  remove(id: string): Promise<void>;                 // ON DELETE CASCADE de vínculos
 }
 ```
 

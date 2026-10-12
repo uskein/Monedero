@@ -8,6 +8,7 @@ import type { DashboardSummary, Transaction, TxFilter, TxInput, TxPatch } from '
 import { TxInputSchema, TxPatchSchema, sanitizeSearch } from '../../core/domain/transaction';
 import type { RepositoryEvent, TransactionRepository } from '../../core/ports/TransactionRepository';
 import type { SqlDbPort, SqlRow } from './SqlDbPort';
+import { uuid } from './sqlErrors';
 
 interface Row extends SqlRow {
   id: string;
@@ -46,18 +47,6 @@ function toDomain(row: Row): Transaction {
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
   };
-}
-
-/** uuid v4 sin dependencias (crypto.randomUUID con fallback). */
-function uuid(): string {
-  const g = globalThis as { crypto?: { randomUUID?: () => string } };
-  const c = g.crypto;
-  if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c0) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c0 === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
 }
 
 export class SqlTransactionRepository implements TransactionRepository {
