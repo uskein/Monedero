@@ -16,7 +16,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nProvider, useT } from '@monedero/i18n/react';
 import { csColors, csLogo, csRadius, csSpace } from '@monedero/tokens';
-import { configureVaultStorage } from './state/vault.store';
+import { configureVaultStorage, getVaultPort } from './state/vault.store';
 import { createSecureStoreStorage } from './infrastructure/security/secureStoreStorage';
 import { createDevRepository, type DevRepository } from './infrastructure/db/createDevRepository';
 import { VaultGate } from './ui/screens/VaultGate';
@@ -85,9 +85,12 @@ function AppShell() {
 
   useEffect(() => {
     let alive = true;
-    void createDevRepository().then((d) => {
-      if (__DEV__) console.warn('[monedero] repo dev listo (sql.js asm)');
+    // Persistencia cifrada interina (ADR-003): el snapshot se sella con la
+    // clave de bóveda (KeyVault.encryptBytes) — la clave nunca sale de ahí.
+    void createDevRepository({ crypto: getVaultPort() ?? undefined }).then((d) => {
+      if (__DEV__) console.warn('[monedero] repo dev listo (sql.js asm + snapshot cifrado)');
       if (alive) setDev(d);
+      else d.dispose();
     });
     return () => {
       alive = false;

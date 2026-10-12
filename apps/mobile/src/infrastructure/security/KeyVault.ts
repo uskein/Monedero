@@ -87,4 +87,18 @@ export class KeyVault implements KeyVaultPort {
   isUnlocked(): boolean {
     return this.key !== null;
   }
+
+  /**
+   * Snapshot local cifrado (persistencia interina ADR-003): la clave maestra
+   * NO sale de la bóveda; los bytes se sellan aquí con AES-256-GCM/IV aleatorio.
+   */
+  async encryptBytes(data: Uint8Array): Promise<Uint8Array> {
+    if (!this.key) throw new DomainError('VALIDATION_FAILED', 'vault');
+    return encrypt(data, this.key);
+  }
+
+  async decryptBytes(payload: Uint8Array): Promise<Uint8Array> {
+    if (!this.key) throw new DomainError('VALIDATION_FAILED', 'vault');
+    return decrypt(payload, this.key);
+  }
 }

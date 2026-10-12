@@ -19,4 +19,12 @@ export interface KeyVaultPort {
   isUnlocked(): boolean;
   /** ¿Existe ya una bóveda creada en este dispositivo? (requiere load() previo) */
   hasVault(): boolean;
+  /**
+   * Cifra bytes con la clave maestra (AES-256-GCM, IV aleatorio) — la clave
+   * NUNCA sale de la bóveda (ADR-003: snapshot de la BD local en RamFs).
+   * Requiere desbloqueado; lanza en caso contrario.
+   */
+  encryptBytes(data: Uint8Array): Promise<Uint8Array>;
+  /** Descifra bytes (GCM autentica: clave incorrecta o corrupción → lanza). */
+  decryptBytes(payload: Uint8Array): Promise<Uint8Array>;
 }

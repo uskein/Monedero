@@ -74,6 +74,10 @@ interface KeyVaultPort {
   unlock(auth: { biometric?: true; passphrase?: string }): Promise<void>;   // deriva/recupera clave
   lock(): Promise<void>;                                                    // zeroize
   isUnlocked(): boolean;
+  /** Snapshot local cifrado (persistencia interina móvil, ADR-003): AES-256-GCM
+   *  con la clave maestra encapsulada — la clave NUNCA sale de la bóveda. */
+  encryptBytes(data: Uint8Array): Promise<Uint8Array>;
+  decryptBytes(payload: Uint8Array): Promise<Uint8Array>;
 }
 interface CryptoPort {                     // SQLCipher móvil · WebCrypto PWA
   encrypt(plain: Uint8Array): Promise<Uint8Array>;

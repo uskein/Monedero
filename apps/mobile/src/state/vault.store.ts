@@ -53,6 +53,14 @@ export function configureVaultStorage(storage: VaultStorage): void {
   useVaultStore.setState({ status: 'boot', error: null, busy: false });
 }
 
+/**
+ * Puerto de la bóveda activa (para inyectar crypto al repo dev: snapshot
+ * local cifrado ADR-003). Null si aún no se ha configurado.
+ */
+export function getVaultPort(): KeyVault | null {
+  return vault;
+}
+
 export const useVaultStore = create<VaultState>((set) => ({
   status: 'boot',
   error: null,
