@@ -18,6 +18,7 @@ export function Button({ variant = 'primary', label, disabled, ...rest }: Button
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ disabled: Boolean(disabled) }}
       disabled={disabled}
       style={({ pressed }) => [

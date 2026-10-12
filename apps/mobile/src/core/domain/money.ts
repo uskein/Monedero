@@ -2,7 +2,9 @@
  * MoneyCents — tipo branded para dinero en centavos enteros (ADR: sin flotantes).
  * Fuente: MODELO_DE_DATOS.md (amount_cents INTEGER) · HU-18 (COP 0 dec / USD·EUR 2 dec).
  * TDD estricto (ESTRATEGIA_PRUEBAS §5): dinero es área crítica.
+ * El parseo string→centavos vive en @monedero/i18n (regla única PWA/móvil, HU-18).
  */
+import { parseAmountToCents as parseShared } from '@monedero/i18n';
 
 export type MoneyCents = number & { readonly __brand: 'MoneyCents' };
 
@@ -23,16 +25,12 @@ export function addCents(a: MoneyCents, b: MoneyCents): MoneyCents {
 }
 
 /**
- * Parsea una entrada decimal del usuario a centavos.
- * Acepta "18.500,50" (es) y "18,500.50" (en) de forma ambigua resolviendo
- * por el ÚLTIMO separador como decimal si tiene 1–2 dígitos tras él.
- * Regla MVP: sin separador de miles automático — el usuario escribe punto o coma decimal.
+ * Parsea una entrada decimal del usuario a MoneyCents.
+ * Delega en la regla única de @monedero/i18n (HU-18): el ÚLTIMO separador es
+ * decimal si tiene 1–2 dígitos tras él, si no es de miles. Devuelve null si no
+ * es parseable. Se envuelve en MoneyCents para conservar el tipo branded.
  */
 export function parseAmountToCents(input: string): MoneyCents | null {
-  const cleaned = input.trim().replace(/\s/g, '');
-  if (cleaned === '' || cleaned === ',' || cleaned === '.') return null;
-  const normalized = cleaned.replace(',', '.');
-  const value = Number(normalized);
-  if (!Number.isFinite(value)) return null;
-  return moneyCents(Math.round(value * 100));
+  const cents = parseShared(input);
+  return cents === null ? null : moneyCents(cents);
 }
