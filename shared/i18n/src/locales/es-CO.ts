@@ -113,6 +113,24 @@ export const esCO = {
   'categories.group.expense': 'Gastos',
   'categories.group.income': 'Ingresos',
   'categories.back': 'Volver a Ajustes',
+
+  // ── Presupuestos BP-06 — HU-11·12 ──
+  'budgets.title': 'Presupuestos',
+  'budgets.add': 'Definir tope',
+  'budgets.form.category': 'Categoría',
+  'budgets.form.amount': 'Tope mensual',
+  'budgets.save': 'Guardar tope',
+  'budgets.edit': 'Editar tope',
+  'budgets.editing': 'Editando el tope de {name}',
+  'budgets.empty.title': 'Aún no tienes topes',
+  'budgets.empty.copy': 'Define un tope mensual por categoría y avanza con calma.',
+  'budgets.error': 'No se pudieron cargar los presupuestos.',
+  'budgets.error.duplicate': 'Esa categoría ya tiene un tope este mes: edítalo en su lugar.',
+  'budgets.error.amount': 'Escribe un monto mayor a cero.',
+  'budgets.of': 'de',
+  'budgets.chip.exceeded': 'Meta alcanzada',
+  'budgets.toast.warn': 'Vas cerca de tu tope en {name}: {percent} % del mes.',
+  'budgets.toast.exceeded': 'Tu tope en {name} se cumplió ({percent} % del mes). Revisa con calma.',
 } as const;
 
 export type TranslationKey = keyof typeof esCO;
