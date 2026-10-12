@@ -7,12 +7,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '@monedero/i18n/react';
+import { formatAmountLive } from '@monedero/i18n';
 import type { CurrencyCode } from '@monedero/i18n';
 import { csColors, csRadius, csSpace } from '@monedero/tokens';
-import { Button, Card, Input, ProgressBar, Toast } from '../design-system';
+import { Button, Card, MoneyInput, ProgressBar, Toast } from '../design-system';
 import { parseAmountToCents } from '../../core/domain/money';
 import { currentPeriod } from '../../core/domain/budget';
 import { useBudgetsStore, type BudgetRow, type BudgetsRepo } from '../../state/budgets.store';
+
+/** Monedas disponibles para mostrar/formatear los topes (botones). */
+export const BUDGET_CURRENCIES: CurrencyCode[] = ['COP', 'USD', 'EUR'];
 
 export interface BudgetsScreenProps {
   budgets: BudgetsRepo;
@@ -30,8 +34,8 @@ export interface BudgetsScreenProps {
   currency?: CurrencyCode;
 }
 
-export function BudgetsScreen({ budgets, txRepo, categories, period, currency = 'COP' }: BudgetsScreenProps) {
-  const { t, money } = useI18n();
+export function BudgetsScreen({ budgets, txRepo, categories, period, currency: currencyProp = 'COP' }: BudgetsScreenProps) {
+  const { t, money, locale } = useI18n();
   const status = useBudgetsStore((s) => s.status);
   const items = useBudgetsStore((s) => s.items);
   const duplicate = useBudgetsStore((s) => s.duplicate);
@@ -42,6 +46,7 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency = 
   const clearToast = useBudgetsStore((s) => s.clearToast);
   const clearDuplicate = useBudgetsStore((s) => s.clearDuplicate);
 
+  const [currency, setCurrency] = useState<CurrencyCode>(currencyProp);
   const [picker, setPicker] = useState<Array<{ id: string; name: string }>>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -81,7 +86,7 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency = 
     setFormOpen(true);
     setEditingCategoryId(row.categoryId);
     setCategoryId(row.categoryId);
-    setAmount(String(row.budgetCents / 100));
+    setAmount(formatAmountLive(String(row.budgetCents / 100), currency, locale));
     setAmountError(null);
   }
 
@@ -108,6 +113,22 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency = 
       <Text style={styles.hint}>
         {`${t('home.period')}: ${t('home.period.current')}`}
       </Text>
+
+      {/* Moneda de visualización — botones COP/USD/EUR (formato y símbolo). */}
+      <View accessibilityRole="radiogroup" accessibilityLabel={t('common.currency')} style={styles.chips}>
+        {BUDGET_CURRENCIES.map((code) => (
+          <Pressable
+            key={code}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: currency === code }}
+            accessibilityLabel={code}
+            onPress={() => setCurrency(code)}
+            style={[styles.chip, currency === code && styles.chipSelected]}
+          >
+            <Text style={[styles.chipLabel, currency === code && styles.chipLabelSelected]}>{code}</Text>
+          </Pressable>
+        ))}
+      </View>
 
       {toast && (
         <Toast
@@ -171,12 +192,13 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency = 
             </View>
           )}
 
-          <Input
+          <MoneyInput
             label={t('budgets.form.amount')}
             value={amount}
-            onValueChange={setAmount}
-            placeholder="0"
+            currency={currency}
+            onValueChange={(raw) => setAmount(formatAmountLive(raw, currency, locale))}
             error={amountError ?? undefined}
+            disabled={false}
           />
 
           {duplicate && (
@@ -195,7 +217,7 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency = 
                   const row = items.find((i) => i.categoryId === duplicate.categoryId);
                   setEditingCategoryId(duplicate.categoryId);
                   setCategoryId(duplicate.categoryId);
-                  setAmount(row ? String(row.budgetCents / 100) : '');
+                  setAmount(row ? formatAmountLive(String(row.budgetCents / 100), currency, locale) : '');
                   clearDuplicate();
                 }}
               />

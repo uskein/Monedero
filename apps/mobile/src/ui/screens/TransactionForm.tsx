@@ -2,13 +2,17 @@
  * TransactionForm (móvil) — BP-05 «Alta de movimiento» (HU-05·06·07).
  * 4 estados: pristine · validando (errores inline) · busy · error.
  * Reglas: importe > 0 en centavos · transfer exige destino distinto y SIN categoría.
- * Copy i18n vía useT() — cero strings hardcodeados (gate i18n:check).
+ * Estética Clay Serenity: chips de tipo CON icono (↑ gasto / ↓ ingreso ⇄
+ * transferencia), MoneyInput con formato EN VIVO (HU-18) y secciones con
+ * iconos. Copy i18n vía useT() — cero strings hardcodeados (gate i18n:check).
  */
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
-import { Button, Input } from '../design-system';
+import { formatAmountLive } from '@monedero/i18n';
+import { csColors, csLogo, csRadius, csSpace } from '@monedero/tokens';
+import { Button, Input, MoneyInput } from '../design-system';
 import { parseAmountToCents } from '../../core/domain/money';
 import type { TxInput, TxType } from '../../core/domain/transaction';
 
@@ -28,9 +32,14 @@ export interface TransactionFormProps {
 
 const TYPES: TxType[] = ['expense', 'income', 'transfer'];
 const TYPE_LABEL = { expense: 'tx.type.expense', income: 'tx.type.income', transfer: 'tx.type.transfer' } as const;
+const TYPE_ICON = {
+  expense: 'arrow-up',
+  income: 'arrow-down',
+  transfer: 'swap-horizontal',
+} as const satisfies Record<TxType, keyof typeof Ionicons.glyphMap>;
 
 export function TransactionForm({ categories, accounts, currency, busy = false, error = null, onSubmit }: TransactionFormProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [type, setType] = useState<TxType>('expense');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -75,17 +84,35 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
 
   return (
     <ScrollView contentContainerStyle={styles.form} accessibilityLabel={t('tx.form.title')}>
-      <Text style={styles.title}>{t('tx.form.title')}</Text>
+      <View style={styles.titleRow}>
+        <View style={styles.titleTile} accessibility-hidden="true">
+          <Ionicons name="create-outline" size={20} color={csLogo.tileLetter} />
+        </View>
+        <Text style={styles.title}>{t('tx.form.title')}</Text>
+      </View>
 
       {/* Tipo */}
       <Text style={styles.label}>{t('tx.form.type')}</Text>
       <View style={styles.row}>
         {TYPES.map((tt) => (
-          <Chip key={tt} label={t(TYPE_LABEL[tt])} selected={type === tt} onPress={() => setType(tt)} />
+          <Chip
+            key={tt}
+            label={t(TYPE_LABEL[tt])}
+            icon={TYPE_ICON[tt]}
+            selected={type === tt}
+            onPress={() => setType(tt)}
+          />
         ))}
       </View>
 
-      <Input label={t('tx.form.amount')} value={amount} onValueChange={setAmount} error={amountError} disabled={busy} />
+      <MoneyInput
+        label={t('tx.form.amount')}
+        value={amount}
+        currency={currency}
+        onValueChange={(raw) => setAmount(formatAmountLive(raw, currency, locale))}
+        error={amountError}
+        disabled={busy}
+      />
       <Input label={t('tx.form.date')} value={date} onValueChange={setDate} disabled={busy} />
       <Input label={t('tx.form.payee')} value={payee} onValueChange={setPayee} placeholder={t('tx.form.payee.placeholder')} disabled={busy} />
 
@@ -144,7 +171,19 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
   );
 }
 
-function Chip({ label, a11yLabel, selected, onPress }: { label: string; a11yLabel?: string; selected: boolean; onPress: () => void }) {
+function Chip({
+  label,
+  a11yLabel,
+  icon,
+  selected,
+  onPress,
+}: {
+  label: string;
+  a11yLabel?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -153,25 +192,43 @@ function Chip({ label, a11yLabel, selected, onPress }: { label: string; a11yLabe
       accessibilityState={{ selected }}
       style={[styles.chip, selected && styles.chipSelected]}
     >
+      {icon ? (
+        <Ionicons
+          name={icon}
+          size={15}
+          color={selected ? csColors.textOnPrimary : csColors.textMuted}
+        />
+      ) : null}
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  form: { gap: csSpace.s3, paddingVertical: csSpace.s4 },
-  title: { fontFamily: 'Fraunces', fontWeight: '700', fontSize: 20, color: csColors.textPrimary },
+  form: { gap: csSpace.s4, padding: csSpace.s4 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
+  titleTile: {
+    width: 36,
+    height: 36,
+    borderRadius: 36 * csLogo.radiusRatio,
+    backgroundColor: csLogo.tileBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: { fontFamily: csLogo.font, fontWeight: '700', fontSize: 20, color: csColors.textPrimary },
   label: { fontSize: 13, fontWeight: '600', color: csColors.textMuted, marginTop: csSpace.s2 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: csSpace.s1,
     minHeight: 40,
-    paddingHorizontal: csSpace.s4,
-    paddingVertical: csSpace.s2,
+    paddingHorizontal: csSpace.s3,
     borderRadius: csRadius.pill,
     backgroundColor: csColors.surfaceSunken,
   },
   chipSelected: { backgroundColor: csColors.primary },
-  chipLabel: { fontSize: 14, color: csColors.textPrimary, fontWeight: '500' },
+  chipLabel: { fontSize: 14, color: csColors.textPrimary },
   chipLabelSelected: { color: csColors.textOnPrimary, fontWeight: '600' },
-  error: { fontSize: 12, color: csColors.danger },
+  error: { fontSize: 13, color: csColors.danger },
 });

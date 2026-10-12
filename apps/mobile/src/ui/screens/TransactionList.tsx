@@ -1,11 +1,15 @@
 /**
  * TransactionList (móvil) — BP-04 «Movimientos» (HU-05·06·07).
  * 4 estados: loading (busy) · empty · success (filas) · error (alert + retry).
- * Borrado blando con Deshacer (4 s). Filtros por tipo + búsqueda.
- * Copy i18n vía useT() — cero strings hardcodeados (gate i18n:check).
+ * Borrado blando con Deshacer (4 gastos · filtros por tipo + búsqueda.
+ * Filas enriquecidas con IDENTIDAD: icono Ionicons por tipo (↑ gasto en
+ * sunken · ↓ ingreso en primarySoft · ⇄ transferencia), meta «categoría ·
+ * fecha» y monto con color semántico (ingreso primary; NUNCA rojo para un
+ * gasto ordinario — SSOT de color). Copy i18n vía useT().
  */
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import type { TranslationKey } from '@monedero/i18n';
 import { csColors, csRadius, csSpace } from '@monedero/tokens';
@@ -18,6 +22,11 @@ const TYPES = [null, 'expense', 'income'] as const satisfies ReadonlyArray<TxTyp
 const TYPE_LABEL: Record<'expense' | 'income', TranslationKey> = {
   expense: 'tx.type.expense',
   income: 'tx.type.income',
+};
+const TYPE_ICON: Record<TxType, keyof typeof Ionicons.glyphMap> = {
+  expense: 'arrow-up',
+  income: 'arrow-down',
+  transfer: 'swap-horizontal',
 };
 
 export interface TransactionListProps {
@@ -34,10 +43,14 @@ export interface TransactionListProps {
   onAddFirst: () => void;
 }
 
-function typeIcon(type: TxType): string {
-  if (type === 'income') return '↑';
-  if (type === 'transfer') return '⇄';
-  return '↓';
+/** Fecha corta local ('05 oct') segura para 'YYYY-MM-DD' (sin deriva UTC). */
+function shortDate(isoDate: string, locale: string): string {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  if (!y || !m || !d) return isoDate;
+  return new Intl.DateTimeFormat(locale === 'es-CO' ? 'es-CO' : 'en-US', {
+    day: '2-digit',
+    month: 'short',
+  }).format(new Date(y, m - 1, d));
 }
 
 export function TransactionList({
@@ -53,7 +66,7 @@ export function TransactionList({
   onClearUndo,
   onAddFirst,
 }: TransactionListProps) {
-  const { t, moneySigned } = useI18n();
+  const { t, moneySigned, locale } = useI18n();
   const [filterType, setFilterType] = useState<TxType | null>(null);
   const [search, setSearch] = useState('');
 
@@ -127,30 +140,44 @@ export function TransactionList({
       <FlatList
         data={visible}
         keyExtractor={(tx) => tx.id}
-        renderItem={({ item }) => (
-          <View style={styles.txRow}>
-            <View style={styles.txIcon}>
-              <Text>{typeIcon(item.type)}</Text>
-            </View>
-            <View style={styles.txBody}>
-              <Text style={styles.txTitle}>{item.payee ?? t('tx.form.payee')}</Text>
-              <Text style={styles.muted}>
-                {item.categoryId ? (categoryNames[item.categoryId] ?? item.categoryId) : item.type === 'income' ? t('tx.type.income') : item.type === 'transfer' ? t('tx.type.transfer') : t('tx.type.expense')}
+        renderItem={({ item }) => {
+          const categoryName = item.categoryId
+            ? (categoryNames[item.categoryId] ?? item.categoryId)
+            : item.type === 'transfer'
+              ? t('tx.type.transfer')
+              : null;
+          const meta = [categoryName, shortDate(item.date, locale)].filter(Boolean).join(' · ');
+          return (
+            <View style={styles.txRow}>
+              <View
+                accessibility-hidden="true"
+                style={[styles.txIcon, item.type === 'income' && styles.txIconIncome]}
+              >
+                <Ionicons
+                  name={TYPE_ICON[item.type]}
+                  size={20}
+                  color={item.type === 'income' ? csColors.primary : csColors.textPrimary}
+                />
+              </View>
+              <View style={styles.txBody}>
+                <Text style={styles.txTitle}>{item.payee ?? t('tx.form.payee')}</Text>
+                {meta ? <Text style={styles.muted}>{meta}</Text> : null}
+              </View>
+              <Text style={[styles.txAmount, item.type === 'income' && styles.income]}>
+                {moneySigned(item.amountCents, currency, item.type === 'income')}
               </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${t('common.delete')} ${item.payee ?? t('tx.form.payee')}`}
+                onPress={() => onDelete(item.id)}
+                style={styles.deleteBtn}
+                hitSlop={8}
+              >
+                <Ionicons name="trash-outline" size={18} color={csColors.danger} />
+              </Pressable>
             </View>
-            <Text style={[styles.txAmount, item.type === 'income' && styles.income]}>
-              {moneySigned(item.amountCents, currency, item.type === 'income')}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${t('common.delete')} ${item.payee ?? t('tx.form.payee')}`}
-              onPress={() => onDelete(item.id)}
-              style={styles.deleteBtn}
-            >
-              <Text style={styles.deleteLabel}>✕</Text>
-            </Pressable>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -179,7 +206,7 @@ const styles = StyleSheet.create({
   list: { gap: csSpace.s3 },
   center: { alignItems: 'center', gap: csSpace.s3, paddingVertical: csSpace.s6 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
-  muted: { fontSize: 13, color: csColors.textMuted },
+  muted: { fontSize: 12, color: csColors.textMuted },
   error: { fontSize: 14, color: csColors.danger, textAlign: 'center' },
   emptyTitle: { fontFamily: 'Fraunces', fontWeight: '700', fontSize: 18, color: csColors.textPrimary },
   chip: {
@@ -192,21 +219,35 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: csColors.primary },
   chipLabel: { fontSize: 13, color: csColors.textPrimary },
   chipLabelSelected: { color: csColors.textOnPrimary, fontWeight: '600' },
-  txRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s2, paddingVertical: csSpace.s3 },
+  txRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: csSpace.s3,
+    paddingVertical: csSpace.s2,
+    paddingHorizontal: csSpace.s3,
+    marginVertical: csSpace.s1,
+    backgroundColor: csColors.surface,
+    borderRadius: csRadius.card,
+    shadowColor: 'rgb(60, 50, 40)',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
   txIcon: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: csRadius.pill,
     backgroundColor: csColors.surfaceSunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  txBody: { flex: 1 },
+  txIconIncome: { backgroundColor: csColors.primarySoft },
+  txBody: { flex: 1, gap: 2 },
   txTitle: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
-  txAmount: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
+  txAmount: { fontSize: 15, fontWeight: '700', color: csColors.textPrimary },
   income: { color: csColors.primary },
   deleteBtn: { padding: csSpace.s2 },
-  deleteLabel: { fontSize: 16, color: csColors.danger },
   toast: {
     flexDirection: 'row',
     alignItems: 'center',

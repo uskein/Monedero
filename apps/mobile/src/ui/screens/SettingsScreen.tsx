@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useT } from '@monedero/i18n/react';
 import { csColors, csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, Input } from '../design-system';
@@ -258,23 +259,27 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
                             />
                             <Text style={styles.rowName}>{c.name}</Text>
                           </View>
+                          {/* Acciones por ICONO (el texto desbordaba); el
+                              nombre accesible sigue siendo «Editar/Archivar/
+                              Eliminar + nombre» (a11y A.3 y tests intactos). */}
                           <View style={styles.rowActions}>
-                            <Button
-                              variant="ghost"
+                            <IconButton
+                              icon="create-outline"
                               label={`${t('categories.edit')} ${c.name}`}
                               onPress={() => startEdit(c)}
                             />
-                            <Button
-                              variant="ghost"
+                            <IconButton
+                              icon="archive-outline"
                               label={`${t('categories.archive')} ${c.name}`}
                               onPress={() => {
                                 setRemoveFailed(false);
                                 void archive(c.id);
                               }}
                             />
-                            <Button
-                              variant="ghost"
+                            <IconButton
+                              icon="trash-outline"
                               label={`${t('common.delete')} ${c.name}`}
+                              danger
                               onPress={() => {
                                 setRemoveFailed(false);
                                 void remove(c.id).then((ok) => setRemoveFailed(!ok));
@@ -296,6 +301,31 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
   );
 }
 
+/** Botón de acción por icono (44 dp de área táctil) con nombre accesible. */
+function IconButton({
+  icon,
+  label,
+  danger = false,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  danger?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      hitSlop={6}
+      style={styles.iconBtn}
+    >
+      <Ionicons name={icon} size={20} color={danger ? csColors.danger : csColors.textPrimary} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: csColors.bgBase },
   content: { gap: csSpace.s4, padding: csSpace.s4 },
@@ -312,7 +342,15 @@ const styles = StyleSheet.create({
   rowMain: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3, minHeight: 40 },
   dot: { width: 12, height: 12, borderRadius: 6 },
   rowName: { fontSize: 15, color: csColors.textPrimary, flexShrink: 1 },
-  rowActions: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
+  rowActions: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2, marginTop: csSpace.s1 },
+  iconBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: csRadius.pill,
+    backgroundColor: csColors.surfaceSunken,
+  },
   chips: { flexDirection: 'row', gap: csSpace.s2 },
   chip: {
     flex: 1,

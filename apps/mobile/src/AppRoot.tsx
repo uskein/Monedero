@@ -45,10 +45,16 @@ export default function AppRoot() {
 }
 
 function Shell() {
+  const t = useT();
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="dark" />
-      <Hero />
+      {/* Marca mínima en la esquina: el protagonismo es de la app. */}
+      <View style={styles.header} accessibilityRole="image" accessibilityLabel="Monedero, logotipo">
+        <View style={styles.tile}>
+          <Text style={styles.tileLetter}>M</Text>
+        </View>
+      </View>
       <View style={styles.body}>
         <AppErrorBoundary>
           <VaultGate>
@@ -56,23 +62,11 @@ function Shell() {
           </VaultGate>
         </AppErrorBoundary>
       </View>
-    </SafeAreaView>
-  );
-}
-
-/** Wordmark + promesa de privacidad (espejo del Hero de la PWA). */
-function Hero() {
-  const t = useT();
-  return (
-    <View style={styles.hero}>
-      <View style={styles.tile} accessibilityRole="image" accessibilityLabel="Monedero, logotipo">
-        <Text style={styles.tileLetter}>M</Text>
-      </View>
-      <Text style={styles.title}>{t('app.name')}</Text>
-      <Text style={styles.lead} accessibilityLiveRegion="polite">
+      {/* Promesa de privacidad como footer sereno (letra pequeña). */}
+      <Text style={styles.footer} accessibilityLiveRegion="polite">
         {t('home.lead')}
       </Text>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -171,37 +165,33 @@ function NavTab({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: csColors.bgBase },
-  hero: { alignItems: 'center', paddingTop: csSpace.s5, paddingHorizontal: csSpace.s5 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: csSpace.s4,
+    paddingTop: csSpace.s2,
+    paddingBottom: csSpace.s1,
+  },
   tile: {
-    width: 72,
-    height: 72,
-    borderRadius: 72 * csLogo.radiusRatio,
+    width: 36,
+    height: 36,
+    borderRadius: 36 * csLogo.radiusRatio,
     backgroundColor: csLogo.tileBg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: csSpace.s4,
   },
-  tileLetter: { color: csLogo.tileLetter, fontFamily: csLogo.font, fontWeight: '700', fontSize: 44 },
-  title: {
-    fontFamily: csLogo.font,
-    fontWeight: '700',
-    fontSize: 34,
-    lineHeight: 37.4,
-    letterSpacing: -0.34,
-    color: csColors.textPrimary,
-  },
-  lead: {
-    fontFamily: 'Inter',
-    fontSize: 16,
-    lineHeight: 26.4,
-    color: csColors.textMuted,
-    textAlign: 'center',
-    maxWidth: 320,
-    marginTop: csSpace.s3,
-  },
+  tileLetter: { color: csLogo.tileLetter, fontFamily: csLogo.font, fontWeight: '700', fontSize: 20 },
   // minHeight: seguro contra colapso de altura en arranques nativos raros
   // (el contenido del VaultGate es flex:1; sin cota mínima quedaría invisible).
   body: { flex: 1, minHeight: 320 },
+  footer: {
+    fontSize: 11,
+    lineHeight: 16,
+    color: csColors.textMuted,
+    textAlign: 'center',
+    paddingHorizontal: csSpace.s5,
+    paddingVertical: csSpace.s2,
+  },
   shell: { flex: 1 },
   tabs: { flexDirection: 'row', gap: csSpace.s2, paddingHorizontal: csSpace.s4, paddingBottom: csSpace.s2 },
   tab: {
