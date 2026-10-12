@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createTranslator, detectLocale, DICTIONARIES, esCO, enUS } from '../src/translator';
-import { formatMoney, formatMoneySigned, decimalsFor, symbolFor } from '../src/format';
+import { formatMoney, formatMoneySigned, parseAmountToCents, decimalsFor, symbolFor } from '../src/format';
 
 describe('createTranslator', () => {
   const t = createTranslator('es-CO');
@@ -103,5 +103,53 @@ describe('formatMoney (HU-18: formateo regional, sin conversión)', () => {
     const text = formatMoney(-450000, 'COP', 'es-CO');
     expect(text).toContain('4.500');
     expect(text.startsWith('-') || text.startsWith('−')).toBe(true);
+  });
+});
+
+describe('parseAmountToCents — entrada a centavos enteros (regla única PWA/móvil)', () => {
+  it('sin separador: unidades enteras → ×100', () => {
+    expect(parseAmountToCents('25000')).toBe(2500000);
+  });
+
+  it('miles es-CO "18.500" (3 dígitos tras el punto) → 1 850 000', () => {
+    expect(parseAmountToCents('18.500')).toBe(1850000);
+  });
+
+  it('miles+decimal es "18.500,50" → 1 850 050', () => {
+    expect(parseAmountToCents('18.500,50')).toBe(1850050);
+  });
+
+  it('miles+decimal en "18,500.50" → 1 850 050', () => {
+    expect(parseAmountToCents('18,500.50')).toBe(1850050);
+  });
+
+  it('decimal corto "12.5" (1 dígito) → 1250', () => {
+    expect(parseAmountToCents('12.5')).toBe(1250);
+  });
+
+  it('decimal es-CO "12,5" → 1250', () => {
+    expect(parseAmountToCents('12,5')).toBe(1250);
+  });
+
+  it('decimal de 2 dígitos "99.99" → 9999 (entero, sin flotantes)', () => {
+    const cents = parseAmountToCents('99.99');
+    expect(cents).toBe(9999);
+    expect(Number.isInteger(cents)).toBe(true);
+  });
+
+  it('"0" → 0 (el schema de dominio lo rechaza, el parseo es neutro)', () => {
+    expect(parseAmountToCents('0')).toBe(0);
+  });
+
+  it('vacío → null', () => {
+    expect(parseAmountToCents('')).toBeNull();
+  });
+
+  it('texto no numérico → null', () => {
+    expect(parseAmountToCents('abc')).toBeNull();
+  });
+
+  it('ignora espacios de agrupado', () => {
+    expect(parseAmountToCents('18 500')).toBe(1850000);
   });
 });

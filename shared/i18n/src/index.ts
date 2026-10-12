@@ -18,6 +18,7 @@ export {
 export {
   formatMoney,
   formatMoneySigned,
+  parseAmountToCents,
   symbolFor,
   decimalsFor,
   type CurrencyCode,

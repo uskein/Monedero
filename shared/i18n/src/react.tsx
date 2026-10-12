@@ -31,15 +31,35 @@ export interface I18nProviderProps {
 
 const LOCALE_STORAGE_KEY = 'monedero.locale';
 
+// Acceso defensivo a globals de navegador: en React Native no existen (ni localStorage
+// ni navigator.languages). `globalThis[...]` evita ReferenceError y el try/catch del
+// caller cubre el caso de almacenamiento bloqueado (modo privado).
+function browserStorage(): { getItem(key: string): string | null; setItem(key: string, value: string): void } | null {
+  const store = (
+    globalThis as {
+      localStorage?: { getItem(key: string): string | null; setItem(key: string, value: string): void };
+    }
+  ).localStorage;
+  return typeof store?.getItem === 'function' ? store : null;
+}
+
+function deviceLanguages(): readonly string[] | undefined {
+  const nav = (globalThis as { navigator?: { languages?: readonly string[] } }).navigator;
+  return nav?.languages;
+}
+
 function resolveInitialLocale(explicit?: Locale): Locale {
   if (explicit) return explicit;
-  try {
-    const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (saved === 'es-CO' || saved === 'en-US') return saved;
-  } catch {
-    /* almacenamiento no disponible — sigue con detección */
+  const store = browserStorage();
+  if (store) {
+    try {
+      const saved = store.getItem(LOCALE_STORAGE_KEY);
+      if (saved === 'es-CO' || saved === 'en-US') return saved;
+    } catch {
+      /* almacenamiento no disponible — sigue con detección */
+    }
   }
-  return detectLocale(typeof navigator !== 'undefined' ? navigator.languages : undefined);
+  return detectLocale(deviceLanguages());
 }
 
 export function I18nProvider({ children, initialLocale, defaultCurrency = 'COP' }: I18nProviderProps) {
@@ -51,8 +71,10 @@ export function I18nProvider({ children, initialLocale, defaultCurrency = 'COP' 
       locale,
       setLocale: (next) => {
         setLocale(next);
+        const store = browserStorage();
+        if (!store) return; // sin localStorage (RN): el locale vive en memoria
         try {
-          localStorage.setItem(LOCALE_STORAGE_KEY, next);
+          store.setItem(LOCALE_STORAGE_KEY, next);
         } catch {
           /* almacenamiento no disponible (modo privado) — el locale vive en memoria */
         }
