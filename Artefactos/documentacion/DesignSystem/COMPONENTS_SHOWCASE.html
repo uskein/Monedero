@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monedero — COMPONENTS_SHOWCASE · Design System Clay Serenity</title>
+<style>
+  /* ===== TOKENS SSOT (idénticos a shared/tokens/src/tokens.css) ===== */
+  :root{
+    --cs-bg-base:#F4EFE7; --cs-surface:#FFFFFF; --cs-surface-sunken:#EAE2D6;
+    --cs-primary:#2F7D5B; --cs-primary-hover:#276B4E; --cs-primary-soft:rgba(47,125,91,.12);
+    --cs-accent:#D97757; --cs-accent-text:#B4573A; --cs-secondary:#3D5A80;
+    --cs-danger:#C4453B; --cs-text-primary:#232A31; --cs-text-muted:#6E7681;
+    --cs-text-on-primary:#FFFFFF; --cs-placeholder:#9A938A;
+    --cs-font-display:'Fraunces','Iowan Old Style',Georgia,serif;
+    --cs-font-ui:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    --cs-space-1:4px; --cs-space-2:8px; --cs-space-3:12px; --cs-space-4:16px; --cs-space-5:24px; --cs-space-6:32px; --cs-space-7:48px;
+    --cs-radius-input:16px; --cs-radius-btn:18px; --cs-radius-card:24px; --cs-radius-pill:999px;
+    --cs-clay:inset 4px 4px 8px rgba(0,0,0,.06), inset -4px -4px 8px rgba(255,255,255,.9), 0 10px 24px rgba(60,50,40,.12);
+    --cs-clay-sm:inset 3px 3px 6px rgba(0,0,0,.05), inset -3px -3px 6px rgba(255,255,255,.9), 0 6px 14px rgba(60,50,40,.10);
+    --cs-clay-press:inset 4px 4px 10px rgba(0,0,0,.10), inset -3px -3px 8px rgba(255,255,255,.8);
+    --cs-focus-outline:3px solid rgba(47,125,91,.45);
+    --cs-ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --cs-dur-base:220ms;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--cs-bg-base);color:var(--cs-text-primary);font-family:var(--cs-font-ui);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 24px 80px}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:40px}
+  .tile{width:56px;height:56px;border-radius:27%;background:var(--cs-primary);color:var(--cs-text-on-primary);display:grid;place-items:center;font-family:var(--cs-font-display);font-weight:700;font-size:34px;box-shadow:var(--cs-clay)}
+  h1{font-family:var(--cs-font-display);font-size:30px;letter-spacing:-.01em}
+  .sub{font-size:13px;color:var(--cs-text-muted)}
+  section{background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:26px;margin-bottom:24px}
+  h2{font-family:var(--cs-font-display);font-size:20px;margin-bottom:4px}
+  .src{font-size:11px;color:var(--cs-secondary);background:rgba(61,90,128,.1);display:inline-block;padding:3px 10px;border-radius:99px;margin-bottom:18px;font-family:ui-monospace,monospace}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:18px}
+  .row:last-child{margin-bottom:0}
+
+  /* Componentes (CSS espejo de apps/web/src/design-system/components.css) */
+  .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border:none;border-radius:var(--cs-radius-btn);font-family:var(--cs-font-ui);font-size:15px;font-weight:600;cursor:pointer;transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .ds-btn:focus-visible{outline:var(--cs-focus-outline);outline-offset:2px}
+  .ds-btn--primary{background:var(--cs-primary);color:var(--cs-text-on-primary);box-shadow:var(--cs-clay-sm)}
+  .ds-btn--primary:hover{background:var(--cs-primary-hover);transform:translateY(-3px)}
+  .ds-btn--primary:active{transform:scale(.97);box-shadow:var(--cs-clay-press)}
+  .ds-btn--secondary{background:var(--cs-surface);color:var(--cs-text-primary);box-shadow:var(--cs-clay-sm)}
+  .ds-btn--ghost{background:transparent;color:var(--cs-danger)}
+  .ds-btn--ghost:hover{background:var(--cs-primary-soft)}
+  .ds-btn--icon{min-width:44px;min-height:44px;padding:0;border-radius:14px;background:var(--cs-surface);color:var(--cs-text-primary);box-shadow:var(--cs-clay-sm)}
+  .ds-btn:disabled{background:var(--cs-surface-sunken);color:var(--cs-placeholder);box-shadow:none;cursor:not-allowed}
+  .ds-field{display:flex;flex-direction:column;gap:8px;min-width:260px;flex:1}
+  .ds-label{font-size:13px;font-weight:600;color:var(--cs-text-muted)}
+  .ds-input{min-height:54px;padding:0 16px;background:var(--cs-surface-sunken);border:2px solid transparent;border-radius:var(--cs-radius-input);box-shadow:var(--cs-clay-press);font-size:16px;color:var(--cs-text-primary)}
+  .ds-input::placeholder{color:var(--cs-placeholder)}
+  .ds-input:focus{outline:none;background:var(--cs-surface);border-color:var(--cs-primary);box-shadow:0 0 0 4px rgba(47,125,91,.15)}
+  .ds-input.invalid{border-color:var(--cs-danger)}
+  .ds-hint{display:flex;gap:4px;font-size:12px;color:var(--cs-danger)}
+  .ds-money{display:flex;align-items:center;gap:8px;min-height:54px;padding:0 16px;background:var(--cs-surface-sunken);border:2px solid transparent;border-radius:var(--cs-radius-input);box-shadow:var(--cs-clay-press)}
+  .ds-money__prefix{font-family:var(--cs-font-display);font-weight:700;font-size:21px;color:var(--cs-text-muted)}
+  .ds-money__input{flex:1;min-width:0;border:none;background:transparent;outline:none;font-family:var(--cs-font-display);font-weight:700;font-size:21px;color:var(--cs-text-primary);font-variant-numeric:tabular-nums}
+  .ds-segmented{display:inline-flex;gap:4px;padding:5px;background:var(--cs-surface-sunken);border-radius:14px}
+  .ds-segmented__btn{min-height:38px;padding:0 16px;border:none;border-radius:10px;background:transparent;color:var(--cs-text-muted);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .ds-segmented__btn[aria-selected="true"]{background:var(--cs-surface);color:var(--cs-primary);box-shadow:var(--cs-clay-sm)}
+  .ds-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border:none;border-radius:var(--cs-radius-pill);font-size:12px;font-weight:600}
+  .ds-chip--income{background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .ds-chip--expense{background:rgba(196,69,59,.12);color:var(--cs-danger)}
+  .ds-chip--pending{background:rgba(217,119,87,.14);color:var(--cs-accent-text)}
+  .ds-toggle{position:relative;width:50px;height:30px;border:none;border-radius:var(--cs-radius-pill);background:var(--cs-surface-sunken);cursor:pointer;transition:background var(--cs-dur-base) var(--cs-ease-spring)}
+  .ds-toggle[aria-checked="true"]{background:var(--cs-primary)}
+  .ds-toggle::after{content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:var(--cs-surface);box-shadow:0 2px 5px rgba(60,50,40,.25);transition:transform var(--cs-dur-base) var(--cs-ease-spring)}
+  .ds-toggle[aria-checked="true"]::after{transform:translateX(20px)}
+  .ds-progress{height:10px;border-radius:var(--cs-radius-pill);background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);overflow:hidden;flex:1;min-width:180px}
+  .ds-progress__fill{height:100%;border-radius:var(--cs-radius-pill);background:var(--cs-primary);transition:width var(--cs-dur-base) ease}
+  .ds-progress__fill--warn{background:var(--cs-accent)}
+  .ds-progress__fill--over{background:var(--cs-danger)}
+  .ds-spinner{width:36px;height:36px;border:4px solid var(--cs-surface-sunken);border-top-color:var(--cs-primary);border-radius:50%;animation:spin .9s cubic-bezier(.4,0,.2,1) infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ds-toast{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--cs-radius-input);background:var(--cs-surface);box-shadow:var(--cs-clay-sm);border-left:4px solid var(--cs-primary);font-size:14px}
+  .ds-toast--warn{border-left-color:var(--cs-accent)}
+  .ds-toast--error{border-left-color:var(--cs-danger)}
+  .ds-tx{display:flex;align-items:center;gap:12px;min-height:64px;padding:8px 0;border-bottom:1px solid var(--cs-bg-base);width:100%;text-align:left;font-family:inherit;background:transparent;border-x:0;border-top:0;cursor:pointer}
+  .ds-tx__icon{width:40px;height:40px;display:grid;place-items:center;background:var(--cs-surface-sunken);border-radius:14px;box-shadow:var(--cs-clay-press);font-size:17px}
+  .ds-tx__body{flex:1}
+  .ds-tx__title{font-size:15px;font-weight:600;display:block}
+  .ds-tx__cat{font-size:12px;color:var(--cs-text-muted);display:block}
+  .ds-tx__amount{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .ds-tx__amount--income{color:var(--cs-primary)}
+  .ds-skeleton{background:var(--cs-surface-sunken);border-radius:var(--cs-radius-input);position:relative;overflow:hidden}
+  .ds-skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shimmer 1.4s infinite}
+  @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+  .ds-empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 16px;text-align:center}
+  .ds-empty__icon{width:72px;height:72px;display:grid;place-items:center;background:var(--cs-surface-sunken);border-radius:30px;font-size:30px}
+  .ds-empty__title{font-family:var(--cs-font-display);font-weight:600;font-size:18px}
+  .ds-empty__copy{font-size:13px;color:var(--cs-text-muted);max-width:30ch}
+  .state-tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cs-text-muted);font-weight:700;margin-right:8px}
+  footer{font-size:12px;color:var(--cs-text-muted);text-align:center;margin-top:32px}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:80ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="tile" aria-hidden="true">M</div>
+    <div>
+      <h1>Design System · Clay Serenity</h1>
+      <p class="sub">Componentes implementados en <code>apps/web/src/design-system</code> (+ subset móvil RN) · Galería viva: <code>/design-system</code> · SSOT: manual-identidad-visual.md §7</p>
+    </div>
+  </header>
+
+  <section>
+    <h2>Botones</h2><span class="src">Button.tsx · §7.1 · a11y: focus-visible 3px, 48px, disabled anunciado</span>
+    <div class="row">
+      <button class="ds-btn ds-btn--primary">Primario</button>
+      <button class="ds-btn ds-btn--secondary">Secundario</button>
+      <button class="ds-btn ds-btn--ghost">Texto peligroso</button>
+      <button class="ds-btn ds-btn--icon" aria-label="Añadir movimiento">+</button>
+      <button class="ds-btn ds-btn--primary" disabled>Deshabilitado</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Formularios</h2><span class="src">Field/Input/MoneyInput · §7.4 · label siempre visible · error role=alert</span>
+    <div class="row">
+      <div class="ds-field">
+        <label class="ds-label" for="demo-input">Concepto</label>
+        <input class="ds-input" id="demo-input" placeholder="Café de la esquina">
+      </div>
+      <div class="ds-field">
+        <label class="ds-label" for="demo-err">Correo (estado error)</label>
+        <input class="ds-input invalid" id="demo-err" value="usuario@">
+        <p class="ds-hint" role="alert"><span aria-hidden="true">⚠</span> Introduce un correo válido</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ds-field">
+        <label class="ds-label" for="demo-money">Importe</label>
+        <div class="ds-money"><span class="ds-money__prefix" aria-hidden="true">$</span><input class="ds-money__input" id="demo-money" value="18.500" inputmode="decimal"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Navegación y selección</h2><span class="src">Segmented/Toggle/ChipButton · §7.2 · tablist/switch con aria</span>
+    <div class="row">
+      <div class="ds-segmented" role="tablist" aria-label="Periodo">
+        <button class="ds-segmented__btn" role="tab" aria-selected="true">Este mes</button>
+        <button class="ds-segmented__btn" role="tab" aria-selected="false">Semana</button>
+      </div>
+      <button class="ds-toggle" role="switch" aria-checked="true" aria-label="Modo oscuro" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked')==='true'?'false':'true')"></button>
+      <span class="ds-chip ds-chip--pending">Filtro: Comida</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Feedback</h2><span class="src">Toast/Progress/Spinner · §7.5 · live regions · umbral 80/100</span>
+    <div class="row" style="flex-direction:column;align-items:stretch">
+      <div class="ds-toast" role="status">✓ Movimiento guardado localmente</div>
+      <div class="ds-toast ds-toast--warn" role="status">⚠ Te acercas al límite de Comida</div>
+      <div class="ds-toast ds-toast--error" role="alert">✕ No se pudo importar el fichero</div>
+    </div>
+    <div class="row">
+      <span class="state-tag">Presupuesto Comida 86%</span>
+      <div class="ds-progress" role="progressbar" aria-valuenow="86" aria-valuemin="0" aria-valuemax="100" aria-label="Presupuesto de Comida"><div class="ds-progress__fill ds-progress__fill--warn" style="width:86%"></div></div>
+    </div>
+    <div class="row">
+      <div class="ds-spinner" role="status" aria-label="Cargando"></div>
+      <div class="ds-skeleton" style="height:54px;flex:1"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Datos</h2><span class="src">TxRow/Chip/EmptyState · §7.5–7.6 · label compuesto con signo · nunca solo color</span>
+    <div class="row" style="gap:8px">
+      <span class="ds-chip ds-chip--income">+ Ingreso</span>
+      <span class="ds-chip ds-chip--expense">− Gasto</span>
+      <span class="ds-chip ds-chip--pending">Pendiente</span>
+    </div>
+    <div class="ds-tx" role="button" tabindex="0" aria-label="Café de la esquina, categoría Comida, gasto de 4.500 pesos colombianos">
+      <span class="ds-tx__icon" aria-hidden="true">☕</span>
+      <span class="ds-tx__body"><span class="ds-tx__title">Café de la esquina</span><span class="ds-tx__cat">Comida</span></span>
+      <span class="ds-tx__amount">− $ 4.500</span>
+    </div>
+    <div class="ds-tx" role="button" tabindex="0" aria-label="Proyecto freelance, categoría Ingresos, ingreso de 320.000 pesos colombianos">
+      <span class="ds-tx__icon" aria-hidden="true">💼</span>
+      <span class="ds-tx__body"><span class="ds-tx__title">Proyecto freelance</span><span class="ds-tx__cat">Ingresos</span></span>
+      <span class="ds-tx__amount ds-tx__amount--income">+ $ 320.000</span>
+    </div>
+    <div class="ds-empty">
+      <div class="ds-empty__icon" aria-hidden="true">🌱</div>
+      <p class="ds-empty__title">Sin movimientos aún</p>
+      <p class="ds-empty__copy">Tu lista está tranquila. Registra tu primer gasto cuando quieras.</p>
+      <button class="ds-btn ds-btn--primary">Registrar movimiento</button>
+    </div>
+  </section>
+
+  <footer>Artefactos/documentacion/DesignSystem/COMPONENTS_SHOWCASE.html · verificado por 9 tests axe-core (WCAG 2.1 AA) en CI · lang="es"</footer>
+</div>
+</body>
+</html>

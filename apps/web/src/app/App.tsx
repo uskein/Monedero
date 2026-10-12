@@ -5,6 +5,8 @@
  */
 import { useSyncExternalStore } from 'react';
 import { csColors, csLogo } from '@monedero/tokens';
+import Showcase from '../design-system/Showcase';
+import '../design-system/components.css';
 
 function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(
@@ -19,6 +21,11 @@ function usePrefersReducedMotion(): boolean {
 
 export default function App() {
   const reducedMotion = usePrefersReducedMotion();
+
+  // Ruta interna de desarrollo: galería viva del Design System (Paso 3).
+  const isShowcase =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/design-system');
+  if (isShowcase) return <Showcase />;
 
   return (
     <main

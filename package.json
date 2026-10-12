@@ -2,6 +2,7 @@
   "name": "monedero",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "description": "Monedero — gestor de gastos local-first (móvil Expo + PWA). Cero backend, cero telemetría.",
   "packageManager": "pnpm@10.32.0",
   "engines": {

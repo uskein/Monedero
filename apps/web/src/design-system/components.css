@@ -1,0 +1,486 @@
+/* ============================================================
+   Design System «Clay Serenity» — estilos de componentes (PWA).
+   Regla: SOLO tokens --cs-* (SSOT). Prohibido hex/radios sueltos.
+   Trazabilidad: manual-identidad-visual.md §7 (directrices componentes)
+   ============================================================ */
+
+/* ---------- Botones (§7.1) ---------- */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cs-space-2);
+  min-height: 48px;
+  padding: 0 var(--cs-space-5);
+  border: none;
+  border-radius: var(--cs-radius-btn);
+  font-family: var(--cs-font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background var(--cs-dur-fast) var(--cs-ease-out),
+    transform var(--cs-dur-fast) var(--cs-ease-spring),
+    box-shadow var(--cs-dur-fast) var(--cs-ease-out);
+}
+.ds-btn:focus-visible {
+  outline: var(--cs-focus-outline);
+  outline-offset: 2px;
+}
+.ds-btn--primary {
+  background: var(--cs-primary);
+  color: var(--cs-text-on-primary);
+  box-shadow: var(--cs-clay-sm);
+}
+.ds-btn--primary:hover:not(:disabled) {
+  background: var(--cs-primary-hover);
+  transform: translateY(-3px);
+}
+.ds-btn--primary:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: var(--cs-clay-press);
+}
+.ds-btn--secondary {
+  background: var(--cs-surface);
+  color: var(--cs-text-primary);
+  box-shadow: var(--cs-clay-sm);
+}
+.ds-btn--secondary:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+.ds-btn--secondary:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: var(--cs-clay-press);
+}
+.ds-btn--ghost {
+  background: transparent;
+  color: var(--cs-danger);
+}
+.ds-btn--ghost:hover:not(:disabled) {
+  background: var(--cs-primary-soft);
+}
+.ds-btn--icon {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 14px;
+  background: var(--cs-surface);
+  color: var(--cs-text-primary);
+  box-shadow: var(--cs-clay-sm);
+}
+.ds-btn:disabled {
+  background: var(--cs-surface-sunken);
+  color: var(--cs-placeholder);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ---------- Card (§7.3) ---------- */
+.ds-card {
+  background: var(--cs-surface);
+  border-radius: var(--cs-radius-card);
+  padding: var(--cs-space-5);
+  box-shadow: var(--cs-clay);
+}
+
+/* ---------- Formularios (§7.4) ---------- */
+.ds-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cs-space-2);
+}
+.ds-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cs-text-muted);
+}
+.ds-input {
+  min-height: 54px;
+  padding: 0 var(--cs-space-4);
+  background: var(--cs-surface-sunken);
+  border: 2px solid transparent;
+  border-radius: var(--cs-radius-input);
+  box-shadow: var(--cs-clay-press);
+  font-family: var(--cs-font-ui);
+  font-size: 16px; /* mínimo iOS anti-zoom */
+  color: var(--cs-text-primary);
+  transition:
+    background var(--cs-dur-base) var(--cs-ease-out),
+    border-color var(--cs-dur-base) var(--cs-ease-out),
+    box-shadow var(--cs-dur-base) var(--cs-ease-out);
+}
+.ds-input::placeholder {
+  color: var(--cs-placeholder); /* nunca única etiqueta: label SIEMPRE visible */
+}
+.ds-input:focus {
+  outline: none;
+  background: var(--cs-surface);
+  border-color: var(--cs-primary);
+  box-shadow: var(--cs-focus-ring);
+}
+.ds-input[aria-invalid='true'] {
+  border-color: var(--cs-danger);
+}
+.ds-input:disabled {
+  color: var(--cs-placeholder);
+  cursor: not-allowed;
+}
+.ds-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-space-1);
+  font-size: 12px;
+  color: var(--cs-danger);
+}
+
+/* Campo monetario (§7.4) */
+.ds-money {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-space-2);
+  min-height: 54px;
+  padding: 0 var(--cs-space-4);
+  background: var(--cs-surface-sunken);
+  border: 2px solid transparent;
+  border-radius: var(--cs-radius-input);
+  box-shadow: var(--cs-clay-press);
+}
+.ds-money:focus-within {
+  background: var(--cs-surface);
+  border-color: var(--cs-primary);
+  box-shadow: var(--cs-focus-ring);
+}
+.ds-money__prefix {
+  font-family: var(--cs-font-display);
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--cs-text-muted);
+}
+.ds-money__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--cs-font-display);
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--cs-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Segmented control (§7.2) ---------- */
+.ds-segmented {
+  display: inline-flex;
+  gap: var(--cs-space-1);
+  padding: 5px;
+  background: var(--cs-surface-sunken);
+  border-radius: 14px;
+}
+.ds-segmented__btn {
+  min-height: 38px;
+  padding: 0 var(--cs-space-4);
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cs-text-muted);
+  font-family: var(--cs-font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--cs-dur-base) var(--cs-ease-spring);
+}
+.ds-segmented__btn[aria-selected='true'] {
+  background: var(--cs-surface);
+  color: var(--cs-primary);
+  box-shadow: var(--cs-clay-sm);
+}
+.ds-segmented__btn:focus-visible {
+  outline: var(--cs-focus-outline);
+  outline-offset: 2px;
+}
+
+/* ---------- Chip (§7.5) ---------- */
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cs-space-1);
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--cs-radius-pill);
+  font-family: var(--cs-font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+}
+.ds-chip--income {
+  background: var(--cs-primary-soft);
+  color: var(--cs-primary);
+}
+.ds-chip--expense {
+  background: rgba(196, 69, 59, 0.12);
+  color: var(--cs-danger);
+}
+.ds-chip--pending {
+  background: rgba(217, 119, 87, 0.14);
+  color: var(--cs-accent-text);
+}
+.ds-chip--interactive {
+  cursor: pointer;
+}
+.ds-chip--interactive:focus-visible {
+  outline: var(--cs-focus-outline);
+  outline-offset: 2px;
+}
+
+/* ---------- Toggle (§7.4) ---------- */
+.ds-toggle {
+  position: relative;
+  width: 50px;
+  height: 30px;
+  border: none;
+  border-radius: var(--cs-radius-pill);
+  background: var(--cs-surface-sunken);
+  cursor: pointer;
+  transition: background var(--cs-dur-base) var(--cs-ease-spring);
+  flex-shrink: 0;
+}
+.ds-toggle[aria-checked='true'] {
+  background: var(--cs-primary);
+}
+.ds-toggle::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--cs-surface);
+  box-shadow: 0 2px 5px rgba(60, 50, 40, 0.25);
+  transition: transform var(--cs-dur-base) var(--cs-ease-spring);
+}
+.ds-toggle[aria-checked='true']::after {
+  transform: translateX(20px);
+}
+.ds-toggle:focus-visible {
+  outline: var(--cs-focus-outline);
+  outline-offset: 2px;
+}
+
+/* ---------- Progress (§7.5) ---------- */
+.ds-progress {
+  height: 10px;
+  border-radius: var(--cs-radius-pill);
+  background: var(--cs-surface-sunken);
+  box-shadow: var(--cs-clay-press);
+  overflow: hidden;
+}
+.ds-progress__fill {
+  height: 100%;
+  border-radius: var(--cs-radius-pill);
+  background: var(--cs-primary);
+  transition: width var(--cs-dur-slow) var(--cs-ease-out);
+}
+.ds-progress__fill--warn {
+  background: var(--cs-accent);
+}
+.ds-progress__fill--over {
+  background: var(--cs-danger);
+}
+
+/* ---------- Spinner (§7.5) ---------- */
+.ds-spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid var(--cs-surface-sunken);
+  border-top-color: var(--cs-primary);
+  border-radius: 50%;
+  animation: ds-spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes ds-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Toast (§7.5) ---------- */
+.ds-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-space-3);
+  padding: var(--cs-space-3) var(--cs-space-4);
+  border-radius: var(--cs-radius-input);
+  background: var(--cs-surface);
+  box-shadow: var(--cs-clay-sm);
+  border-left: 4px solid var(--cs-primary);
+  font-size: 14px;
+  color: var(--cs-text-primary);
+}
+.ds-toast--warn {
+  border-left-color: var(--cs-accent);
+}
+.ds-toast--error {
+  border-left-color: var(--cs-danger);
+}
+
+/* ---------- Modal (§7.3) ---------- */
+.ds-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--cs-z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--cs-space-5);
+  background: rgba(35, 42, 49, 0.42);
+  backdrop-filter: blur(4px);
+  animation: ds-fade var(--cs-dur-slow) var(--cs-ease-out);
+}
+.ds-modal {
+  width: min(420px, 100%);
+  background: var(--cs-surface);
+  border-radius: var(--cs-radius-card);
+  padding: 26px;
+  box-shadow: var(--cs-clay);
+  animation: ds-pop var(--cs-dur-slow) var(--cs-ease-spring);
+}
+@keyframes ds-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ds-pop {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+}
+
+/* ---------- Empty state (§7.5) ---------- */
+.ds-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cs-space-3);
+  padding: var(--cs-space-6) var(--cs-space-4);
+  text-align: center;
+}
+.ds-empty__icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  background: var(--cs-surface-sunken);
+  border-radius: 30px;
+  font-size: 30px;
+}
+.ds-empty__title {
+  font-family: var(--cs-font-display);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--cs-text-primary);
+}
+.ds-empty__copy {
+  font-size: 13px;
+  color: var(--cs-text-muted);
+  max-width: 30ch;
+}
+
+/* ---------- Fila de movimiento (§7.6) ---------- */
+.ds-tx {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-space-3);
+  min-height: 64px;
+  padding: var(--cs-space-2) 0;
+  border-bottom: 1px solid var(--cs-bg-base);
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+.ds-tx:focus-visible {
+  outline: var(--cs-focus-outline);
+  outline-offset: -2px;
+}
+.ds-tx__icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--cs-surface-sunken);
+  border-radius: 14px;
+  box-shadow: var(--cs-clay-press);
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.ds-tx__body {
+  flex: 1;
+  min-width: 0;
+}
+.ds-tx__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cs-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ds-tx__cat {
+  font-size: 12px;
+  color: var(--cs-text-muted);
+}
+.ds-tx__amount {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--cs-text-primary);
+}
+.ds-tx__amount--income {
+  color: var(--cs-primary);
+}
+
+/* Skeleton (§7.5) */
+.ds-skeleton {
+  background: var(--cs-surface-sunken);
+  border-radius: var(--cs-radius-input);
+  position: relative;
+  overflow: hidden;
+}
+.ds-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: ds-shimmer 1.4s infinite;
+}
+@keyframes ds-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Accesibilidad del motion (SSOT §8) */
+@media (prefers-reduced-motion: reduce) {
+  .ds-btn,
+  .ds-segmented__btn,
+  .ds-progress__fill,
+  .ds-toggle,
+  .ds-toggle::after {
+    transition-duration: 80ms !important;
+  }
+  .ds-spinner,
+  .ds-skeleton::after,
+  .ds-modal,
+  .ds-modal-backdrop {
+    animation: none !important;
+  }
+}
