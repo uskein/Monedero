@@ -9,6 +9,7 @@ import { I18nProvider, useT } from '@monedero/i18n/react';
 import Showcase from '../design-system/Showcase';
 import '../design-system/components.css';
 import { VaultGate } from '../features/vault/VaultGate';
+import { TransactionsScreen } from '../features/transactions/TransactionsScreen';
 
 function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(
@@ -74,7 +75,6 @@ function Hero({ reducedMotion }: { reducedMotion: boolean }) {
 }
 
 function Shell() {
-  const t = useT();
   const reducedMotion = usePrefersReducedMotion();
 
   return (
@@ -94,9 +94,7 @@ function Shell() {
       <Hero reducedMotion={reducedMotion} />
       <div style={{ width: 'min(440px, 100%)', textAlign: 'left' }}>
         <VaultGate>
-          <p role="status" style={{ textAlign: 'center', color: csColors.primary, fontSize: 14 }}>
-            {t('home.unlocked')}
-          </p>
+          <TransactionsScreen currency="COP" />
         </VaultGate>
       </div>
     </main>

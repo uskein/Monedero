@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <!-- CSP: cero red a terceros (ADR-001) — solo 'self' y datos/blob para assets locales -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;" />
+    <!-- CSP: cero red a terceros (ADR-001) — solo 'self' y datos/blob para assets locales.
+         'wasm-unsafe-eval' es necesario para sql.js (WASM); NO relaja eval() de JS,
+         solo permite compilar WebAssembly. Sin él, WebAssembly.instantiate lanza
+         "Wasm code generation disallowed by embedder" y la BD local no abre. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;" />
     <meta name="theme-color" content="#F4EFE7" />
     <meta name="description" content="Monedero — gestor de gastos local. Tus datos nunca salen de tu dispositivo." />
     <link rel="manifest" href="/manifest.webmanifest" />

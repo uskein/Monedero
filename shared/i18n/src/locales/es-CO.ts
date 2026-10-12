@@ -46,6 +46,38 @@ export const esCO = {
   'vault.onboarding.finish': 'Crear bóveda',
   'vault.onboarding.busy': 'Cifrando…',
   'vault.onboarding.step': '{current} de {total}',
+
+  // ── Movimientos BP-04 (lista) / BP-05 (alta) — HU-05·06·07 ──
+  'tx.form.title': 'Nuevo movimiento',
+  'tx.form.type': 'Tipo',
+  'tx.type.expense': 'Gasto',
+  'tx.type.income': 'Ingreso',
+  'tx.type.transfer': 'Transferencia',
+  'tx.form.amount': 'Importe',
+  'tx.form.date': 'Fecha',
+  'tx.form.payee': 'Concepto',
+  'tx.form.payee.placeholder': 'Ej. Almuerzo, Mercado…',
+  'tx.form.note': 'Nota',
+  'tx.form.category': 'Categoría',
+  'tx.form.account': 'Cuenta',
+  'tx.form.toAccount': 'Cuenta destino',
+  'tx.form.submit': 'Guardar movimiento',
+  'tx.form.busy': 'Guardando…',
+  'tx.form.error.amount': 'El importe debe ser mayor que cero.',
+  'tx.form.error.amount.nan': 'Escribe un importe válido.',
+  'tx.form.error.toAccount': 'Elige una cuenta destino distinta.',
+  'tx.form.saved': 'Movimiento guardado.',
+
+  'tx.list.title': 'Movimientos',
+  'tx.list.filter.all': 'Todos',
+  'tx.list.empty.title': 'Aún no hay movimientos',
+  'tx.list.empty.copy': 'Registra tu primer gasto cuando quieras.',
+  'tx.list.empty.cta': 'Añadir primer movimiento',
+  'tx.list.error': 'No se pudieron cargar los movimientos.',
+  'tx.list.undo': 'Movimiento eliminado.',
+  'tx.list.undo.cta': 'Deshacer',
+  'tx.list.search': 'Buscar por concepto o nota',
+  'tx.list.count': '{count} movimientos',
 } as const;
 
 export type TranslationKey = keyof typeof esCO;
