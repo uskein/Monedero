@@ -2,8 +2,9 @@
  * Recorrido E2E F3 móvil (tarea 4.4) — FLUJOS_DE_USUARIO F3 · Gate S4 (🎯).
  * Camino real por la UI: crear bóveda (BP-01) → Inicio empty (BP-03) →
  * CTA → alta de ingreso (BP-05) → fila (BP-04) → balance en Inicio. Segundo
- * caso: bóveda existente → abrir → desbloquear (BP-02) → Inicio visible
- * (recorrido «abrir → desbloquear» del Gate S4).
+ * caso: bóveda existente → abrir → desbloquear (BP-02) → registrar gasto →
+ * ver balance: el recorrido continuo «abrir → desbloquear → registrar →
+ * balance» del Gate S4.
  * RNTL v14: `await render` y fireEvent uniforme Y esperado (mezclar con
  * userEvent provoca «overlapping act» y el estado no flushea). PBKDF2 120k
  * ≈ 1,2 s/derive + sql.js WASM → WAIT amplio.
@@ -92,7 +93,7 @@ describe('Recorrido E2E F3 móvil — alta → balance (tarea 4.4 · Gate S4)', 
   );
 
   it(
-    'abrir → desbloquear (bóveda existente) → Inicio visible (Gate S4)',
+    'abrir → desbloquear → registrar gasto → ver balance (Gate S4)',
     async () => {
       // Pre-condición: bóveda creada en una sesión anterior
       await useVaultStore.getState().createVault(PASS, PASS);
@@ -112,6 +113,17 @@ describe('Recorrido E2E F3 móvil — alta → balance (tarea 4.4 · Gate S4)', 
       await fireEvent.press(navTab('Movimientos'));
       expect(navTab('Movimientos').props.accessibilityState?.selected).toBe(true);
       expect(await movs().findByText('Añadir primer movimiento', {}, WAIT)).toBeTruthy();
+
+      // Gate S4 «día real»: registrar un gasto (tipo por defecto) tras desbloquear…
+      await fireEvent.press(movs().getByRole('button', { name: 'Añadir primer movimiento' }));
+      await fireEvent.changeText(movs().getByLabelText('Importe'), '2500');
+      await fireEvent.changeText(movs().getByLabelText('Concepto'), 'Almuerzo');
+      await fireEvent.press(movs().getByRole('button', { name: 'Guardar movimiento' }));
+      expect(await movs().findByText('Almuerzo', {}, WAIT)).toBeTruthy();
+
+      // …y ver el balance actualizado en Inicio (evento tx → refresh del dashboard)
+      await fireEvent.press(navTab('Inicio'));
+      await waitFor(() => expect(dash().getAllByText(/2\.500/).length).toBeGreaterThan(0), WAIT);
     },
     60000,
   );

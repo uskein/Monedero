@@ -4,7 +4,8 @@
  * CTA → alta (BP-05) → fila (BP-04) → balance en Inicio → eliminar →
  * Deshacer → balance intacto. Segundo caso: bóveda existente → abrir →
  * desbloquear (BP-02) → Inicio visible (recorrido «abrir → desbloquear»
- * del Gate S4).
+ * del Gate S4) → registrar gasto → ver balance: la cadena continua
+ * «abrir → desbloquear → registrar → balance» del gate.
  * El AppShell mantiene AMBAS pantallas montadas (una oculta con `hidden`), así
  * que las consultas se acotan con within(region): getByRole excluye lo oculto
  * y within aísla claves repetidas entre paneles (tx.list.empty.*).
@@ -110,7 +111,7 @@ describe('Recorrido E2E F3 — alta → balance → deshacer (tarea 4.4)', () =>
   );
 
   it(
-    'abrir → desbloquear (bóveda existente) → Inicio visible (Gate S4)',
+    'abrir → desbloquear → registrar gasto → ver balance (Gate S4)',
     async () => {
       // Pre-condición: bóveda creada en una sesión anterior
       await useVaultStore.getState().createVault(PASS, PASS);
@@ -130,6 +131,18 @@ describe('Recorrido E2E F3 — alta → balance → deshacer (tarea 4.4)', () =>
       fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }));
       expect(screen.getByRole('tab', { name: 'Movimientos' }).getAttribute('aria-selected')).toBe('true');
       expect(await movs().findByText('Añadir primer movimiento', {}, WAIT)).toBeTruthy();
+
+      // Gate S4 «día real»: registrar un gasto (tipo por defecto) tras desbloquear…
+      fireEvent.click(await movs().findByRole('button', { name: 'Añadir primer movimiento' }, WAIT));
+      fireEvent.change(screen.getByLabelText('Importe'), { target: { value: '2500' } });
+      fireEvent.change(screen.getByLabelText('Concepto'), { target: { value: 'Almuerzo' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar movimiento' }));
+      expect(await movs().findByText('Almuerzo', {}, WAIT)).toBeTruthy();
+
+      // …y ver el balance actualizado en Inicio (evento tx → refresh del dashboard)
+      // Formato negativo del gasto (moneySigned) → regex sin espacios (NBSP-safe).
+      fireEvent.click(screen.getByRole('tab', { name: 'Inicio' }));
+      await waitFor(() => expect(dash().getAllByText(/2\.500/).length).toBeGreaterThan(0), WAIT);
     },
     60000,
   );
