@@ -13,6 +13,7 @@ import { sqlJsMigrationExecutor } from '@monedero/db/sqljs';
 import { sqlJsDb } from './sqljsAdapter';
 import { SqlTransactionRepository } from './tx.repo.sql';
 import { SqlCategoryRepository } from './category.repo.sql';
+import { SqlBudgetRepository } from './budget.repo.sql';
 
 const NOW = '2026-10-11T00:00:00.000Z';
 
@@ -55,6 +56,7 @@ function seed(db: Database): void {
 export interface DevRepository {
   repo: SqlTransactionRepository;
   categories: SqlCategoryRepository;
+  budgets: SqlBudgetRepository;
   db: Database;
   categoryNames: Record<string, string>;
 }
@@ -71,6 +73,7 @@ export async function createDevRepository(): Promise<DevRepository> {
   return {
     repo: new SqlTransactionRepository(port),
     categories: new SqlCategoryRepository(port),
+    budgets: new SqlBudgetRepository(port),
     db,
     categoryNames: CATEGORY_NAMES,
   };

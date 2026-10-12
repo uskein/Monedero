@@ -20,6 +20,7 @@ import { createDevRepository, type DevRepository } from './infrastructure/db/cre
 import { VaultGate } from './ui/screens/VaultGate';
 import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { TransactionsScreen } from './ui/screens/TransactionsScreen';
+import { BudgetsScreen } from './ui/screens/BudgetsScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
 
 // Raíz de composición: el puerto de la bóveda se inyecta al cargar el módulo,
@@ -76,7 +77,7 @@ function Hero() {
  */
 function AppShell() {
   const t = useT();
-  const [tab, setTab] = useState<'home' | 'tx' | 'settings'>('home');
+  const [tab, setTab] = useState<'home' | 'tx' | 'budgets' | 'settings'>('home');
   const [addSignal, setAddSignal] = useState(0);
   const [dev, setDev] = useState<DevRepository | null>(null);
 
@@ -103,6 +104,7 @@ function AppShell() {
       <View style={styles.tabs}>
         <NavTab label={t('home.title')} selected={tab === 'home'} onPress={() => setTab('home')} />
         <NavTab label={t('tx.list.title')} selected={tab === 'tx'} onPress={() => setTab('tx')} />
+        <NavTab label={t('budgets.title')} selected={tab === 'budgets'} onPress={() => setTab('budgets')} />
         <NavTab label={t('settings.title')} selected={tab === 'settings'} onPress={() => setTab('settings')} />
       </View>
       <View style={[styles.panel, tab !== 'home' && styles.hidden]}>
@@ -117,6 +119,9 @@ function AppShell() {
       </View>
       <View style={[styles.panel, tab !== 'tx' && styles.hidden]}>
         <TransactionsScreen repo={dev.repo} addSignal={addSignal} />
+      </View>
+      <View style={[styles.panel, tab !== 'budgets' && styles.hidden]}>
+        <BudgetsScreen budgets={dev.budgets} txRepo={dev.repo} categories={dev.categories} />
       </View>
       <View style={[styles.panel, tab !== 'settings' && styles.hidden]}>
         <SettingsScreen categories={dev.categories} />
