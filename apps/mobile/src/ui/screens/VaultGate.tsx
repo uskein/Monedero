@@ -62,7 +62,7 @@ export function VaultGate({ children }: VaultGateProps) {
     if (justCreated) {
       return (
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-          <Card>
+          <Card style={styles.card}>
             <Text accessibilityRole="header" style={styles.title}>
               {t('vault.success.title')}
             </Text>
@@ -79,7 +79,7 @@ export function VaultGate({ children }: VaultGateProps) {
   const wrongPassphrase = error === 'VAULT_WRONG_PASSPHRASE';
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Card>
+      <Card style={styles.card}>
         <Text accessibilityRole="header" style={styles.title}>
           {t('vault.lock.title')}
         </Text>
@@ -114,6 +114,9 @@ export function VaultGate({ children }: VaultGateProps) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: csColors.bgBase },
   content: { padding: csSpace.s4 },
+  // Separación explícita Input ↔ botón (el Card no tiene gap propio y
+  // el estilo clay los fundía visualmente).
+  card: { gap: csSpace.s4 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: csColors.bgBase },
   title: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 24, color: csColors.textPrimary },
   copy: { fontSize: 15, color: csColors.textMuted },

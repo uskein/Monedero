@@ -11,7 +11,9 @@
  */
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { I18nProvider, useT } from '@monedero/i18n/react';
 import { csColors, csLogo, csRadius, csSpace } from '@monedero/tokens';
 import { configureVaultStorage } from './state/vault.store';
@@ -34,7 +36,9 @@ configureVaultStorage(createSecureStoreStorage());
 export default function AppRoot() {
   return (
     <I18nProvider>
-      <Shell />
+      <SafeAreaProvider>
+        <Shell />
+      </SafeAreaProvider>
     </I18nProvider>
   );
 }
@@ -106,10 +110,10 @@ function AppShell() {
   return (
     <View style={styles.shell}>
       <View style={styles.tabs}>
-        <NavTab label={t('home.title')} selected={tab === 'home'} onPress={() => setTab('home')} />
-        <NavTab label={t('tx.list.title')} selected={tab === 'tx'} onPress={() => setTab('tx')} />
-        <NavTab label={t('budgets.title')} selected={tab === 'budgets'} onPress={() => setTab('budgets')} />
-        <NavTab label={t('settings.title')} selected={tab === 'settings'} onPress={() => setTab('settings')} />
+        <NavTab icon="home" label={t('home.title')} selected={tab === 'home'} onPress={() => setTab('home')} />
+        <NavTab icon="receipt" label={t('tx.list.title')} selected={tab === 'tx'} onPress={() => setTab('tx')} />
+        <NavTab icon="wallet" label={t('budgets.title')} selected={tab === 'budgets'} onPress={() => setTab('budgets')} />
+        <NavTab icon="settings" label={t('settings.title')} selected={tab === 'settings'} onPress={() => setTab('settings')} />
       </View>
       <View style={[styles.panel, tab !== 'home' && styles.hidden]}>
         <DashboardScreen
@@ -134,16 +138,36 @@ function AppShell() {
   );
 }
 
-/** Pestaña de navegación (role=tab + estado selected, idéntico a PeriodTab). */
-function NavTab({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+/**
+ * Pestaña de navegación por ICONO (los textos se desbordan en pantallas
+ * estrechas). El nombre accesible sigue siendo el texto i18n: role=tab +
+ * accessibilityLabel garantizan la matriz A.3 y que los journey tests
+ * (getByRole('tab', {name})) sigan funcionando.
+ */
+function NavTab({
+  icon,
+  label,
+  selected,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       accessibilityRole="tab"
+      accessibilityLabel={label}
       accessibilityState={{ selected }}
       onPress={onPress}
       style={[styles.tab, selected && styles.tabSelected]}
     >
-      <Text style={[styles.tabLabel, selected && styles.tabLabelSelected]}>{label}</Text>
+      <Ionicons
+        name={icon}
+        size={22}
+        color={selected ? csColors.textOnPrimary : csColors.textPrimary}
+      />
     </Pressable>
   );
 }
@@ -187,15 +211,13 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: csSpace.s2, paddingHorizontal: csSpace.s4, paddingBottom: csSpace.s2 },
   tab: {
     flex: 1,
-    minHeight: 44,
+    minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: csRadius.pill,
     backgroundColor: csColors.surfaceSunken,
   },
   tabSelected: { backgroundColor: csColors.primary },
-  tabLabel: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
-  tabLabelSelected: { color: csColors.textOnPrimary },
   panel: { flex: 1 },
   hidden: { display: 'none' },
 });
