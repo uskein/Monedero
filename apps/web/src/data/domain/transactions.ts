@@ -37,6 +37,18 @@ export interface TxFilter {
   offset?: number;
 }
 
+/** Resumen BP-03 (HU-08·09): saldo total global + reporte del mes. */
+export interface DashboardSummary {
+  /** Σ iniciales de cuentas + ingresos − gastos (GLOBAL: no depende del mes). */
+  totalBalanceCents: number;
+  /** Ingresos del mes pedido. */
+  incomeCents: number;
+  /** Gastos del mes pedido. */
+  expenseCents: number;
+  /** ingresos − gastos del mes pedido. */
+  monthBalanceCents: number;
+}
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Objeto base (sin refinamientos) — el patch se deriva de aquí con .partial(). */

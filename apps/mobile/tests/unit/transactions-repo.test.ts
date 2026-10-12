@@ -148,6 +148,41 @@ describe('SqlTransactionRepository — vistas derivadas (MODELO §7)', () => {
   });
 });
 
+describe('SqlTransactionRepository — dashboardSummary (BP-03 · HU-08·09)', () => {
+  /** Saldo inicial de TODAS las cuentas leído de la BD (sql.js exec → values[0][0]). */
+  function initialBalancesTotal(): number {
+    const res = db.exec(
+      'SELECT COALESCE(SUM(initial_balance_cents),0) FROM accounts WHERE deleted_at IS NULL',
+    );
+    return Number(res[0]?.values?.[0]?.[0] ?? 0);
+  }
+
+  it('totalBalanceCents = Σ iniciales + Σ ingresos − Σ gastos (transferencias cancelan)', async () => {
+    const all = await repo.list(); // excluye tombstones, igual que la consulta
+    const income = all.filter((t) => t.type === 'income').reduce((a, t) => a + t.amountCents, 0);
+    const expense = all.filter((t) => t.type === 'expense').reduce((a, t) => a + t.amountCents, 0);
+    const summary = await repo.dashboardSummary('2026-11');
+    expect(summary.totalBalanceCents).toBe(initialBalancesTotal() + income - expense);
+  });
+
+  it('coincide con monthReport para el mes pedido (2026-11 aislado)', async () => {
+    const summary = await repo.dashboardSummary('2026-11');
+    const report = await repo.monthReport('2026-11');
+    expect(summary.incomeCents).toBe(report.incomeCents);
+    expect(summary.expenseCents).toBe(report.expenseCents);
+    expect(summary.monthBalanceCents).toBe(report.balanceCents);
+  });
+
+  it('mes sin movimientos → periodo en 0; el saldo total es global', async () => {
+    const empty = await repo.dashboardSummary('2027-05');
+    const other = await repo.dashboardSummary('2026-11');
+    expect(empty.incomeCents).toBe(0);
+    expect(empty.expenseCents).toBe(0);
+    expect(empty.monthBalanceCents).toBe(0);
+    expect(empty.totalBalanceCents).toBe(other.totalBalanceCents);
+  });
+});
+
 describe('SqlTransactionRepository — subscribe', () => {
   it('emite tx:created tras create', async () => {
     const events: string[] = [];

@@ -67,6 +67,9 @@ function fakeRepo(seed: Transaction[] = [], opts: { failList?: boolean } = {}): 
     async monthReport() {
       return { incomeCents: 0, expenseCents: 0, balanceCents: 0 };
     },
+    async dashboardSummary() {
+      return { totalBalanceCents: 0, incomeCents: 0, expenseCents: 0, monthBalanceCents: 0 };
+    },
     subscribe() {
       return () => {};
     },

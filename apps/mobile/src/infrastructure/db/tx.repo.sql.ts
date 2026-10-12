@@ -4,7 +4,7 @@
  * El driver (SQLCipher prod / sql.js test) se inyecta vía SqlDbPort; aquí solo
  * hay DML/SELECT con params posicionales (?) y subscribe por eventos.
  */
-import type { Transaction, TxFilter, TxInput, TxPatch } from '../../core/domain/transaction';
+import type { DashboardSummary, Transaction, TxFilter, TxInput, TxPatch } from '../../core/domain/transaction';
 import { TxInputSchema, TxPatchSchema, sanitizeSearch } from '../../core/domain/transaction';
 import type { RepositoryEvent, TransactionRepository } from '../../core/ports/TransactionRepository';
 import type { SqlDbPort, SqlRow } from './SqlDbPort';
@@ -241,5 +241,36 @@ export class SqlTransactionRepository implements TransactionRepository {
     const incomeCents = Number(rows[0]?.income ?? 0);
     const expenseCents = Number(rows[0]?.expense ?? 0);
     return { incomeCents, expenseCents, balanceCents: incomeCents - expenseCents };
+  }
+
+  /**
+   * Resumen BP-03 (HU-08·09) en UNA consulta: saldo total global + ingreso/gasto
+   * del mes. Las transferencias cancelan a nivel global (salen de una cuenta y
+   * entran en otra), así que solo suman ingresos y restan gastos.
+   */
+  async dashboardSummary(month: string): Promise<DashboardSummary> {
+    const rows = await this.db.select<{
+      initial: number;
+      all_income: number;
+      all_expense: number;
+      month_income: number;
+      month_expense: number;
+    }>(
+      `SELECT
+         (SELECT COALESCE(SUM(initial_balance_cents), 0)
+            FROM accounts WHERE deleted_at IS NULL)                        AS initial,
+         COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents END), 0) AS all_income,
+         COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents END), 0) AS all_expense,
+         COALESCE(SUM(CASE WHEN type = 'income'  AND substr(date, 1, 7) = ? THEN amount_cents END), 0) AS month_income,
+         COALESCE(SUM(CASE WHEN type = 'expense' AND substr(date, 1, 7) = ? THEN amount_cents END), 0) AS month_expense
+       FROM transactions WHERE deleted_at IS NULL`,
+      [month, month],
+    );
+    const row = rows[0];
+    const totalBalanceCents =
+      Number(row?.initial ?? 0) + Number(row?.all_income ?? 0) - Number(row?.all_expense ?? 0);
+    const incomeCents = Number(row?.month_income ?? 0);
+    const expenseCents = Number(row?.month_expense ?? 0);
+    return { totalBalanceCents, incomeCents, expenseCents, monthBalanceCents: incomeCents - expenseCents };
   }
 }

@@ -4,7 +4,7 @@
  * Prepared statements (?), orden date DESC id DESC, tombstones + subscribe.
  */
 import type { Database } from 'sql.js';
-import type { Transaction, TxFilter, TxInput, TxPatch } from '../domain/transactions';
+import type { DashboardSummary, Transaction, TxFilter, TxInput, TxPatch } from '../domain/transactions';
 import { TxInputSchema, TxPatchSchema, sanitizeSearch } from '../domain/transactions';
 
 type Unsubscribe = () => void;
@@ -275,6 +275,41 @@ export class SqlJsTransactionRepository {
       const incomeCents = Number(row.income ?? 0);
       const expenseCents = Number(row.expense ?? 0);
       return { incomeCents, expenseCents, balanceCents: incomeCents - expenseCents };
+    } finally {
+      stmt.free();
+    }
+  }
+
+  /**
+   * Resumen BP-03 (HU-08·09) en UNA consulta: saldo total global + ingreso/gasto
+   * del mes. Las transferencias cancelan a nivel global (salen de una cuenta y
+   * entran en otra), así que solo suman ingresos y restan gastos.
+   */
+  async dashboardSummary(month: string): Promise<DashboardSummary> {
+    const stmt = this.db.prepare(
+      `SELECT
+         (SELECT COALESCE(SUM(initial_balance_cents), 0)
+            FROM accounts WHERE deleted_at IS NULL)                    AS initial,
+         COALESCE(SUM(CASE WHEN type = 'income'  THEN amount_cents END), 0) AS all_income,
+         COALESCE(SUM(CASE WHEN type = 'expense' THEN amount_cents END), 0) AS all_expense,
+         COALESCE(SUM(CASE WHEN type = 'income'  AND substr(date, 1, 7) = ? THEN amount_cents END), 0) AS month_income,
+         COALESCE(SUM(CASE WHEN type = 'expense' AND substr(date, 1, 7) = ? THEN amount_cents END), 0) AS month_expense
+       FROM transactions WHERE deleted_at IS NULL`,
+    );
+    try {
+      stmt.bind([month, month]);
+      stmt.step();
+      const row = stmt.getAsObject() as {
+        initial: number;
+        all_income: number;
+        all_expense: number;
+        month_income: number;
+        month_expense: number;
+      };
+      const totalBalanceCents = Number(row.initial ?? 0) + Number(row.all_income ?? 0) - Number(row.all_expense ?? 0);
+      const incomeCents = Number(row.month_income ?? 0);
+      const expenseCents = Number(row.month_expense ?? 0);
+      return { totalBalanceCents, incomeCents, expenseCents, monthBalanceCents: incomeCents - expenseCents };
     } finally {
       stmt.free();
     }
