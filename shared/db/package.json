@@ -1,0 +1,24 @@
+{
+  "name": "@monedero/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Esquema SQLite + migraciones numeradas (user_version) compartidas por semanticas entre móvil (SQLCipher) y PWA (sql.js). DDL SSOT: MODELO_DE_DATOS.md.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./sqljs": "./src/sqljs.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.11",
+    "sql.js": "^1.14.2",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0",
+    "@vitest/coverage-v8": "3.2.7"
+  }
+}

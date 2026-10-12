@@ -13,6 +13,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@monedero/db": "workspace:*",
     "@monedero/export-contract": "workspace:*",
     "@monedero/i18n": "workspace:*",
     "@monedero/tokens": "workspace:*",

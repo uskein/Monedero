@@ -9,6 +9,7 @@ build/
 .expo-shared/
 web-build/
 *.tsbuildinfo
+.turbo/
 
 # Entornos
 .env
