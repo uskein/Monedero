@@ -13,25 +13,36 @@ import { sqlJsMigrationExecutor } from '@monedero/db/sqljs';
 import { seedDefaults } from './seed';
 
 let singleton: Database | null = null;
+/** Promesa en curso: sin ella, dos efectos concurrentes (AppShell monta
+ *  Inicio y Movimientos a la vez) crearían DOS BDs distintas y los datos no
+ *  se verían entre pantallas. */
+let pending: Promise<Database> | null = null;
 
-export async function openDb(): Promise<Database> {
-  if (singleton) return singleton;
-  const isTest = import.meta.env?.MODE === 'test';
-  const SQL = await (isTest
-    ? initSqlJs()
-    : initSqlJs({
-        locateFile: (file: string) => (file.endsWith('.wasm') ? wasmUrl : file),
-      }));
-  const db = new SQL.Database();
-  db.run('PRAGMA foreign_keys = ON');
-  await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
-  seedDefaults(db);
-  singleton = db;
-  return db;
+export function openDb(): Promise<Database> {
+  if (singleton) return Promise.resolve(singleton);
+  pending ??= (async () => {
+    const isTest = import.meta.env?.MODE === 'test';
+    const SQL = await (isTest
+      ? initSqlJs()
+      : initSqlJs({
+          locateFile: (file: string) => (file.endsWith('.wasm') ? wasmUrl : file),
+        }));
+    const db = new SQL.Database();
+    db.run('PRAGMA foreign_keys = ON');
+    await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
+    seedDefaults(db);
+    singleton = db;
+    return db;
+  })().catch((err: unknown) => {
+    pending = null; // permite reintentar tras un fallo de init
+    throw err;
+  });
+  return pending;
 }
 
 /** Solo tests: limpia el singleton para aislar BDs. */
 export function resetDbSingleton(): void {
   singleton?.close();
   singleton = null;
+  pending = null;
 }

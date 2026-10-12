@@ -7,35 +7,22 @@ import { useEffect, useState } from 'react';
 import { Button, Card } from '../../design-system';
 import { useT } from '@monedero/i18n/react';
 import type { CurrencyCode } from '@monedero/i18n';
-import { openDb, resetDbSingleton } from '../../data/db/open';
-import { SqlJsTransactionRepository } from '../../data/repo/tx.repo.sqljs';
+import { getTxRepo, resetSession } from '../../data/db/session';
+import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES } from '../../data/catalog';
 import { useTransactionsStore, type TransactionsRepo } from './store';
 import { TransactionForm } from './TransactionForm';
 import { TransactionList } from './TransactionList';
 import type { Transaction, TxInput } from '../../data/domain/transactions';
 
-const DEFAULT_CATEGORIES: Array<{ id: string; name: string }> = [
-  { id: 'cat-comida', name: 'Comida' },
-  { id: 'cat-transporte', name: 'Transporte' },
-  { id: 'cat-casa', name: 'Casa' },
-  { id: 'cat-salud', name: 'Salud' },
-  { id: 'cat-ocio', name: 'Ocio' },
-  { id: 'cat-otros', name: 'Otros' },
-  { id: 'cat-salario', name: 'Salario' },
-  { id: 'cat-ingresos-otros', name: 'Otros ingresos' },
-];
-
-const DEFAULT_ACCOUNTS: Array<{ id: string; name: string }> = [
-  { id: 'acc-efectivo', name: 'Efectivo' },
-];
-
 export interface TransactionsScreenProps {
   currency: CurrencyCode;
   /** Solo tests: repo en memoria para no tocar sql.js en la UI. */
   repoOverride?: TransactionsRepo;
+  /** Señal externa: cada incremento abre el alta BP-05 (CTA del dashboard). */
+  addSignal?: number;
 }
 
-export function TransactionsScreen({ currency, repoOverride }: TransactionsScreenProps) {
+export function TransactionsScreen({ currency, repoOverride, addSignal = 0 }: TransactionsScreenProps) {
   const t = useT();
   const status = useTransactionsStore((s) => s.status);
   const items = useTransactionsStore((s) => s.items);
@@ -55,7 +42,9 @@ export function TransactionsScreen({ currency, repoOverride }: TransactionsScree
     let cancelled = false;
     async function boot() {
       try {
-        const repo = repoOverride ?? new SqlJsTransactionRepository(await openDb());
+        // Sesión compartida: el MISMO repo alimenta la lista (BP-04) y el
+        // dashboard (BP-03) para que sus eventos 'tx' se crucen (tarea 4.3).
+        const repo = repoOverride ?? (await getTxRepo());
         if (!cancelled) await init(repo);
       } catch {
         if (!cancelled) setBootError('STORAGE_UNAVAILABLE');
@@ -67,8 +56,13 @@ export function TransactionsScreen({ currency, repoOverride }: TransactionsScree
     };
   }, [init, repoOverride]);
 
-  // Limpia la BD singleton al desmontar (solo tests la reabren limpias).
-  useEffect(() => () => resetDbSingleton(), []);
+  // Limpia la sesión (repo + BD singleton) al desmontar (solo tests la reabren limpias).
+  useEffect(() => () => resetSession(), []);
+
+  // CTA «Añadir primer movimiento» del dashboard (BP-03) → abre el alta (BP-05).
+  useEffect(() => {
+    if (addSignal > 0) setShowForm(true);
+  }, [addSignal]);
 
   if (bootError) {
     return (

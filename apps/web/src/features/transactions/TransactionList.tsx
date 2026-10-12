@@ -10,6 +10,7 @@ import { useI18n } from '@monedero/i18n/react';
 import type { CurrencyCode } from '@monedero/i18n';
 import type { Transaction, TxType } from '../../data/domain/transactions';
 import type { TxListStatus } from './store';
+import { txRowView } from './presentTx';
 
 const UNDO_MS = 4000;
 
@@ -27,19 +28,6 @@ export interface TransactionListProps {
   /** Mapa id→nombre de categoría para mostrar el nombre legible. */
   categoryNames: Record<string, string>;
 }
-
-function categoryIcon(type: TxType): string {
-  if (type === 'income') return '↑';
-  if (type === 'transfer') return '⇄';
-  return '↓';
-}
-
-/** Mapa explícito (nunca claves dinámicas: el tipo TranslationKey es unión cerrada). */
-const TYPE_LABEL_KEY = {
-  income: 'tx.type.income',
-  expense: 'tx.type.expense',
-  transfer: 'tx.type.transfer',
-} as const;
 
 export function TransactionList({
   status,
@@ -174,14 +162,7 @@ export function TransactionList({
           <li key={tx.id}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--cs-space-2)' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <TxRow
-                  icon={categoryIcon(tx.type)}
-                  title={tx.payee ?? t('tx.form.payee')}
-                  category={tx.categoryId ? (categoryNames[tx.categoryId] ?? tx.categoryId) : t(TYPE_LABEL_KEY[tx.type])}
-                  amount={moneySigned(tx.amountCents, currency, tx.type === 'income')}
-                  isIncome={tx.type === 'income'}
-                  ariaLabel={`${tx.payee ?? t('tx.form.payee')} — ${moneySigned(tx.amountCents, currency, tx.type === 'income')}`}
-                />
+                <TxRow {...txRowView(tx, { t, currency, moneySigned, categoryNames })} />
               </div>
               <Button
                 variant="ghost"

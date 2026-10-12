@@ -31,3 +31,4 @@ export { TxRow } from './TxRow';
 export type { TxRowProps } from './TxRow';
 export { Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
+export { usePrefersReducedMotion } from './usePrefersReducedMotion';
