@@ -5,14 +5,17 @@ import App from '../src/app/App';
 describe('App (smoke S1)', () => {
   it('renderiza el wordmark Monedero', () => {
     render(<App />);
-    const h1 = screen.getByRole('heading', { level: 1 });
-    expect(h1.textContent).toContain('Monedero');
+    // Hero h1 «Monedero» + h1 del onboarding: buscar por texto exacto del wordmark
+    const headings = screen.getAllByRole('heading', { level: 1 });
+    expect(headings.some((h) => h.textContent === 'Monedero')).toBe(true);
   });
 
   it('anuncia el mensaje de privacidad con role=status (a11y)', () => {
     render(<App />);
-    const status = screen.getByRole('status');
-    expect(status.textContent).toContain('Tus datos nunca salen de tu dispositivo');
+    const statuses = screen.getAllByRole('status');
+    expect(
+      statuses.some((el) => el.textContent?.includes('nunca salen de tu dispositivo')),
+    ).toBe(true);
   });
 
   it('maqueta el hero con estilo inline derivado de tokens', () => {

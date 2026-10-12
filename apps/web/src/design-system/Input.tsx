@@ -13,7 +13,7 @@ export interface FieldProps {
   children: (ids: { inputId: string; describedBy: string | undefined; invalid: boolean }) => ReactNode;
 }
 
-export function Field({ label, error, children }: FieldProps) {
+export function Field({ label, error, hint, children }: FieldProps) {
   const base = useId();
   const inputId = `${base}-input`;
   const errorId = `${base}-error`;
@@ -24,6 +24,7 @@ export function Field({ label, error, children }: FieldProps) {
         {label}
       </label>
       {children({ inputId, describedBy: invalid ? errorId : undefined, invalid })}
+      {!invalid && hint && <p className="ds-label" style={{ fontWeight: 400 }}>{hint}</p>}
       {invalid && (
         <p className="ds-hint" id={errorId} role="alert">
           <span aria-hidden="true">⚠</span> {error}
