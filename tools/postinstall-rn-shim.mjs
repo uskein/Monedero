@@ -21,10 +21,13 @@ if (!existsSync(target)) {
     target,
     [
       '// Shim AUTO-GENERADO por tools/postinstall-rn-shim.mjs — NO editar.',
-      '// RN 0.87 eliminó rn-get-polyfills; @expo/metro-config@57 aún lo exige',
-      '// al fusionar metro.config.js de usuario. Lista vacía = comportamiento',
-      '// por defecto de Metro (RN se auto-polyfila desde InitializeCore).',
-      'module.exports = () => [];',
+      '// Réplica FIEL del rn-get-polyfills.js oficial (pre-0.87): re-exporta',
+      '// @react-native/js-polyfills (console + error-guard). RN 0.87 eliminó el',
+      '// archivo pero @expo/metro-config@57 lo sigue exigiendo al fusionar el',
+      '// metro.config.js de usuario; devolver [] hereje dejaba el bundle SIN el',
+      '// preludio de error-guard y el arranque moría con',
+      '// "Cannot read property setGlobalHandler of undefined".',
+      "module.exports = require('@react-native/js-polyfills');",
       '',
     ].join('\n'),
   );
