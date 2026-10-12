@@ -17,11 +17,13 @@ export const esCO = {
   'common.delete': 'Eliminar',
   'common.undo': 'Deshacer',
   'common.error.generic': 'Algo salió mal. Inténtalo de nuevo.',
+  'nav.sections': 'Secciones',
 
   // ── Dashboard / inicio BP-03 — HU-08·09·12 ──
   'home.lead': 'Gestor de gastos local — tus datos nunca salen de tu dispositivo.',
   'home.title': 'Inicio',
   'home.balance': 'Balance total',
+  'home.period': 'Periodo',
   'home.period.current': 'Este mes',
   'home.period.previous': 'Mes anterior',
   'home.month.income': 'Ingresos',

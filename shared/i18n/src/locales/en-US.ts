@@ -14,10 +14,12 @@ export const enUS: Dictionary = {
   'common.delete': 'Delete',
   'common.undo': 'Undo',
   'common.error.generic': 'Something went wrong. Please try again.',
+  'nav.sections': 'Sections',
 
   'home.lead': 'Local expense tracker — your data never leaves your device.',
   'home.title': 'Home',
   'home.balance': 'Total balance',
+  'home.period': 'Period',
   'home.period.current': 'This month',
   'home.period.previous': 'Last month',
   'home.month.income': 'Income',
