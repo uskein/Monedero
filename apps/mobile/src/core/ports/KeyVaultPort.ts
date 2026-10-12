@@ -4,6 +4,12 @@
  * vive en infrastructure/ y se inyecta en AppRoot.
  */
 export interface KeyVaultPort {
+  /**
+   * Lee los metadatos de la bóveda desde el almacenamiento (SecureStore es
+   * async). Debe llamarse antes de hasVault()/unlock() — el propio boot del
+   * store lo hace.
+   */
+  load(): Promise<void>;
   /** Deriva y guarda la clave maestra a partir de la passphrase. Idempotente por vaultId. */
   createVault(vaultId: string, passphrase: string): Promise<void>;
   /** Desbloquea: deriva y cachea la clave en memoria. Lanza DomainError si no coincide. */
@@ -11,6 +17,6 @@ export interface KeyVaultPort {
   /** Bloquea y hace zeroize de la clave en memoria. */
   lock(): void;
   isUnlocked(): boolean;
-  /** ¿Existe ya una bóveda creada en este dispositivo? */
+  /** ¿Existe ya una bóveda creada en este dispositivo? (requiere load() previo) */
   hasVault(): boolean;
 }
