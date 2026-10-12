@@ -69,3 +69,9 @@ export function evaluateBudgets(items: BudgetUsage[]): BudgetEvaluation[] {
     return { ...item, ratio, level };
   });
 }
+
+/** Periodo del mes local actual ('YYYY-MM') — sin deriva UTC. */
+export function currentPeriod(now: Date = new Date()): string {
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${now.getFullYear()}-${month}`;
+}
