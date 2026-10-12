@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Monedero",
+    "slug": "monedero",
+    "version": "0.1.0",
+    "scheme": "monedero",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "backgroundColor": "#F4EFE7",
+    "splash": {
+      "backgroundColor": "#F4EFE7",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.monedero.local",
+      "infoPlist": {
+        "UIFileSharingEnabled": false
+      }
+    },
+    "android": {
+      "package": "app.monedero.local",
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "allowBackup": false
+    },
+    "plugins": []
+  }
+}

@@ -1,0 +1,39 @@
+/* Base global PWA — usa EXCLUSIVAMENTE tokens --cs-* (SSOT). Prohibido hex aquí. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cs-bg-base);
+  color: var(--cs-text-primary);
+  font-family: var(--cs-font-ui);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: var(--cs-focus-outline);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--cs-primary);
+  color: var(--cs-text-on-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 80ms !important;
+  }
+}

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monedero — Blueprints de Pantallas | Clay Serenity</title>
+<style>
+  /* ===== TOKENS EXACTOS SSOT Clay Serenity ===== */
+  :root{
+    --cs-bg-base:#F4EFE7; --cs-surface:#FFFFFF; --cs-surface-sunken:#EAE2D6;
+    --cs-primary:#2F7D5B; --cs-primary-hover:#276B4E; --cs-primary-soft:rgba(47,125,91,.12);
+    --cs-accent:#D97757; --cs-accent-text:#B4573A; --cs-secondary:#3D5A80;
+    --cs-danger:#C4453B; --cs-text-primary:#232A31; --cs-text-muted:#6E7681;
+    --cs-text-on-primary:#FFFFFF; --cs-placeholder:#9A938A;
+    --cs-font-display:'Fraunces','Iowan Old Style',Georgia,serif;
+    --cs-font-ui:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    --cs-radius-input:16px; --cs-radius-btn:18px; --cs-radius-card:24px; --cs-radius-pill:999px;
+    --cs-clay:inset 4px 4px 8px rgba(0,0,0,.06), inset -4px -4px 8px rgba(255,255,255,.9), 0 10px 24px rgba(60,50,40,.12);
+    --cs-clay-sm:inset 3px 3px 6px rgba(0,0,0,.05), inset -3px -3px 6px rgba(255,255,255,.9), 0 6px 14px rgba(60,50,40,.10);
+    --cs-clay-press:inset 4px 4px 10px rgba(0,0,0,.10), inset -3px -3px 8px rgba(255,255,255,.8);
+    --cs-ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --cs-ease-out:cubic-bezier(.2,.8,.2,1);
+    --cs-dur-fast:150ms; --cs-dur-base:220ms; --cs-dur-slow:280ms;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--cs-bg-base);color:var(--cs-text-primary);font-family:var(--cs-font-ui);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+  ::selection{background:var(--cs-primary);color:#fff}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+  .readbar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cs-primary),var(--cs-accent));width:0;z-index:60}
+
+  .topnav{position:sticky;top:0;z-index:50;background:rgba(244,239,231,.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(35,42,49,.07)}
+  .topnav .inner{max-width:1200px;margin:0 auto;padding:13px 28px;display:flex;align-items:center;gap:14px}
+  .wordmark{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+  .wordmark .mark{width:36px;height:36px}
+  .wordmark .name{font-family:var(--cs-font-display);font-weight:700;font-size:20px}
+  .wordmark .name em{font-style:normal;color:var(--cs-primary)}
+  .wordmark .tag{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cs-text-muted);display:block;margin-top:-4px}
+  .topnav nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .topnav nav a{font-size:13px;font-weight:600;color:var(--cs-text-muted);text-decoration:none;padding:7px 14px;border-radius:var(--cs-radius-pill);transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .topnav nav a:hover{background:var(--cs-surface);color:var(--cs-primary);box-shadow:var(--cs-clay-sm)}
+
+  .hero{position:relative;padding:84px 0 64px;overflow:hidden}
+  .blob{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;opacity:.55}
+  .blob.b1{width:400px;height:400px;background:#CFE3D5;top:-130px;right:-90px;animation:drift 16s ease-in-out infinite alternate}
+  .blob.b2{width:300px;height:300px;background:#F3D2C4;top:150px;left:-110px;animation:drift 20s ease-in-out infinite alternate-reverse}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,24px) scale(1.06)}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--cs-primary);background:var(--cs-surface);padding:8px 18px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-sm);margin-bottom:22px}
+  .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cs-primary);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+  h1{font-family:var(--cs-font-display);font-weight:700;font-size:clamp(38px,6vw,62px);line-height:1.05;letter-spacing:-.02em;max-width:18ch}
+  h1 .grad{background:linear-gradient(105deg,var(--cs-primary) 15%,var(--cs-accent) 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p.lead{font-size:18px;color:var(--cs-text-muted);max-width:680px;margin-top:20px}
+  .hero-stats{display:flex;gap:14px;margin-top:38px;flex-wrap:wrap}
+  .stat{background:var(--cs-surface);border-radius:20px;padding:16px 22px;box-shadow:var(--cs-clay-sm);min-width:130px}
+  .stat .v{font-family:var(--cs-font-display);font-size:26px;font-weight:700;color:var(--cs-primary)}
+  .stat .l{font-size:11.5px;color:var(--cs-text-muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+  section{padding:70px 0}
+  .sec-tag{font-size:11.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--cs-accent-text);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .sec-tag::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(217,119,87,.5),transparent);max-width:220px}
+  h2{font-family:var(--cs-font-display);font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-.015em;line-height:1.14}
+  .sec-lead{font-size:16.5px;color:var(--cs-text-muted);max-width:740px;margin-top:12px}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--cs-ease-spring),transform .7s var(--cs-ease-spring)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.07s}.reveal.d2{transition-delay:.14s}.reveal.d3{transition-delay:.21s}
+
+  /* ===== STORYBOOK ===== */
+  .storybook{display:grid;grid-template-columns:280px 1fr;gap:24px;margin-top:44px;align-items:start}
+  @media (max-width:940px){.storybook{grid-template-columns:1fr}}
+  .sb-nav{background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:14px;position:sticky;top:86px}
+  .sb-nav h3{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cs-text-muted);font-weight:700;padding:6px 10px 12px}
+  .sb-item{
+    display:flex;align-items:center;gap:11px;width:100%;background:transparent;border:none;
+    padding:11px 12px;border-radius:15px;cursor:pointer;font-family:inherit;text-align:left;
+    transition:all var(--cs-dur-base) var(--cs-ease-spring);margin-bottom:3px;
+  }
+  .sb-item:hover{background:var(--cs-bg-base)}
+  .sb-item.on{background:var(--cs-primary-soft)}
+  .sb-item .si{width:34px;height:34px;border-radius:11px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .sb-item.on .si{background:var(--cs-primary);color:#fff;box-shadow:var(--cs-clay-sm)}
+  .sb-item .st{flex:1;min-width:0}
+  .sb-item .st strong{display:block;font-size:13.5px;font-weight:600;color:var(--cs-text-primary)}
+  .sb-item .st span{font-size:10.5px;color:var(--cs-text-muted);font-family:ui-monospace,Menlo,monospace}
+  .sb-item.on .st strong{color:var(--cs-primary)}
+
+  .sb-stage{display:grid;grid-template-columns:minmax(290px,360px) 1fr;gap:24px;align-items:start}
+  @media (max-width:760px){.sb-stage{grid-template-columns:1fr}}
+
+  /* Phone */
+  .phone{width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/17.5;background:var(--cs-text-primary);border-radius:42px;padding:11px;box-shadow:var(--cs-clay),0 24px 50px rgba(60,50,40,.25);position:relative}
+  .screen{width:100%;height:100%;background:var(--cs-bg-base);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .ph-status{display:flex;justify-content:space-between;padding:12px 20px 4px;font-size:11px;font-weight:600}
+  .ph-top{padding:6px 18px 10px;display:flex;align-items:center;gap:10px}
+  .ph-top h4{font-family:var(--cs-font-display);font-size:18px;font-weight:600;flex:1}
+  .ph-badge{font-size:10px;font-weight:700;background:var(--cs-primary-soft);color:var(--cs-primary);padding:4px 10px;border-radius:var(--cs-radius-pill)}
+  .ph-body{flex:1;overflow-y:auto;padding:4px 15px 12px;scrollbar-width:thin}
+  .ph-body::-webkit-scrollbar{width:4px}.ph-body::-webkit-scrollbar-thumb{background:var(--cs-surface-sunken);border-radius:9px}
+  .ph-tabbar{display:flex;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);padding:7px 7px 14px;gap:4px;border-top:1px solid var(--cs-bg-base);border-radius:0 0 32px 32px}
+  .ph-tab{flex:1;text-align:center;padding:6px 2px 4px;border-radius:12px;background:transparent;border:none;font-family:inherit;color:var(--cs-text-muted);font-size:9px;font-weight:600}
+  .ph-tab .ti{display:block;font-size:16px;margin-bottom:1px}
+  .ph-tab.on{background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .ph-fab{position:absolute;right:15px;bottom:74px;height:44px;padding:0 16px;border-radius:15px;background:var(--cs-primary);color:#fff;font-size:12.5px;font-weight:600;border:none;box-shadow:var(--cs-clay-sm),0 8px 18px rgba(47,125,91,.35);display:flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;z-index:4}
+
+  /* primitivas de preview */
+  .p-card{background:var(--cs-surface);border-radius:17px;padding:14px;box-shadow:var(--cs-clay-sm);margin-bottom:10px}
+  .p-lbl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cs-text-muted);font-weight:700}
+  .p-val{font-family:var(--cs-font-display);font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .p-sub{font-size:11.5px;color:var(--cs-primary);font-weight:600}
+  .p-seg{display:flex;background:var(--cs-surface-sunken);border-radius:12px;padding:4px;gap:3px;margin-bottom:10px}
+  .p-seg span{flex:1;text-align:center;font-size:11px;font-weight:600;color:var(--cs-text-muted);padding:6px 0;border-radius:9px}
+  .p-seg span.on{background:var(--cs-surface);color:var(--cs-text-primary);box-shadow:var(--cs-clay-sm)}
+  .p-tx{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--cs-bg-base)}
+  .p-tx:last-child{border-bottom:none}
+  .p-tx .ic{width:31px;height:31px;border-radius:10px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:13px}
+  .p-tx .i{flex:1;min-width:0}
+  .p-tx .i strong{display:block;font-size:12.5px;font-weight:600}
+  .p-tx .i span{font-size:10px;color:var(--cs-text-muted)}
+  .p-tx .a{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .a.pos{color:var(--cs-primary)}.a.neg{color:var(--cs-danger)}
+  .p-prog .pl{display:flex;justify-content:space-between;font-size:10px;color:var(--cs-text-muted);font-weight:600;margin-bottom:4px}
+  .p-prog .pt{height:8px;background:var(--cs-surface-sunken);border-radius:99px;box-shadow:var(--cs-clay-press);overflow:hidden}
+  .p-prog .pf{height:100%;border-radius:99px;background:var(--cs-primary);transition:width .6s var(--cs-ease-spring)}
+  .p-prog .pf.warn{background:var(--cs-accent)}.p-prog .pf.over{background:var(--cs-danger)}
+  .p-input{width:100%;height:44px;background:var(--cs-surface-sunken);border:2px solid transparent;border-radius:14px;box-shadow:var(--cs-clay-press);padding:0 14px;font-size:13.5px;color:var(--cs-text-muted);display:flex;align-items:center;gap:8px;margin-bottom:9px;font-family:inherit}
+  .p-input.focus{border-color:var(--cs-primary);background:var(--cs-surface);box-shadow:0 0 0 3px rgba(47,125,91,.15);color:var(--cs-text-primary)}
+  .p-input.err{border-color:var(--cs-danger)}
+  .p-label{font-size:11px;font-weight:600;color:var(--cs-text-muted);display:block;margin-bottom:5px}
+  .p-btn{width:100%;height:45px;border-radius:15px;background:var(--cs-primary);color:#fff;font-size:13.5px;font-weight:600;border:none;box-shadow:var(--cs-clay-sm);display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;font-family:inherit;margin-top:4px}
+  .p-btn.sec{background:var(--cs-surface);color:var(--cs-text-primary);border:1px solid var(--cs-bg-base)}
+  .p-btn.ghost{background:transparent;color:var(--cs-danger);box-shadow:none}
+  .p-btn:disabled{background:var(--cs-surface-sunken);color:#A39B90;box-shadow:none}
+  .p-toast{display:flex;gap:9px;background:var(--cs-surface);border-radius:13px;padding:11px 13px;font-size:12px;box-shadow:var(--cs-clay-sm);border-left:4px solid var(--cs-primary);margin-bottom:9px}
+  .p-toast.warn{border-left-color:var(--cs-accent)}.p-toast.err{border-left-color:var(--cs-danger)}
+  .p-toast strong{display:block;font-size:12.5px}.p-toast span{color:var(--cs-text-muted);font-size:11px}
+  .p-empty{text-align:center;padding:26px 8px}
+  .p-empty .art{width:66px;height:66px;margin:0 auto 12px;background:var(--cs-surface-sunken);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:27px;box-shadow:var(--cs-clay)}
+  .p-empty h5{font-family:var(--cs-font-display);font-size:15.5px;font-weight:600}
+  .p-empty p{font-size:11.5px;color:var(--cs-text-muted);margin:5px 0 14px}
+  .p-spin{width:34px;height:34px;border:4px solid var(--cs-surface-sunken);border-top-color:var(--cs-primary);border-radius:50%;animation:spin .9s cubic-bezier(.4,0,.2,1) infinite;margin:0 auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .p-skel{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--cs-surface-sunken) 25%,#F1EAE0 50%,var(--cs-surface-sunken) 75%);background-size:200% 100%;animation:sh 1.4s infinite;margin-bottom:9px}
+  @keyframes sh{to{background-position:-200% 0}}
+  .p-skel.card{height:74px;border-radius:17px}
+  .p-chip{font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .p-chip.out{background:rgba(196,69,59,.12);color:var(--cs-danger)}
+  .p-chip.w{background:rgba(217,119,87,.14);color:var(--cs-accent-text)}
+  .p-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--cs-bg-base);font-size:12.5px}
+  .p-row:last-child{border-bottom:none}
+  .p-row .ri{width:30px;height:30px;border-radius:10px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:13px}
+  .p-row .rt{flex:1}
+  .p-hint{font-size:10.5px;margin-top:5px;display:flex;gap:5px;align-items:center}
+  .p-hint.err{color:var(--cs-danger);font-weight:500}
+  .p-lock{position:absolute;inset:0;background:var(--cs-bg-base);border-radius:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center;z-index:6}
+  .p-lock .shield{width:74px;height:74px;border-radius:26px;background:var(--cs-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:33px;box-shadow:var(--cs-clay),0 12px 26px rgba(47,125,91,.4);margin-bottom:16px}
+  .p-lock h5{font-family:var(--cs-font-display);font-size:19px;font-weight:600}
+  .p-lock p{font-size:12px;color:var(--cs-text-muted);margin:6px 0 18px}
+
+  /* Panel blueprint */
+  .bp{background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:26px}
+  .bp-head{display:flex;align-items:center;gap:13px;margin-bottom:6px}
+  .bp-head .bi{width:46px;height:46px;border-radius:15px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:21px}
+  .bp-head h3{font-family:var(--cs-font-display);font-size:21px;font-weight:600}
+  .bp-head .route{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--cs-secondary);background:rgba(61,90,128,.1);padding:3px 10px;border-radius:99px}
+  .bp .purpose{font-size:14.5px;color:var(--cs-text-muted);margin:10px 0 4px}
+  .bp h4{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cs-accent-text);margin:20px 0 9px}
+  .tagrow{display:flex;gap:7px;flex-wrap:wrap}
+  .tag{font-size:12px;font-weight:600;background:var(--cs-bg-base);color:var(--cs-secondary);padding:6px 13px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-press)}
+  .tag.c1{background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .tag.c2{background:rgba(217,119,87,.14);color:var(--cs-accent-text)}
+
+  .state-switch{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;background:var(--cs-surface-sunken);padding:6px;border-radius:17px;box-shadow:var(--cs-clay-press)}
+  .state-btn{
+    flex:1;min-width:88px;padding:11px 10px;border-radius:13px;border:none;background:transparent;
+    font-family:inherit;font-size:12.5px;font-weight:600;color:var(--cs-text-muted);cursor:pointer;
+    transition:all var(--cs-dur-base) var(--cs-ease-spring);display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .state-btn:hover{color:var(--cs-text-primary)}
+  .state-btn.on{background:var(--cs-surface);color:var(--cs-primary);box-shadow:var(--cs-clay-sm)}
+  .state-btn:focus-visible{outline:3px solid rgba(47,125,91,.45)}
+  .state-desc{margin-top:13px;font-size:13.5px;color:var(--cs-text-muted);background:var(--cs-bg-base);border-radius:14px;padding:13px 16px;box-shadow:var(--cs-clay-press)}
+  .state-desc b{color:var(--cs-text-primary)}
+
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:34px}
+  .leg{background:var(--cs-surface);border-radius:19px;padding:19px;box-shadow:var(--cs-clay-sm)}
+  .leg b{display:flex;align-items:center;gap:8px;font-family:var(--cs-font-display);font-size:15.5px;font-weight:600;margin-bottom:6px}
+  .leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .leg p{font-size:13px;color:var(--cs-text-muted)}
+
+  footer{padding:60px 0 50px;background:linear-gradient(180deg,transparent,rgba(234,226,214,.6))}
+  .foot-inner{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;align-items:center}
+  .foot-badges{display:flex;gap:10px;flex-wrap:wrap}
+  .foot-badges span{font-size:12px;font-weight:600;background:var(--cs-surface);padding:8px 16px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-sm);color:var(--cs-text-muted)}
+
+  @media (max-width:760px){.topnav nav{display:none}section{padding:54px 0}.sb-nav{position:static}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:80ms !important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="readbar" id="readbar"></div>
+
+<header class="topnav">
+  <div class="inner">
+    <a class="wordmark" href="#top">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="42" height="42" rx="13" fill="#2F7D5B"/>
+        <text x="24" y="34" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="700" font-size="29" fill="#FFFFFF">M</text>
+      </svg>
+      <span class="name">Mone<em>dero</em><span class="tag">Blueprints · Paso 4</span></span>
+    </a>
+    <nav>
+      <a href="#storybook">Storybook</a>
+      <a href="#estados">Leyenda de estados</a>
+      <a href="#cobertura">Cobertura</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="wrap">
+    <span class="eyebrow reveal">Paso 4 · Screen Blueprints</span>
+    <h1 class="reveal d1">Cada pantalla,<br><span class="grad">en sus cuatro estados.</span></h1>
+    <p class="lead reveal d2">Galería tipo storybook: selecciona una pantalla, alterna entre <strong>Loading · Empty · Success · Error</strong> y observa en vivo cómo reaccionan los componentes del Design System. El panel declara, con trazabilidad obligatoria, su composición visual (Skill 1) y sus datos (Skill 2).</p>
+    <div class="hero-stats reveal d3">
+      <div class="stat"><div class="v">10</div><div class="l">Blueprints</div></div>
+      <div class="stat"><div class="v">40</div><div class="l">Estados diseñados</div></div>
+      <div class="stat"><div class="v">4/4</div><div class="l">Estados por pantalla</div></div>
+      <div class="stat"><div class="v">0</div><div class="l">Componentes inventados</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STORYBOOK ===== -->
+<section id="storybook">
+  <div class="wrap">
+    <div class="sec-tag reveal">4.1 · Galería inmersiva</div>
+    <h2 class="reveal d1">Storybook interactivo.</h2>
+    <p class="sec-lead reveal d2">Elige pantalla en la columna izquierda y conmuta estados con los botones bajo el teléfono. Regla de Oro visible: cada tag cita un componente (azul) o un contrato/entidad (terracota).</p>
+
+    <div class="storybook">
+      <aside class="sb-nav reveal d1" id="sbNav">
+        <h3>Pantallas</h3>
+        <!-- inyectado por JS -->
+      </aside>
+
+      <div class="sb-stage">
+        <div class="reveal d2">
+          <div class="phone">
+            <div class="screen">
+              <div class="ph-status"><span>9:41</span><span>📶 🔋</span></div>
+              <div class="ph-top"><h4 id="bpTitle">—</h4><span class="ph-badge" id="bpBadge">—</span></div>
+              <div class="ph-body" id="bpBody"></div>
+              <div class="ph-tabbar" id="bpTabs">
+                <button class="ph-tab on"><span class="ti">◧</span>Inicio</button>
+                <button class="ph-tab"><span class="ti">⇄</span>Movim.</button>
+                <button class="ph-tab"><span class="ti">◔</span>Presup.</button>
+                <button class="ph-tab"><span class="ti">☰</span>Ajustes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bp reveal d3" id="bpPanel"><!-- inyectado por JS --></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== LEYENDA ===== -->
+<section id="estados">
+  <div class="wrap">
+    <div class="sec-tag reveal">4.2 · Leyenda de estados obligatorios</div>
+    <h2 class="reveal d1">Los cuatro, en toda pantalla.</h2>
+    <div class="legend">
+      <div class="leg reveal d1"><b><i style="background:var(--cs-secondary)"></i>Loading</b><p><code style="font-size:12px">.spinner</code> o skeleton con shimmer. Nunca pantalla en blanco; &gt;200ms ⇒ skeleton.</p></div>
+      <div class="leg reveal d2"><b><i style="background:var(--cs-accent)"></i>Empty</b><p><code style="font-size:12px">.empty</code>: ilustración clay + copy sereno + <b>CTA primario</b> que enseña a empezar.</p></div>
+      <div class="leg reveal d3"><b><i style="background:var(--cs-primary)"></i>Success</b><p>Datos reales + <code style="font-size:12px">.toast</code> de confirmación (borde 4px) y microinteracción de feedback.</p></div>
+      <div class="leg reveal d3"><b><i style="background:var(--cs-danger)"></i>Error</b><p><code style="font-size:12px">.fhint error</code> + <code style="font-size:12px">.toast err</code> con <b>código de dominio localizado</b> y reintento. Nunca culpar al usuario.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== COBERTURA ===== -->
+<section id="cobertura">
+  <div class="wrap">
+    <div class="sec-tag reveal">4.3 · Cobertura de blueprints</div>
+    <h2 class="reveal d1">Mapa completo pantalla → historia → contrato.</h2>
+    <p class="sec-lead reveal d2">Los 10 blueprints detallados de la galería + las subpantallas de Ajustes (agrupadas) cubren los 18 nodos del sitemap aprobado.</p>
+    <div class="legend">
+      <div class="leg reveal d1"><b>BP-01 · Onboarding — Crear bóveda</b><p>HU-01 · <code>settings['vault']</code> · <code>VALIDATION_FAILED</code></p></div>
+      <div class="leg reveal d1"><b>BP-02 · Bloqueo (VaultGate)</b><p>HU-03·04 · <code>KeyVaultPort</code> · <code>VAULT_LOCKED</code></p></div>
+      <div class="leg reveal d2"><b>BP-03 · Inicio (Dashboard)</b><p>HU-08·09·12 · <code>computeMonthReport</code> · <code>budgets</code></p></div>
+      <div class="leg reveal d2"><b>BP-04 · Movimientos (lista)</b><p>HU-07·09 · <code>TransactionRepository.list</code></p></div>
+      <div class="leg reveal d3"><b>BP-05 · Alta de movimiento</b><p>HU-05·06 · <code>addTransaction</code> · <code>tx:created</code></p></div>
+      <div class="leg reveal d3"><b>BP-06 · Presupuestos</b><p>HU-11·12 · <code>budgets.upsert</code> · <code>budget:exceeded</code></p></div>
+      <div class="leg reveal d3"><b>BP-07 · Reportes</b><p>HU-13 · <code>computeMonthReport</code></p></div>
+      <div class="leg reveal d3"><b>BP-08 · Ajustes (raíz)</b><p>HU-17·18 · <code>settings</code></p></div>
+      <div class="leg reveal d3"><b>BP-09 · Exportar bóveda</b><p>HU-14 · <code>ExportPort</code> · <code>EXPORT_FAILED</code></p></div>
+      <div class="leg reveal d3"><b>BP-10 · Importar bóveda</b><p>HU-15·16 · <code>importFile</code> · <code>IMPORT_*</code></p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="foot-badges">
+      <span>Clay Serenity SSOT</span><span>10 blueprints · 40 estados</span><span>Regla de Oro</span><span>4/4 obligatorios</span><span>lang="es"</span>
+    </div>
+    <div style="font-size:13px;color:var(--cs-text-muted)">Artefactos/documentacion/<strong>Blueprints</strong>/BLUEPRINTS_VISUAL.html · Paso 4 de 6</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){reduced?el.classList.add('in'):obs.observe(el);});
+  var rb=document.getElementById('readbar');
+  addEventListener('scroll',function(){var h=document.documentElement;rb.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';},{passive:true});
+
+  /* ---------- helpers de preview ---------- */
+  function skel(n){var s='';for(var i=0;i<n;i++){s+='<div class="p-skel" style="width:'+(70+Math.round(Math.sin(i*2.3)*25))+'%"></div>';}return s;}
+  function spinner(msg){return '<div class="p-card" style="text-align:center;padding:30px 14px"><div class="p-spin"></div><div style="font-size:12px;color:var(--cs-text-muted);margin-top:12px">'+msg+'</div></div>';}
+  function empty(icon,title,desc,cta){return '<div class="p-card p-empty"><div class="art">'+icon+'</div><h5>'+title+'</h5><p>'+desc+'</p><button class="p-btn" style="max-width:210px;margin:0 auto">'+cta+'</button></div>';}
+  function toast(t,txt,kind){return '<div class="p-toast '+(kind||'')+'"><span>'+(kind==='err'?'✕':kind==='warn'?'⚠':'✓')+'</span><div><strong>'+t+'</strong><span>'+txt+'</span></div></div>';}
+  function tx(ic,name,cat,amt,cls){return '<div class="p-tx"><div class="ic">'+ic+'</div><div class="i"><strong>'+name+'</strong><span>'+cat+'</span></div><div class="a '+(cls||'neg')+'">'+amt+'</div></div>';}
+  function fab(){return '<button class="ph-fab">＋ Añadir</button>';}
+
+  /* ---------- pantallas ---------- */
+  var SCREENS=[
+  {
+    id:'bp1', icon:'🌱', title:'Onboarding — Crear bóveda', route:'/onboarding/crear', badge:'HU-01',
+    purpose:'Primera apertura: configurar la passphrase que cifrará la bóveda local. Educa sobre custodia antes de registrar el primer dato.',
+    comp:['.input (passphrase ×2)','.btn primary','.progress (derivación)','.fhint error','.modal (aviso custodia)'],
+    data:["settings['vault']","PBKDF2 ≥120k","KeyVaultPort","VALIDATION_FAILED"],
+    states:{
+      loading:{d:'Derivando clave (PBKDF2 120k): <b>.progress</b> indeterminado + botón deshabilitado. Nunca pantalla congelada.',h:
+        '<div class="p-card" style="padding:24px 16px;text-align:center"><div class="p-lbl" style="text-align:left">Paso 2 de 4 · Crear bóveda</div>'+
+        '<div class="p-spin" style="margin-top:16px"></div><div style="font-size:12px;color:var(--cs-text-muted);margin-top:12px">Derivando clave segura…</div>'+
+        '<div class="p-prog" style="margin-top:14px"><div class="pt"><div class="pf" style="width:62%"></div></div></div>'+
+        '<button class="p-btn" disabled>Creando bóveda…</button></div>'},
+      empty:{d:'Estado base del formulario (pristine). Los CTA guían: sin passphrase aún no hay bóveda.',h:
+        '<div class="p-card"><div class="p-lbl">Paso 2 de 4 · Crear bóveda</div>'+
+        '<div style="font-family:var(--cs-font-display);font-size:16.5px;font-weight:600;margin:8px 0 12px">Define tu passphrase</div>'+
+        '<label class="p-label">Passphrase (mín. 10 caracteres)</label><div class="p-input">🔒 ··········</div>'+
+        '<label class="p-label">Confirma la passphrase</label><div class="p-input">🔒 ··········</div>'+
+        '<button class="p-btn" disabled>Crear bóveda</button>'+
+        '<button class="p-btn sec" style="margin-top:8px">Ya tengo una bóveda · Importar</button></div>'},
+      success:{d:'Passphrase válida y confirmada: CTA activo. Un <b>.modal</b> de custodia aparece al pulsar (HU-01, criterio 1).',h:
+        '<div class="p-card"><div class="p-lbl">Paso 2 de 4 · Crear bóveda</div>'+
+        '<label class="p-label">Passphrase (mín. 10 caracteres)</label><div class="p-input focus">🔒 ··········</div>'+
+        '<label class="p-label">Confirma la passphrase</label><div class="p-input">🔒 ··········</div>'+
+        '<button class="p-btn">Crear bóveda →</button></div>'+
+        '<div class="p-card" style="background:rgba(217,119,87,.1);box-shadow:none"><div style="font-size:11.5px;color:var(--cs-accent-text)"><b>⚠ Custodia:</b> no existe recuperación de passphrase. Sin ella, nadie —ni nosotros— puede abrir tu bóveda.</div></div>'+
+        '<div class="p-row"><span>☑</span><span class="rt">Entiendo que la clave no se puede recuperar</span></div>'},
+      error:{d:'Confirmación distinta → <b>VALIDATION_FAILED</b> con <code>field</code>: error inline en el 2º <b>.input</b> + <b>.fhint error</b> con ícono (nunca solo rojo).',h:
+        '<div class="p-card"><div class="p-lbl">Paso 2 de 4 · Crear bóveda</div>'+
+        '<label class="p-label">Passphrase (mín. 10 caracteres)</label><div class="p-input">🔒 ··········</div>'+
+        '<label class="p-label">Confirma la passphrase</label><div class="p-input err">🔒 ········</div>'+
+        '<div class="p-hint err">⚠ Las passphrases no coinciden. (field: confirm)</div>'+
+        '<button class="p-btn" disabled>Crear bóveda</button></div>'+
+        toast('VALIDATION_FAILED','Revisa el campo señalado — field: confirm','err')}
+    }
+  },
+  {
+    id:'bp2', icon:'🔐', title:'Bloqueo (VaultGate)', route:'guard global', badge:'HU-03·04',
+    purpose:'Estado global de seguridad. Cubre toda la app ante inactividad (2 min) o segundo plano; restaura ruta y scroll tras desbloquear.',
+    comp:['.btn primary "Desbloquear"','.input (passphrase)','.spinner','.fhint error','biometría nativa'],
+    data:['vault:locked','KeyVaultPort.unlock()','VAULT_LOCKED','zeroize'],
+    states:{
+      loading:{d:'Biometría en curso: <b>.spinner</b> y botón deshabilitado. El estado dura solo lo que el SO.',h:
+        '<div class="p-lock"><div class="shield">🔐</div><h5>Verificando…</h5><p>Confirma tu identidad para abrir la bóveda.</p>'+
+        '<div class="p-spin"></div><button class="p-btn" style="margin-top:16px" disabled>Desbloqueando…</button></div>'},
+      empty:{d:'Bóveda bloqueada (estado por defecto tras 2 min). Copy sereno, sin alarmismo.',h:
+        '<div class="p-lock"><div class="shield">🔐</div><h5>Bóveda cerrada</h5><p>Tus datos permanecen cifrados. Desbloquea para continuar donde estabas.</p>'+
+        '<button class="p-btn" style="max-width:230px">Desbloquear con biometría</button>'+
+        '<button class="p-btn sec" style="max-width:230px;margin-top:9px">Usar passphrase</button></div>'},
+      success:{d:'Tras <b>vault:unlocked</b> se restaura la ruta previa con filtros y scroll intactos (criterio HU-04).',h:
+        '<div class="p-lock" style="background:var(--cs-primary-soft)"><div class="shield" style="background:var(--cs-surface);color:var(--cs-primary)">✓</div>'+
+        '<h5>¡Bienvenida de vuelta!</h5><p>Retomando tu sesión en Inicio…</p></div>'+
+        '<div class="p-card"><div class="p-lbl">Balance total · COP</div><div class="p-val">$ 12.480.550</div><div class="p-sub">▲ + $ 840.000 este mes</div></div>'},
+      error:{d:'5 fallos → backoff exponencial: botón <b>:disabled</b> con temporizador (criterio HU-04). Nunca borrar datos por fallo.',h:
+        '<div class="p-lock"><div class="shield" style="background:var(--cs-danger)">⚠</div><h5>Intento fallido</h5>'+
+        '<p>Passphrase incorrecta. Espera 30 s antes de volver a intentarlo.</p>'+
+        '<div class="p-input err" style="max-width:230px">🔒 ··········</div>'+
+        '<div class="p-hint err" style="justify-content:center">⚠ VAULT_LOCKED — reintento en 30 s</div>'+
+        '<button class="p-btn" style="max-width:230px" disabled>Reintentar (28 s)</button></div>'}
+    }
+  },
+  {
+    id:'bp3', icon:'◧', title:'Inicio (Dashboard)', route:'/home', badge:'HU-08·09',
+    purpose:'Respuesta inmediata a «¿cuánto queda?». Balance total, delta del mes, alertas de presupuesto y últimos movimientos.',
+    comp:['.card balance','.segmented','.tx','.progress','.toast warn','.spinner','.empty'],
+    data:['accounts','transactions','budgets','computeMonthReport()'],
+    tabs:0, fab:true,
+    states:{
+      loading:{d:'Skeletons con shimmer (&gt;200ms) — jamás un flash de vacío. Formato COP sin decimales.',h:
+        '<div class="p-seg"><span>Semana</span><span class="on">Mes</span><span>Año</span></div>'+
+        '<div class="p-skel card"></div><div class="p-skel" style="width:80%"></div><div class="p-skel" style="width:64%"></div>'+
+        '<div class="p-skel card" style="height:110px"></div>'},
+      empty:{d:'Primera bóveda: <b>.empty</b> con ilustración clay y CTA que lanza el alta (FAB equivalente).',h:
+        '<div class="p-seg"><span>Semana</span><span class="on">Mes</span><span>Año</span></div>'+
+        '<div class="p-card"><div class="p-lbl">Balance total · COP</div><div class="p-val">$ 0</div><div class="p-sub" style="color:var(--cs-text-muted)">Sin movimientos todavía</div></div>'+
+        empty('🌱','Tu bóveda está lista','Registra tu primer ingreso o gasto y aquí verás tu balance.','＋ Añadir primer movimiento')},
+      success:{d:'Datos reales: contador animado del balance, alerta al 85% (accent) y lista <b>.tx</b> con montos tabulares.',h:
+        '<div class="p-seg"><span>Semana</span><span class="on">Mes</span><span>Año</span></div>'+
+        '<div class="p-card"><div class="p-lbl">Balance total · COP</div><div class="p-val">$ 12.480.550</div><div class="p-sub">▲ + $ 840.000 este mes</div></div>'+
+        toast('Presupuesto al 85%','Te quedan $ 60.000 en Alimentación','warn')+
+        '<div class="p-card" style="padding:10px 14px">'+
+          tx('🛒','Supermercado','Alimentación · Hoy','−$ 180.000')+
+          tx('💼','Nómina','Ingreso · Ayer','+$ 4.500.000','pos')+
+          tx('⚡','Luz y gas','Servicios · 12 sep','−$ 260.000')+
+        '</div>'},
+      error:{d:'Fallo de storage → <b>STORAGE_UNAVAILABLE</b> con reintento. Nunca pantalla muerta ni datos a medias.',h:
+        '<div class="p-card" style="border-left:4px solid var(--cs-danger)">'+
+        '<div style="font-family:var(--cs-font-display);font-weight:600;font-size:15px">No pudimos leer la bóveda</div>'+
+        '<div style="font-size:12px;color:var(--cs-text-muted);margin-top:5px">STORAGE_UNAVAILABLE — la base local no respondió.</div>'+
+        '<button class="p-btn sec" style="margin-top:12px">Reintentar</button>'+
+        '<button class="p-btn ghost" style="margin-top:6px">Importar backup (.monedero)</button></div>'+
+        '<div class="p-card"><div class="p-lbl">Balance total</div><div class="p-val" style="color:var(--cs-text-muted)">— — —</div></div>'}
+    }
+  },
+  {
+    id:'bp4', icon:'⇄', title:'Movimientos (lista)', route:'/movimientos', badge:'HU-07·09',
+    purpose:'Listado principal con filtros y búsqueda; desde aquí se abre el sheet de detalle con editar/eliminar (deshacer 4 s).',
+    comp:['.tx','.segmented','.chip','.spinner','.empty','.toast "Deshacer"','.modal'],
+    data:['TransactionRepository.list()','transactions (tombstones)','categories','tags'],
+    tabs:1, fab:true,
+    states:{
+      loading:{d:'Skeleton de filas mientras consulta índices (<b>.spinner</b> solo si &gt;400ms).',h:
+        '<div class="p-seg"><span class="on">Todos</span><span>Gastos</span><span>Ingresos</span></div>'+
+        skel(6)},
+      empty:{d:'Sin movimientos (o filtro sin resultados): <b>.empty</b> distinto según causa, con CTA contextual.',h:
+        '<div class="p-seg"><span class="on">Todos</span><span>Gastos</span><span>Ingresos</span></div>'+
+        empty('🔍','Aún no hay movimientos','Filtra o registra tu primer gasto para verlo aquí.','＋ Añadir movimiento')},
+      success:{d:'Lista densa con chips de filtro activos, montos con signo + color (nunca solo color) y paginación incremental.',h:
+        '<div class="p-seg"><span class="on">Todos</span><span>Gastos</span><span>Ingresos</span></div>'+
+        '<div style="display:flex;gap:6px;margin-bottom:9px"><span class="p-chip">Filtro: Octubre ✕</span><span class="p-chip">Cuenta: Efectivo ✕</span></div>'+
+        '<div class="p-card" style="padding:8px 14px">'+
+          tx('🛒','Supermercado','Alimentación · Hoy','−$ 180.000')+
+          tx('☕','Café central','Alimentación · Hoy','−$ 8.500')+
+          tx('💼','Nómina','Ingreso · Ayer','+$ 4.500.000','pos')+
+          tx('🚌','Metro','Transporte · Ayer','−$ 3.200')+
+          tx('💡','Luz y gas','Servicios · 12 sep','−$ 260.000')+
+        '</div>'+
+        '<div style="text-align:center;font-size:10.5px;color:var(--cs-text-muted)">Toca una fila → sheet de detalle</div>'},
+      error:{d:'Fallo de consulta → <b>.toast err</b> persistente con reintento; la lista conserva el último estado válido.',h:
+        toast('No se pudo cargar la lista','INTEGRITY_VIOLATION — datos inconsistentes','err')+
+        '<div class="p-card" style="padding:8px 14px;opacity:.5">'+tx('🛒','Supermercado','Alimentación · Hoy','−$ 180.000')+'</div>'+
+        '<button class="p-btn sec">Reintentar consulta</button>'}
+    }
+  },
+  {
+    id:'bp5', icon:'➕', title:'Alta de movimiento', route:'/movimientos/nuevo', badge:'HU-05·06',
+    purpose:'Bottom sheet de alta rápida: importe, tipo (segmented), concepto, categoría y cuenta. Validación Zod en tiempo real.',
+    comp:['.money-input','.segmented','.input','.chip','.btn primary','.fhint error','.toast'],
+    data:['addTransaction()','TxInputSchema','tx:created','account_id · category_id'],
+    tabs:1, fab:false,
+    states:{
+      loading:{d:'Guardando: botón en estado spinner + campos bloqueados (no se pierde lo escrito).',h:
+        '<div class="p-card"><div class="p-lbl">Nuevo movimiento</div>'+
+        '<div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div>'+
+        '<label class="p-label">Importe</label><div class="p-input" style="font-family:var(--cs-font-display);font-weight:700;font-size:17px">COP $ 180.000</div>'+
+        '<button class="p-btn" disabled>Guardando…</button></div>'},
+      empty:{d:'Formulario pristine con defaults: tipo Gasto, cuenta Efectivo. CTA deshabilitado hasta válido.',h:
+        '<div class="p-card"><div class="p-lbl">Nuevo movimiento</div>'+
+        '<div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div>'+
+        '<label class="p-label">Importe</label><div class="p-input">COP $ —</div>'+
+        '<label class="p-label">Concepto</label><div class="p-input">Ej. Compra semanal</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"><span class="p-chip">🛒 Alimentación</span><span class="p-chip out">🚌 Transporte</span><span class="p-chip w">🏷️ + Nueva</span></div>'+
+        '<button class="p-btn" disabled>Guardar movimiento</button></div>'},
+      success:{d:'Válido → <b>tx:created</b>: el sheet se cierra con confirmación y la fila nueva aparece con animación spring.',h:
+        toast('Movimiento guardado','Alimentación · −$ 180.000 · COP')+
+        '<div class="p-card"><div class="p-lbl">Nuevo movimiento</div>'+
+        '<div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div>'+
+        '<label class="p-label">Importe</label><div class="p-input focus" style="font-family:var(--cs-font-display);font-weight:700;font-size:17px;color:var(--cs-text-primary)">COP $ 180.000</div>'+
+        '<label class="p-label">Concepto</label><div class="p-input focus" style="color:var(--cs-text-primary)">Supermercado</div>'+
+        '<div style="display:flex;gap:6px"><span class="p-chip">🛒 Alimentación</span><span class="p-chip">💵 Efectivo</span></div>'+
+        '<button class="p-btn">Guardar movimiento</button></div>'},
+      error:{d:'Importe 0 → <b>VALIDATION_FAILED</b> (field: amount) en <b>.money-input</b>; transferencia sin destino → <b>INTEGRITY_VIOLATION</b>.',h:
+        '<div class="p-card"><div class="p-lbl">Nuevo movimiento</div>'+
+        '<div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div>'+
+        '<label class="p-label">Importe</label><div class="p-input err" style="font-weight:700">COP $ 0</div>'+
+        '<div class="p-hint err">⚠ El importe debe ser mayor que cero. (field: amount)</div>'+
+        '<label class="p-label">Concepto</label><div class="p-input">Supermercado</div>'+
+        '<button class="p-btn" disabled>Guardar movimiento</button></div>'}
+    }
+  },
+  {
+    id:'bp6', icon:'◔', title:'Presupuestos', route:'/presupuestos', badge:'HU-11·12',
+    purpose:'Metas mensuales por categoría con barra semántica (80% accent → 100% danger) y alertas del evento budget:exceeded.',
+    comp:['.progress','.chip','.money-input','.btn primary','.toast warn','.empty'],
+    data:['budgets (UNIQUE category+period)','evaluateBudgets()','budget:exceeded','categories'],
+    tabs:2, fab:false,
+    states:{
+      loading:{d:'Skeleton de barras mientras se agregan gastos por categoría.',h:
+        '<div class="p-seg"><span>Sep</span><span class="on">Oct</span><span>Nov</span></div>'+
+        '<div class="p-card"><div class="p-skel" style="width:55%"></div><div class="p-skel" style="width:100%;height:8px"></div></div>'+
+        '<div class="p-card"><div class="p-skel" style="width:45%"></div><div class="p-skel" style="width:100%;height:8px"></div></div>'+
+        '<div class="p-card"><div class="p-skel" style="width:60%"></div><div class="p-skel" style="width:100%;height:8px"></div></div>'},
+      empty:{d:'Sin presupuestos: <b>.empty</b> educa en una idea por pantalla (pilar Claridad) con CTA único.',h:
+        '<div class="p-seg"><span>Sep</span><span class="on">Oct</span><span>Nov</span></div>'+
+        empty('🎯','Sin presupuestos este mes','Define un tope por categoría y Monedero te avisará a tiempo.','＋ Crear presupuesto')},
+      success:{d:'Barras con umbrales: verde normal, <b>accent</b> al 85%, <b>danger</b> al 100%. Serenidad: el aviso informa, no castiga.',h:
+        '<div class="p-seg"><span>Sep</span><span class="on">Oct</span><span>Nov</span></div>'+
+        toast('Transporte llegó al 100%','Revisa tus gastos del mes 🌿','warn')+
+        '<div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Alimentación</span><span class="p-chip w">85%</span></div>'+
+          '<div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 340.000 / $ 400.000</span><span>Te quedan $ 60.000</span></div><div class="pt"><div class="pf warn" style="width:85%"></div></div></div></div>'+
+        '<div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Transporte</span><span class="p-chip out">100%</span></div>'+
+          '<div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 120.000 / $ 120.000</span><span>Meta alcanzada</span></div><div class="pt"><div class="pf over" style="width:100%"></div></div></div></div>'+
+        '<div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Ocio</span><span class="p-chip">27%</span></div>'+
+          '<div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 55.000 / $ 200.000</span><span>En camino</span></div><div class="pt"><div class="pf" style="width:27%"></div></div></div></div>'},
+      error:{d:'Upsert inválido → <b>VALIDATION_FAILED</b>; categoría duplicada en periodo → <b>INTEGRITY_VIOLATION</b>.',h:
+        toast('No se pudo guardar el presupuesto','INTEGRITY_VIOLATION — meta ya existe','err')+
+        '<div class="p-card"><label class="p-label">Categoría</label><div class="p-input">🛒 Alimentación</div>'+
+        '<label class="p-label">Importe mensual</label><div class="p-input err">COP $ 0</div>'+
+        '<div class="p-hint err">⚠ Debe ser mayor que cero. (field: amountCents)</div>'+
+        '<button class="p-btn" disabled>Guardar presupuesto</button></div>'}
+    }
+  },
+  {
+    id:'bp7', icon:'📊', title:'Reportes', route:'/reportes/:month', badge:'HU-13',
+    purpose:'Análisis mensual con donut de categorías y tabla de conceptos — pensado para exportar a la asesoría (Elena).',
+    comp:['.segmented (mes)','.tx (tabla)','.chip','.empty','.btn secondary','.spinner'],
+    data:['computeMonthReport()','byCategory[]','react-native-svg / SVG'],
+    tabs:0, fab:false,
+    states:{
+      loading:{d:'<b>.spinner</b> centrado + skeletons mientras se agregan los SUM por categoría.',h:
+        '<div class="p-seg"><span>◀</span><span class="on">Octubre 2026</span><span>▶</span></div>'+
+        '<div class="p-card" style="height:150px;display:flex;align-items:center;justify-content:center"><div class="p-spin"></div></div>'+
+        skel(4)},
+      empty:{d:'Mes sin gastos → <b>.empty</b> con CTA a registrar; nunca un donut vacío.',h:
+        '<div class="p-seg"><span>◀</span><span class="on">Octubre 2026</span><span>▶</span></div>'+
+        empty('📊','Sin datos este mes','Registra movimientos y aquí verás cómo se distribuye tu gasto.','＋ Añadir movimiento')},
+      success:{d:'Donut con paleta semántica + <code>aria-label</code> y tabla alternativa accesible (criterio HU-13).',h:
+        '<div class="p-seg"><span>◀</span><span class="on">Octubre 2026</span><span>▶</span></div>'+
+        '<div class="p-card" style="text-align:center">'+
+          '<svg width="130" height="130" viewBox="0 0 42 42" role="img" aria-label="Distribución de gastos por categoría">'+
+          '<circle cx="21" cy="21" r="15.9" fill="none" stroke="#EAE2D6" stroke-width="7"/>'+
+          '<circle cx="21" cy="21" r="15.9" fill="none" stroke="#2F7D5B" stroke-width="7" stroke-dasharray="42 58" stroke-dashoffset="25"/>'+
+          '<circle cx="21" cy="21" r="15.9" fill="none" stroke="#D97757" stroke-width="7" stroke-dasharray="27 73" stroke-dashoffset="-17"/>'+
+          '<circle cx="21" cy="21" r="15.9" fill="none" stroke="#3D5A80" stroke-width="7" stroke-dasharray="18 82" stroke-dashoffset="-44"/>'+
+          '</svg>'+
+          '<div class="p-lbl" style="margin-top:6px">Gasto total del mes</div>'+
+          '<div style="font-family:var(--cs-font-display);font-weight:700;font-size:20px">COP $ 2.248.500</div></div>'+
+        '<div class="p-card" style="padding:8px 14px">'+
+          '<div class="p-row"><span class="ri">🛒</span><span class="rt">Alimentación · 42%</span><b>$ 944.400</b></div>'+
+          '<div class="p-row"><span class="ri">🏠</span><span class="rt">Vivienda · 27%</span><b>$ 1.800.000</b></div>'+
+          '<div class="p-row"><span class="ri">⚡</span><span class="rt">Servicios · 15%</span><b>$ 260.000</b></div>'+
+        '</div>'+
+        '<button class="p-btn sec">Exportar resumen</button>'},
+      error:{d:'Fallo de agregación → error localizado con reintento y alternativa de exportar diagnóstico sin PII.',h:
+        toast('No se pudo generar el reporte','EXPORT_FAILED — sin detalle sensible en el error','err')+
+        '<button class="p-btn sec">Reintentar</button>'}
+    }
+  },
+  {
+    id:'bp8', icon:'☰', title:'Ajustes (raíz)', route:'/ajustes', badge:'HU-17·18',
+    purpose:'Hub de configuración: seguridad, cuentas, categorías, moneda (COP/USD/EUR), apariencia y soberanía de datos.',
+    comp:['.toggle','.avatar','.input','.btn ghost','.chip','.row list'],
+    data:["settings['theme']","settings['currency']",'accounts','categories','ExportPort'],
+    tabs:3, fab:false,
+    states:{
+      loading:{d:'Cargando preferencias: skeleton de filas (rápido, sin spinner salvo BBDD caída).',h:skel(5)},
+      empty:{d:'Estado base sin personalización: valores por defecto visibles y editables.',h:
+        '<div class="p-card" style="display:flex;gap:10px;align-items:center">'+
+          '<div style="width:40px;height:40px;border-radius:50%;background:var(--cs-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--cs-font-display);font-weight:700">M</div>'+
+          '<div style="flex:1"><div style="font-size:13.5px;font-weight:600">Bóveda local</div><div style="font-size:10.5px;color:var(--cs-text-muted)">Cifrada · sin copia todavía</div></div></div>'+
+        '<div class="p-card">'+
+          '<div class="p-row"><span class="ri">💱</span><span class="rt">Moneda</span><b>COP</b></div>'+
+          '<div class="p-row"><span class="ri">🌗</span><span class="rt">Apariencia</span><b>Sistema</b></div>'+
+          '<div class="p-row"><span class="ri">📦</span><span class="rt">Exportar bóveda</span><span class="rc">›</span></div></div>'},
+      success:{d:'Configuración activa: tema oscuro aplicado, moneda COP, biometría encendida, última copia «hoy».',h:
+        '<div class="p-card" style="display:flex;gap:10px;align-items:center">'+
+          '<div style="width:40px;height:40px;border-radius:50%;background:var(--cs-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--cs-font-display);font-weight:700">M</div>'+
+          '<div style="flex:1"><div style="font-size:13.5px;font-weight:600">Bóveda local</div><div style="font-size:10.5px;color:var(--cs-text-muted)">Cifrada · última copia: hoy</div></div>'+
+          '<span class="p-chip">Verificada</span></div>'+
+        '<div class="p-card">'+
+          '<div class="p-row"><span class="ri">🛡️</span><span class="rt">Biometría</span><span class="p-chip">Activa</span></div>'+
+          '<div class="p-row"><span class="ri">💱</span><span class="rt">Moneda · formato</span><b>COP $ 1.250.000</b></div>'+
+          '<div class="p-row"><span class="ri">🌗</span><span class="rt">Tema oscuro</span><span class="p-chip">ON</span></div>'+
+          '<div class="p-row"><span class="ri">📦</span><span class="rt">Exportar (.monedero.enc)</span><span class="rc">›</span></div>'+
+          '<div class="p-row"><span class="ri">📥</span><span class="rt">Importar bóveda</span><span class="rc">›</span></div>'+
+        '</div>'+
+        '<div class="p-card"><div class="p-row"><span class="ri">🗑️</span><span class="rt" style="color:var(--cs-danger)">Borrar todos los datos</span><span class="rc">›</span></div></div>'},
+      error:{d:'No se pudo leer <b>settings</b> → <b>STORAGE_UNAVAILABLE</b>; los controles quedan deshabilitados con explicación.',h:
+        toast('Preferencias no disponibles','STORAGE_UNAVAILABLE — reintenta abrir la bóveda','err')+
+        '<div class="p-card" style="opacity:.55">'+
+          '<div class="p-row"><span class="ri">💱</span><span class="rt">Moneda</span><b>—</b></div>'+
+          '<div class="p-row"><span class="ri">🌗</span><span class="rt">Apariencia</span><b>—</b></div></div>'+
+        '<button class="p-btn sec">Reintentar</button>'}
+    }
+  },
+  {
+    id:'bp9', icon:'📦', title:'Exportar bóveda', route:'/ajustes/datos/export', badge:'HU-14',
+    purpose:'Genera el fichero .monedero(.enc) con hash SHA-256 para mover datos a la otra plataforma (móvil ⇄ PWA).',
+    comp:['.btn primary','.modal','.progress','.toast','.chip','.input (passphrase)'],
+    data:['ExportPort.exportFile()','MonederoFile v1','integrity.sha256','EXPORT_FAILED'],
+    tabs:3, fab:false,
+    states:{
+      loading:{d:'Serialización + cifrado + hash: <b>.progress</b> determinista con etapas visibles.',h:
+        '<div class="p-card"><div class="p-lbl">Exportando bóveda</div>'+
+        '<div class="p-prog" style="margin-top:12px"><div class="pl"><span>Cifrando (AES-256-GCM)</span><span>72%</span></div><div class="pt"><div class="pf" style="width:72%"></div></div></div>'+
+        '<div style="font-size:11px;color:var(--cs-text-muted);margin-top:9px">2.418 movimientos · 6 cuentas · 24 categorías</div>'+
+        '<button class="p-btn" disabled>Exportando…</button></div>'},
+      empty:{d:'Pantalla previa: explica qué saldrá y ofrece cifrado (recomendado para Íker).',h:
+        '<div class="p-card"><div class="p-lbl">Datos · Exportar</div>'+
+        '<div style="font-family:var(--cs-font-display);font-size:16px;font-weight:600;margin:8px 0 6px">Exportar bóveda</div>'+
+        '<div style="font-size:12px;color:var(--cs-text-muted)">Incluye cuentas, movimientos, categorías, presupuestos y etiquetas — sin claves.</div>'+
+        '<label class="p-label" style="margin-top:12px">Passphrase del fichero (opcional)</label>'+
+        '<div class="p-input">🔒 ··········</div>'+
+        '<div class="p-row"><span class="p-chip">🔒 .monedero.enc</span><span class="p-chip w">Recomendado</span></div>'+
+        '<button class="p-btn">Generar fichero</button></div>'},
+      success:{d:'Fichero listo → Share del SO + <b>.toast</b> con ruta y chips de verificación (hash incluido).',h:
+        toast('Bóveda exportada','monedero-2026-10-11.monedero.enc · 1,8 MB')+
+        '<div class="p-card"><div class="p-lbl">Fichero generado</div>'+
+        '<div style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;margin-top:8px;word-break:break-all">monedero-2026-10-11.monedero.enc</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><span class="p-chip">🔒 Cifrado ✓</span><span class="p-chip">SHA-256 ✓</span><span class="p-chip">formatVersion 1</span></div>'+
+        '<button class="p-btn" style="margin-top:12px">Compartir…</button>'+
+        '<button class="p-btn sec" style="margin-top:8px">Guardar en archivos</button></div>'},
+      error:{d:'<b>EXPORT_FAILED</b> (permisos/storage) con reintento; nunca mostrar pila de errores ni datos sensibles.',h:
+        toast('No se pudo exportar','EXPORT_FAILED — sin permiso de archivos','err')+
+        '<div class="p-card"><div class="p-lbl">Exportar bóveda</div>'+
+        '<button class="p-btn" style="margin-top:10px">Reintentar</button>'+
+        '<button class="p-btn sec" style="margin-top:8px">Abrir ajustes de permisos</button></div>'}
+    }
+  },
+  {
+    id:'bp10', icon:'📥', title:'Importar bóveda', route:'/ajustes/datos/import', badge:'HU-15·16',
+    purpose:'Carga un fichero .monedero con modo merge (LWW) o replace (con snapshot). Mapea todos los códigos de error del contrato.',
+    comp:['.segmented (modo)','.modal confirmación','.progress','.toast','.btn primary','.fhint error'],
+    data:['ExportPort.importFile()','MonederoFileSchema','ImportSummary','IMPORT_HASH/MISMATCH/DECRYPT/FORMAT'],
+    tabs:3, fab:false,
+    states:{
+      loading:{d:'Validación Zod → hash → decrypt → merge: etapas en <b>.progress</b>; nunca congelar la UI.',h:
+        '<div class="p-card"><div class="p-lbl">Importando bóveda</div>'+
+        '<div class="p-prog" style="margin-top:12px"><div class="pl"><span>Fusionando movimientos (LWW)</span><span>55%</span></div><div class="pt"><div class="pf" style="width:55%"></div></div></div>'+
+        '<div style="font-size:11px;color:var(--cs-text-muted);margin-top:9px">No cierres la app</div></div>'},
+      empty:{d:'Sin fichero elegido: explica los dos modos con <b>.segmented</b> y qué implica cada uno.',h:
+        '<div class="p-card"><div class="p-lbl">Datos · Importar</div>'+
+        '<div style="font-family:var(--cs-font-display);font-size:16px;font-weight:600;margin:8px 0 10px">Importar bóveda</div>'+
+        '<div class="p-seg"><span class="on">Fusionar</span><span>Reemplazar</span></div>'+
+        '<div style="font-size:11.5px;color:var(--cs-text-muted)">Fusionar: combina por UUID y conserva lo más reciente (LWW). Reemplazar: borra lo actual (con copia previa).</div>'+
+        '<button class="p-btn" style="margin-top:12px">Elegir fichero .monedero</button></div>'},
+      success:{d:'Resumen <b>ImportSummary</b> con añadidos/actualizados/conflictos — transparencia total (pilar Claridad).',h:
+        toast('Importación completada','Fusionado desde archivo de la PWA')+
+        '<div class="p-card"><div class="p-lbl">Resumen de importación</div>'+
+        '<div class="p-row"><span class="rt">Añadidos</span><b style="color:var(--cs-primary)">+ 312</b></div>'+
+        '<div class="p-row"><span class="rt">Actualizados</span><b>48</b></div>'+
+        '<div class="p-row"><span class="rt">Borrados propagados</span><b>3</b></div>'+
+        '<div class="p-row"><span class="rt">Conflictos (LWW)</span><b style="color:var(--cs-accent-text)">2</b></div>'+
+        '<button class="p-btn" style="margin-top:10px">Ver en Inicio</button></div>'},
+      error:{d:'Tres códigos distintos con copy propio: <b>IMPORT_HASH_MISMATCH</b> (corrupto), <b>IMPORT_DECRYPT_FAILED</b> (passphrase), <b>IMPORT_FORMAT_UNSUPPORTED</b> (versión).',h:
+        toast('No se pudo importar','IMPORT_DECRYPT_FAILED — passphrase incorrecta','err')+
+        '<div class="p-card"><div class="p-lbl">Reintentar</div>'+
+        '<label class="p-label" style="margin-top:8px">Passphrase del fichero</label>'+
+        '<div class="p-input err">🔒 ··········</div>'+
+        '<div class="p-hint err">⚠ Passphrase incorrecta. Intento 2 de 5.</div>'+
+        '<button class="p-btn">Desbloquear fichero</button>'+
+        '<button class="p-btn ghost" style="margin-top:6px">Cancelar importación</button></div>'}
+    }
+  }
+  ];
+
+  /* ---------- render ---------- */
+  var nav=document.getElementById('sbNav'),body=document.getElementById('bpBody'),
+      title=document.getElementById('bpTitle'),badge=document.getElementById('bpBadge'),
+      panel=document.getElementById('bpPanel'),tabsBar=document.getElementById('bpTabs');
+  var cur=0, curState='success';
+
+  SCREENS.forEach(function(s,i){
+    var b=document.createElement('button');
+    b.className='sb-item'+(i===0?' on':'');
+    b.innerHTML='<span class="si">'+s.icon+'</span><span class="st"><strong>'+s.title+'</strong><span>'+s.route+'</span></span>';
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.sb-item').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); cur=i; render();
+    });
+    nav.appendChild(b);
+  });
+
+  function render(){
+    var s=SCREENS[cur];
+    title.textContent=s.title; badge.textContent=s.badge;
+    tabsBar.style.display = s.tabs!==undefined ? 'flex':'none';
+    if(s.tabs!==undefined){
+      tabsBar.querySelectorAll('.ph-tab').forEach(function(t,ix){t.classList.toggle('on',ix===s.tabs);});
+    }
+    body.style.opacity=0; body.style.transform='translateY(8px)';
+    body.innerHTML=s.states[curState].h;
+    requestAnimationFrame(function(){
+      body.style.transition='opacity 220ms cubic-bezier(.34,1.56,.64,1), transform 220ms cubic-bezier(.34,1.56,.64,1)';
+      body.style.opacity=1; body.style.transform='none';
+    });
+    body.scrollTop=0;
+
+    panel.innerHTML=
+      '<div class="bp-head"><span class="bi">'+s.icon+'</span><div><h3>'+s.title+'</h3><span class="route">'+s.route+'</span></div></div>'+
+      '<p class="purpose">'+s.purpose+'</p>'+
+      '<h4>Composición visual (Skill 1)</h4><div class="tagrow">'+s.comp.map(function(t){return '<span class="tag c1">'+t+'</span>';}).join('')+'</div>'+
+      '<h4>Datos y estado (Skill 2)</h4><div class="tagrow">'+s.data.map(function(t){return '<span class="tag c2">'+t+'</span>';}).join('')+'</div>'+
+      '<div class="state-switch" role="tablist">'+
+        ['loading','empty','success','error'].map(function(k){
+          var icons={loading:'◍',empty:'○',success:'●',error:'✕'};
+          return '<button class="state-btn'+(k===curState?' on':'')+'" data-state="'+k+'" role="tab" aria-selected="'+(k===curState)+'">'+icons[k]+' '+k.charAt(0).toUpperCase()+k.slice(1)+'</button>';
+        }).join('')+
+      '</div>'+
+      '<div class="state-desc"><b>Estado «'+curState.charAt(0).toUpperCase()+curState.slice(1)+'»:</b> '+s.states[curState].d+'</div>';
+
+    panel.querySelectorAll('.state-btn').forEach(function(b){
+      b.addEventListener('click',function(){curState=b.dataset.state;render();});
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>

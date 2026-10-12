@@ -1,0 +1,46 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Builds
+dist/
+build/
+.expo/
+.expo-shared/
+web-build/
+*.tsbuildinfo
+
+# Entornos
+.env
+.env.local
+.env.*.local
+
+# Tests / cobertura
+coverage/
+playwright-report/
+test-results/
+*.lcov
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+logs/
+
+# SO / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# EAS / Expo
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Nunca versionar secrets (guardrail seguridad)
+secrets/
+*.pem

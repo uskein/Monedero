@@ -1,0 +1,33 @@
+{
+  "name": "monedero",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Monedero — gestor de gastos local-first (móvil Expo + PWA). Cero backend, cero telemetría.",
+  "packageManager": "pnpm@10.32.0",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "dev:mobile": "pnpm --filter @monedero/mobile start",
+    "dev:web": "pnpm --filter @monedero/web dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "tokens:check": "node tools/tokens-check.mjs",
+    "contract:check": "node tools/sync-contract.mjs",
+    "audit": "pnpm audit --audit-level=high"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.8.0",
+    "eslint": "^9.28.0",
+    "@eslint/js": "^9.28.0",
+    "typescript-eslint": "^8.33.0",
+    "prettier": "^3.5.0",
+    "globals": "^16.2.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

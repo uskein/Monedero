@@ -1,0 +1,139 @@
+{
+  "$schema": "internal://monedero/doc-index",
+  "version": 1,
+  "descripcion": "Índice de contexto dinámico para el Orquestador (Skill 4). Regla de inyección: por tarea cargar SOLO los chunks listados aquí, nunca la documentación completa. Objetivo: precisión y ahorro de ventana de contexto.",
+  "regla_oro": "1 pantalla (blueprint) + sus componentes DS + su contrato/entidad + reglas a11y/i18n aplicables. Nada más.",
+  "fuentes_base": {
+    "ssot_visual": "Artefactos/documentacion/Diseño Visual/manual-identidad-visual.md",
+    "arquitectura": "Artefactos/documentacion/Arquitectura/README_ARQUITECTURA.md",
+    "modelo_datos": "Artefactos/documentacion/Arquitectura/MODELO_DE_DATOS.md",
+    "contratos": "Artefactos/documentacion/Arquitectura/CONTRATOS_API.md",
+    "requerimientos": "Artefactos/documentacion/Producto y Flujos/REQUERIMIENTOS_FUNCIONALES.md",
+    "arquitectura_informacion": "Artefactos/documentacion/Producto y Flujos/ARQUITECTURA_INFORMACION.md",
+    "blueprints_md": "Artefactos/documentacion/Producto y Flujos/BLUEPRINTS_DE_PANTALLAS.md",
+    "flujos_md": "Artefactos/documentacion/Producto y Flujos/FLUJOS_DE_USUARIO.md",
+    "calidad_pruebas": "Artefactos/documentacion/Calidad y Gobernanza/ESTRATEGIA_PRUEBAS.md",
+    "calidad_a11y": "Artefactos/documentacion/Calidad y Gobernanza/ESTANDAR_ACCESIBILIDAD.md",
+    "calidad_i18n": "Artefactos/documentacion/Calidad y Gobernanza/ESTANDAR_INTERNACIONALIZACION.md",
+    "calidad_observabilidad": "Artefactos/documentacion/Calidad y Gobernanza/ESTRATEGIA_OBSERVABILIDAD.md",
+    "calidad_flags": "Artefactos/documentacion/Calidad y Gobernanza/ESTRATEGIA_FEATURE_FLAGS.md"
+  },
+  "tareas": {
+    "BP-01_ONBOARDING_CREAR_BOVEDA": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-01" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F1" },
+      "historias": ["HU-01", "HU-02", "HU-18"],
+      "componentes_ds": [".input", ".btn primary", ".progress", ".fhint error", ".modal", ".toggle"],
+      "entidades_contratos": ["settings['vault']", "KeyVaultPort", "PBKDF2>=120k", "VALIDATION_FAILED", "settings['currency']"],
+      "reglas": ["calidad_a11y#formulario", "calidad_i18n#formularios", "calidad_observabilidad#log-errores"],
+      "feature_flags": ["env.debug_menu"],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-02_VAULTGATE_BLOQUEO": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-02" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F2" },
+      "historias": ["HU-03", "HU-04"],
+      "componentes_ds": [".btn primary", ".input", ".spinner", ".fhint error"],
+      "entidades_contratos": ["vault:locked", "vault:unlocked", "KeyVaultPort.unlock()", "VAULT_LOCKED"],
+      "reglas": ["calidad_a11y#dialog", "calidad_observabilidad#cero-pii"],
+      "feature_flags": [],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-03_INICIO_DASHBOARD": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-03" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F3" },
+      "historias": ["HU-08", "HU-09", "HU-12"],
+      "componentes_ds": [".card balance", ".segmented", ".tx", ".progress", ".toast warn", ".spinner", ".empty"],
+      "entidades_contratos": ["accounts", "transactions", "budgets", "computeMonthReport()"],
+      "reglas": ["calidad_a11y#contraste-no-solo-color", "calidad_a11y#reduced-motion", "calidad_i18n#montos"],
+      "feature_flags": ["experiment.balance_compact"],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-04_MOVIMIENTOS_LISTA": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-04" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F3" },
+      "historias": ["HU-07", "HU-09"],
+      "componentes_ds": [".tx", ".segmented", ".chip", ".toast Deshacer", ".modal"],
+      "entidades_contratos": ["TransactionRepository.list()", "transactions tombstones", "categories", "tags"],
+      "reglas": ["calidad_a11y#listas", "calidad_pruebas#cobertura-negocio"],
+      "feature_flags": [],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-05_ALTA_MOVIMIENTO": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-05" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F3" },
+      "historias": ["HU-05", "HU-06"],
+      "componentes_ds": [".money-input", ".segmented", ".input", ".chip", ".btn primary", ".fhint error"],
+      "entidades_contratos": ["addTransaction()", "TxInputSchema", "tx:created", "shared/money formatMoney"],
+      "reglas": ["calidad_i18n#montos", "calidad_a11y#formulario", "calidad_pruebas#tdd-estricto"],
+      "feature_flags": [],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-06_PRESUPUESTOS": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-06" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F4" },
+      "historias": ["HU-11", "HU-12"],
+      "componentes_ds": [".progress", ".chip", ".money-input", ".btn primary", ".toast warn", ".empty"],
+      "entidades_contratos": ["budgets upsert", "evaluateBudgets()", "budget:exceeded", "categories"],
+      "reglas": ["calidad_a11y#contraste-no-solo-color"],
+      "feature_flags": [],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-07_REPORTES": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-07" },
+      "historias": ["HU-13"],
+      "componentes_ds": [".segmented", ".tx", ".chip", ".empty", ".btn secondary", ".spinner"],
+      "entidades_contratos": ["computeMonthReport()", "byCategory[]"],
+      "reglas": ["calidad_a11y#graficos-aria-label", "calidad_pruebas#cobertura-negocio"],
+      "feature_flags": ["feature.reportes.v1"],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-08_AJUSTES_RAIZ": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-08" },
+      "historias": ["HU-17", "HU-18", "HU-19"],
+      "componentes_ds": [".toggle", ".avatar", ".input", ".btn ghost", ".chip"],
+      "entidades_contratos": ["settings['theme']", "settings['currency']", "accounts", "ExportPort"],
+      "reglas": ["calidad_i18n#montos", "calidad_a11y#targets-44"],
+      "feature_flags": [],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-09_EXPORTAR_BOVEDA": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-09" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F5" },
+      "historias": ["HU-14"],
+      "componentes_ds": [".btn primary", ".modal", ".progress", ".toast", ".chip", ".input"],
+      "entidades_contratos": ["ExportPort.exportFile()", "MonederoFile v1", "integrity.sha256", "EXPORT_FAILED"],
+      "reglas": ["calidad_observabilidad#cero-pii", "calidad_pruebas#matrix-fixtures"],
+      "feature_flags": [],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "BP-10_IMPORTAR_BOVEDA": {
+      "blueprint": { "fuente": "blueprints_md", "seccion": "BP-10" },
+      "flujos": { "fuente": "flujos_md", "seccion": "F5" },
+      "historias": ["HU-15", "HU-16"],
+      "componentes_ds": [".segmented", ".modal", ".progress", ".toast", ".btn primary", ".fhint error"],
+      "entidades_contratos": ["ExportPort.importFile()", "MonederoFileSchema", "ImportSummary", "IMPORT_*"],
+      "reglas": ["calidad_pruebas#matrix-fixtures", "calidad_a11y#dialog"],
+      "feature_flags": ["feature.import_replace.v1"],
+      "estados": ["loading", "empty", "success", "error"]
+    },
+    "FLUJO_F6_BORRADO_TOTAL": {
+      "flujos": { "fuente": "flujos_md", "seccion": "F6" },
+      "historias": ["HU-19"],
+      "componentes_ds": [".btn ghost", ".input", ".modal"],
+      "entidades_contratos": ["wipe", "onboarding HU-01"],
+      "reglas": ["calidad_a11y#dialog", "calidad_pruebas#cobertura-critica"],
+      "feature_flags": ["ops.wipe_double_confirm"],
+      "estados": ["empty", "success", "error"]
+    }
+  },
+  "gates_ci_globales": {
+    "typecheck": "tsc --noEmit en todos los paquetes",
+    "lint": "ESLint + reglas i18n/flags/naming + sin console.* en producto",
+    "test": "unit + integration + coverage>=80% negocio",
+    "a11y": "axe-core PWA + jest-axe + props RN",
+    "tokens": "tokens:check — solo colores --cs-* en UI",
+    "contract": "contract:check — fixtures .monedero válidas en ambas apps",
+    "network": "no-network — falla si hay fetch externo en prod"
+  }
+}

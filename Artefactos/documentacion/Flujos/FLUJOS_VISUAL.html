@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monedero — Flujos de Usuario | Clay Serenity</title>
+<style>
+  /* ===== TOKENS EXACTOS SSOT Clay Serenity ===== */
+  :root{
+    --cs-bg-base:#F4EFE7; --cs-surface:#FFFFFF; --cs-surface-sunken:#EAE2D6;
+    --cs-primary:#2F7D5B; --cs-primary-hover:#276B4E; --cs-primary-soft:rgba(47,125,91,.12);
+    --cs-accent:#D97757; --cs-accent-text:#B4573A; --cs-secondary:#3D5A80;
+    --cs-danger:#C4453B; --cs-text-primary:#232A31; --cs-text-muted:#6E7681;
+    --cs-text-on-primary:#FFFFFF; --cs-placeholder:#9A938A;
+    --cs-font-display:'Fraunces','Iowan Old Style',Georgia,serif;
+    --cs-font-ui:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    --cs-radius-input:16px; --cs-radius-btn:18px; --cs-radius-card:24px; --cs-radius-pill:999px;
+    --cs-clay:inset 4px 4px 8px rgba(0,0,0,.06), inset -4px -4px 8px rgba(255,255,255,.9), 0 10px 24px rgba(60,50,40,.12);
+    --cs-clay-sm:inset 3px 3px 6px rgba(0,0,0,.05), inset -3px -3px 6px rgba(255,255,255,.9), 0 6px 14px rgba(60,50,40,.10);
+    --cs-clay-press:inset 4px 4px 10px rgba(0,0,0,.10), inset -3px -3px 8px rgba(255,255,255,.8);
+    --cs-ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --cs-ease-out:cubic-bezier(.2,.8,.2,1);
+    --cs-dur-fast:150ms; --cs-dur-base:220ms; --cs-dur-slow:280ms;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--cs-bg-base);color:var(--cs-text-primary);font-family:var(--cs-font-ui);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+  ::selection{background:var(--cs-primary);color:#fff}
+  .wrap{max-width:1220px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+  .readbar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cs-primary),var(--cs-accent));width:0;z-index:60}
+
+  .topnav{position:sticky;top:0;z-index:50;background:rgba(244,239,231,.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(35,42,49,.07)}
+  .topnav .inner{max-width:1220px;margin:0 auto;padding:13px 28px;display:flex;align-items:center;gap:14px}
+  .wordmark{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+  .wordmark .mark{width:36px;height:36px}
+  .wordmark .name{font-family:var(--cs-font-display);font-weight:700;font-size:20px}
+  .wordmark .name em{font-style:normal;color:var(--cs-primary)}
+  .wordmark .tag{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cs-text-muted);display:block;margin-top:-4px}
+  .topnav nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .topnav nav a{font-size:13px;font-weight:600;color:var(--cs-text-muted);text-decoration:none;padding:7px 14px;border-radius:var(--cs-radius-pill);transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .topnav nav a:hover{background:var(--cs-surface);color:var(--cs-primary);box-shadow:var(--cs-clay-sm)}
+
+  .hero{position:relative;padding:84px 0 64px;overflow:hidden}
+  .blob{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;opacity:.55}
+  .blob.b1{width:400px;height:400px;background:#CFE3D5;top:-130px;right:-90px;animation:drift 16s ease-in-out infinite alternate}
+  .blob.b2{width:300px;height:300px;background:#F3D2C4;top:150px;left:-110px;animation:drift 20s ease-in-out infinite alternate-reverse}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,24px) scale(1.06)}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--cs-primary);background:var(--cs-surface);padding:8px 18px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-sm);margin-bottom:22px}
+  .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cs-primary);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+  h1{font-family:var(--cs-font-display);font-weight:700;font-size:clamp(38px,6vw,62px);line-height:1.05;letter-spacing:-.02em;max-width:18ch}
+  h1 .grad{background:linear-gradient(105deg,var(--cs-primary) 15%,var(--cs-accent) 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p.lead{font-size:18px;color:var(--cs-text-muted);max-width:680px;margin-top:20px}
+  .hero-stats{display:flex;gap:14px;margin-top:38px;flex-wrap:wrap}
+  .stat{background:var(--cs-surface);border-radius:20px;padding:16px 22px;box-shadow:var(--cs-clay-sm);min-width:130px}
+  .stat .v{font-family:var(--cs-font-display);font-size:26px;font-weight:700;color:var(--cs-primary)}
+  .stat .l{font-size:11.5px;color:var(--cs-text-muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+  section{padding:70px 0}
+  .sec-tag{font-size:11.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--cs-accent-text);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .sec-tag::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(217,119,87,.5),transparent);max-width:220px}
+  h2{font-family:var(--cs-font-display);font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-.015em;line-height:1.14}
+  .sec-lead{font-size:16.5px;color:var(--cs-text-muted);max-width:740px;margin-top:12px}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--cs-ease-spring),transform .7s var(--cs-ease-spring)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.07s}.reveal.d2{transition-delay:.14s}.reveal.d3{transition-delay:.21s}
+
+  /* ===== SIMULADOR ===== */
+  .sim{display:grid;grid-template-columns:270px minmax(300px,350px) 1fr;gap:22px;margin-top:44px;align-items:start}
+  @media (max-width:1060px){.sim{grid-template-columns:1fr;}.sim .phone-wrap{order:-1}}
+
+  .flow-nav{background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:14px;position:sticky;top:86px}
+  .flow-nav h3{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cs-text-muted);font-weight:700;padding:6px 10px 12px}
+  .f-item{display:flex;align-items:center;gap:11px;width:100%;background:transparent;border:none;padding:11px 12px;border-radius:15px;cursor:pointer;font-family:inherit;text-align:left;transition:all var(--cs-dur-base) var(--cs-ease-spring);margin-bottom:3px}
+  .f-item:hover{background:var(--cs-bg-base)}
+  .f-item.on{background:var(--cs-primary-soft)}
+  .f-item .si{width:34px;height:34px;border-radius:11px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .f-item.on .si{background:var(--cs-primary);color:#fff;box-shadow:var(--cs-clay-sm)}
+  .f-item .st{flex:1;min-width:0}
+  .f-item .st strong{display:block;font-size:13.5px;font-weight:600}
+  .f-item .st span{font-size:10.5px;color:var(--cs-text-muted);font-family:ui-monospace,Menlo,monospace}
+  .f-item.on .st strong{color:var(--cs-primary)}
+
+  .phone-wrap{position:sticky;top:86px}
+  .phone{width:100%;max-width:340px;margin:0 auto;aspect-ratio:9/17.5;background:var(--cs-text-primary);border-radius:42px;padding:11px;box-shadow:var(--cs-clay),0 24px 50px rgba(60,50,40,.25);position:relative}
+  .screen{width:100%;height:100%;background:var(--cs-bg-base);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .ph-status{display:flex;justify-content:space-between;padding:12px 20px 4px;font-size:11px;font-weight:600}
+  .ph-top{padding:6px 18px 10px;display:flex;align-items:center;gap:10px}
+  .ph-top h4{font-family:var(--cs-font-display);font-size:18px;font-weight:600;flex:1}
+  .ph-badge{font-size:10px;font-weight:700;background:var(--cs-primary-soft);color:var(--cs-primary);padding:4px 10px;border-radius:var(--cs-radius-pill)}
+  .ph-body{flex:1;overflow-y:auto;padding:4px 15px 12px;scrollbar-width:thin}
+  .ph-body::-webkit-scrollbar{width:4px}.ph-body::-webkit-scrollbar-thumb{background:var(--cs-surface-sunken);border-radius:9px}
+  .ph-tabbar{display:flex;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);padding:7px 7px 14px;gap:4px;border-top:1px solid var(--cs-bg-base);border-radius:0 0 32px 32px}
+  .ph-tab{flex:1;text-align:center;padding:6px 2px 4px;border-radius:12px;background:transparent;border:none;font-family:inherit;color:var(--cs-text-muted);font-size:9px;font-weight:600}
+  .ph-tab .ti{display:block;font-size:16px;margin-bottom:1px}
+  .ph-tab.on{background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .tap-cursor{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid var(--cs-accent);background:rgba(217,119,87,.25);pointer-events:none;z-index:8;animation:tap 1.4s var(--cs-ease-out) infinite;left:50%;top:60%;transform:translate(-50%,-50%)}
+  @keyframes tap{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.9}50%{transform:translate(-50%,-50%) scale(.7);opacity:.5}}
+
+  /* primitivas preview */
+  .p-card{background:var(--cs-surface);border-radius:17px;padding:14px;box-shadow:var(--cs-clay-sm);margin-bottom:10px}
+  .p-lbl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cs-text-muted);font-weight:700}
+  .p-val{font-family:var(--cs-font-display);font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .p-sub{font-size:11.5px;color:var(--cs-primary);font-weight:600}
+  .p-seg{display:flex;background:var(--cs-surface-sunken);border-radius:12px;padding:4px;gap:3px;margin-bottom:10px}
+  .p-seg span{flex:1;text-align:center;font-size:11px;font-weight:600;color:var(--cs-text-muted);padding:6px 0;border-radius:9px}
+  .p-seg span.on{background:var(--cs-surface);color:var(--cs-text-primary);box-shadow:var(--cs-clay-sm)}
+  .p-tx{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--cs-bg-base)}
+  .p-tx:last-child{border-bottom:none}
+  .p-tx .ic{width:31px;height:31px;border-radius:10px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:13px}
+  .p-tx .i{flex:1;min-width:0}
+  .p-tx .i strong{display:block;font-size:12.5px;font-weight:600}
+  .p-tx .i span{font-size:10px;color:var(--cs-text-muted)}
+  .p-tx .a{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .a.pos{color:var(--cs-primary)}.a.neg{color:var(--cs-danger)}
+  .p-prog .pl{display:flex;justify-content:space-between;font-size:10px;color:var(--cs-text-muted);font-weight:600;margin-bottom:4px}
+  .p-prog .pt{height:8px;background:var(--cs-surface-sunken);border-radius:99px;box-shadow:var(--cs-clay-press);overflow:hidden}
+  .p-prog .pf{height:100%;border-radius:99px;background:var(--cs-primary);transition:width .6s var(--cs-ease-spring)}
+  .p-prog .pf.warn{background:var(--cs-accent)}.p-prog .pf.over{background:var(--cs-danger)}
+  .p-input{width:100%;height:44px;background:var(--cs-surface-sunken);border:2px solid transparent;border-radius:14px;box-shadow:var(--cs-clay-press);padding:0 14px;font-size:13.5px;color:var(--cs-text-muted);display:flex;align-items:center;gap:8px;margin-bottom:9px;font-family:inherit}
+  .p-input.focus{border-color:var(--cs-primary);background:var(--cs-surface);box-shadow:0 0 0 3px rgba(47,125,91,.15);color:var(--cs-text-primary)}
+  .p-input.err{border-color:var(--cs-danger)}
+  .p-label{font-size:11px;font-weight:600;color:var(--cs-text-muted);display:block;margin-bottom:5px}
+  .p-btn{width:100%;height:45px;border-radius:15px;background:var(--cs-primary);color:#fff;font-size:13.5px;font-weight:600;border:none;box-shadow:var(--cs-clay-sm);display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;font-family:inherit;margin-top:4px}
+  .p-btn.sec{background:var(--cs-surface);color:var(--cs-text-primary);border:1px solid var(--cs-bg-base)}
+  .p-btn.ghost{background:transparent;color:var(--cs-danger);box-shadow:none}
+  .p-btn:disabled{background:var(--cs-surface-sunken);color:#A39B90;box-shadow:none}
+  .p-toast{display:flex;gap:9px;background:var(--cs-surface);border-radius:13px;padding:11px 13px;font-size:12px;box-shadow:var(--cs-clay-sm);border-left:4px solid var(--cs-primary);margin-bottom:9px}
+  .p-toast.warn{border-left-color:var(--cs-accent)}.p-toast.err{border-left-color:var(--cs-danger)}
+  .p-toast strong{display:block;font-size:12.5px}.p-toast span{color:var(--cs-text-muted);font-size:11px}
+  .p-empty{text-align:center;padding:26px 8px}
+  .p-empty .art{width:66px;height:66px;margin:0 auto 12px;background:var(--cs-surface-sunken);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:27px;box-shadow:var(--cs-clay)}
+  .p-empty h5{font-family:var(--cs-font-display);font-size:15.5px;font-weight:600}
+  .p-empty p{font-size:11.5px;color:var(--cs-text-muted);margin:5px 0 14px}
+  .p-spin{width:34px;height:34px;border:4px solid var(--cs-surface-sunken);border-top-color:var(--cs-primary);border-radius:50%;animation:spin .9s cubic-bezier(.4,0,.2,1) infinite;margin:0 auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .p-chip{font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .p-chip.out{background:rgba(196,69,59,.12);color:var(--cs-danger)}
+  .p-chip.w{background:rgba(217,119,87,.14);color:var(--cs-accent-text)}
+  .p-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--cs-bg-base);font-size:12.5px}
+  .p-row:last-child{border-bottom:none}
+  .p-row .ri{width:30px;height:30px;border-radius:10px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:13px}
+  .p-row .rt{flex:1}
+  .p-hint{font-size:10.5px;margin-top:5px}
+  .p-hint.err{color:var(--cs-danger);font-weight:500}
+  .p-lock{position:absolute;inset:0;background:var(--cs-bg-base);border-radius:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center;z-index:6}
+  .p-lock .shield{width:74px;height:74px;border-radius:26px;background:var(--cs-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:33px;box-shadow:var(--cs-clay),0 12px 26px rgba(47,125,91,.4);margin-bottom:16px}
+  .p-lock h5{font-family:var(--cs-font-display);font-size:19px;font-weight:600}
+  .p-lock p{font-size:12px;color:var(--cs-text-muted);margin:6px 0 18px}
+  .p-modal{position:absolute;inset:0;background:rgba(35,42,49,.45);backdrop-filter:blur(3px);border-radius:32px;display:flex;align-items:flex-end;z-index:7}
+  .p-modal .sheet{background:var(--cs-surface);width:100%;border-radius:24px 24px 32px 32px;padding:20px 18px;box-shadow:0 -10px 30px rgba(60,50,40,.2);text-align:center}
+  .p-modal h5{font-family:var(--cs-font-display);font-size:16.5px;font-weight:600}
+  .p-modal p{font-size:11.5px;color:var(--cs-text-muted);margin:7px 0 14px}
+
+  /* Panel de flujo */
+  .fp{background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:26px}
+  .fp-head{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+  .fp-head .bi{width:46px;height:46px;border-radius:15px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:21px}
+  .fp-head h3{font-family:var(--cs-font-display);font-size:21px;font-weight:600}
+  .fp-head .hu{font-size:10.5px;font-weight:700;background:var(--cs-primary-soft);color:var(--cs-primary);padding:4px 12px;border-radius:99px}
+  .routes{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;background:var(--cs-surface-sunken);padding:6px;border-radius:17px;box-shadow:var(--cs-clay-press)}
+  .route-btn{flex:1;min-width:120px;padding:10px 12px;border-radius:13px;border:none;background:transparent;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--cs-text-muted);cursor:pointer;transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .route-btn.on{background:var(--cs-surface);color:var(--cs-primary);box-shadow:var(--cs-clay-sm)}
+  .route-btn.alt.on{color:var(--cs-accent-text)}
+  .route-btn:focus-visible{outline:3px solid rgba(47,125,91,.45)}
+
+  .player-ctl{display:flex;gap:9px;align-items:center;margin-top:18px}
+  .ctl-btn{width:44px;height:44px;border-radius:14px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);border:none;cursor:pointer;font-size:15px;color:var(--cs-text-primary);font-family:inherit;transition:all var(--cs-dur-base) var(--cs-ease-spring);display:flex;align-items:center;justify-content:center}
+  .ctl-btn:hover{background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .ctl-btn.main{background:var(--cs-primary);color:#fff;box-shadow:var(--cs-clay-sm),0 6px 14px rgba(47,125,91,.35);width:52px;height:44px}
+  .ctl-btn:focus-visible{outline:3px solid rgba(47,125,91,.45)}
+  .step-dots{display:flex;gap:6px;margin-left:auto}
+  .step-dots i{width:9px;height:9px;border-radius:50%;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);cursor:pointer;transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .step-dots i.on{background:var(--cs-primary);transform:scale(1.35);box-shadow:0 2px 6px rgba(47,125,91,.5)}
+  .step-dots i.past{background:var(--cs-primary-soft)}
+
+  .step-card{margin-top:18px;background:var(--cs-bg-base);border-radius:18px;padding:18px;box-shadow:var(--cs-clay-press);animation:stepIn .35s var(--cs-ease-spring)}
+  @keyframes stepIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .step-card .step-n{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cs-accent-text);font-weight:700}
+  .step-card h4{font-family:var(--cs-font-display);font-size:17.5px;font-weight:600;margin:5px 0 12px}
+  .tat{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px}
+  .tat div{background:var(--cs-surface);border-radius:13px;padding:12px 13px;box-shadow:var(--cs-clay-sm);font-size:12.5px;color:var(--cs-text-muted)}
+  .tat b{display:block;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:5px}
+  .tat .t1 b{color:var(--cs-secondary)}.tat .t2 b{color:var(--cs-accent-text)}.tat .t3 b{color:var(--cs-primary)}
+  .step-note{margin-top:11px;font-size:12.5px;color:var(--cs-text-muted);background:var(--cs-primary-soft);border-radius:12px;padding:10px 13px}
+  .step-note code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--cs-primary)}
+
+  /* Diagrama */
+  .diagram{margin-top:44px;background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:28px 24px;overflow-x:auto}
+  .d-row{display:flex;align-items:center;gap:0;min-width:max-content;padding:6px 0}
+  .d-node{background:var(--cs-bg-base);border-radius:15px;padding:13px 17px;box-shadow:var(--cs-clay-sm);text-align:center;min-width:130px;transition:transform var(--cs-dur-base) var(--cs-ease-spring)}
+  .d-node:hover{transform:translateY(-4px)}
+  .d-node b{display:block;font-size:13.5px;font-weight:600}
+  .d-node span{font-size:10.5px;color:var(--cs-text-muted)}
+  .d-node.trigger{background:rgba(61,90,128,.1)}
+  .d-node.action{background:var(--cs-primary-soft)}
+  .d-node.success{background:rgba(47,125,91,.16)}
+  .d-node.error{background:rgba(196,69,59,.12)}
+  .d-node.error b{color:var(--cs-danger)}
+  .d-arrow{padding:0 10px;color:var(--cs-accent);font-weight:700;font-size:17px}
+  .d-branch{display:flex;flex-direction:column;gap:8px;margin-left:14px;padding-left:14px;border-left:2px dashed rgba(217,119,87,.5)}
+
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:34px}
+  .leg{background:var(--cs-surface);border-radius:19px;padding:19px;box-shadow:var(--cs-clay-sm)}
+  .leg b{display:flex;align-items:center;gap:8px;font-family:var(--cs-font-display);font-size:15.5px;font-weight:600;margin-bottom:6px}
+  .leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .leg p{font-size:13px;color:var(--cs-text-muted)}
+
+  footer{padding:60px 0 50px;background:linear-gradient(180deg,transparent,rgba(234,226,214,.6))}
+  .foot-inner{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;align-items:center}
+  .foot-badges{display:flex;gap:10px;flex-wrap:wrap}
+  .foot-badges span{font-size:12px;font-weight:600;background:var(--cs-surface);padding:8px 16px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-sm);color:var(--cs-text-muted)}
+
+  @media (max-width:760px){.topnav nav{display:none}section{padding:54px 0}.flow-nav,.phone-wrap{position:static}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:80ms !important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="readbar" id="readbar"></div>
+
+<header class="topnav">
+  <div class="inner">
+    <a class="wordmark" href="#top">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="42" height="42" rx="13" fill="#2F7D5B"/>
+        <text x="24" y="34" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="700" font-size="29" fill="#FFFFFF">M</text>
+      </svg>
+      <span class="name">Mone<em>dero</em><span class="tag">Flujos · Paso 5</span></span>
+    </a>
+    <nav>
+      <a href="#simulador">Simulador</a>
+      <a href="#diagramas">Diagramas</a>
+      <a href="#alternos">Flujos alternos</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="wrap">
+    <span class="eyebrow reveal">Paso 5 · Flujos Interactivos</span>
+    <h1 class="reveal d1">La cinemática del producto:<br><span class="grad">recórrela paso a paso.</span></h1>
+    <p class="lead reveal d2">Simulación jugable de los flujos de Monedero. Elige un flujo y una ruta (happy path o alterna), pulsa <strong>▶ Play</strong> y observa cómo cada <em>Trigger → Acción → Transición</em> se ejecuta en la maqueta, con los componentes del Design System y los contratos de datos citados en cada paso.</p>
+    <div class="hero-stats reveal d3">
+      <div class="stat"><div class="v">6</div><div class="l">Flujos</div></div>
+      <div class="stat"><div class="v">13</div><div class="l">Rutas</div></div>
+      <div class="stat"><div class="v">64</div><div class="l">Pasos</div></div>
+      <div class="stat"><div class="v">100%</div><div class="l">Con ruta de error</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SIMULADOR ===== -->
+<section id="simulador">
+  <div class="wrap">
+    <div class="sec-tag reveal">5.1 · Simulación jugable</div>
+    <h2 class="reveal d1">Pulsa play. El flujo se ejecuta.</h2>
+    <p class="sec-lead reveal d2">Cada paso muestra en la maqueta la pantalla real y, en el panel, su trinca <strong>Trigger → Acción → Transición</strong> con el componente (Skill 1) y el contrato (Skill 2) implicados. Usa <b>‹ ›</b> para navegar manualmente o los puntos para saltar.</p>
+
+    <div class="sim">
+      <aside class="flow-nav reveal d1" id="flowNav">
+        <h3>Flujos</h3>
+      </aside>
+
+      <div class="phone-wrap reveal d2">
+        <div class="phone">
+          <div class="screen">
+            <div class="ph-status"><span>9:41</span><span>📶 🔋</span></div>
+            <div class="ph-top"><h4 id="fTitle">—</h4><span class="ph-badge" id="fBadge">—</span></div>
+            <div class="ph-body" id="fBody"></div>
+            <div class="ph-tabbar" id="fTabs">
+              <button class="ph-tab on"><span class="ti">◧</span>Inicio</button>
+              <button class="ph-tab"><span class="ti">⇄</span>Movim.</button>
+              <button class="ph-tab"><span class="ti">◔</span>Presup.</button>
+              <button class="ph-tab"><span class="ti">☰</span>Ajustes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fp reveal d3" id="fpPanel"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIAGRAMAS ===== -->
+<section id="diagramas">
+  <div class="wrap">
+    <div class="sec-tag reveal">5.2 · Diagramas de flujo (nodos)</div>
+    <h2 class="reveal d1">Trigger → Acción → Transición.</h2>
+    <p class="sec-lead reveal d2">Vista esquemática de cada flujo: nodo azul = trigger, verde = acción, terracota = rama de error. Los diagramas complementan la simulación anterior.</p>
+
+    <div class="diagram reveal d1">
+      <div class="d-row">
+        <div class="d-node trigger"><b>Onboarding</b><span>1ª apertura</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Passphrase ×2</b><span>.input + HU-01</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>PBKDF2 120k</b><span>.progress</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node success"><b>Dashboard vacío</b><span>.empty + HU-08</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Biometría</b><span>.toggle HU-02</span></div>
+      </div>
+      <div class="d-branch">
+        <div class="d-node error"><b>Mismatch → VALIDATION_FAILED</b><span>field: confirm · .fhint error</span></div>
+        <div class="d-node error"><b>Aviso custodia obligatorio</b><span>.modal «no hay recuperación»</span></div>
+      </div>
+    </div>
+
+    <div class="diagram reveal d2" style="margin-top:18px">
+      <div class="d-row">
+        <div class="d-node trigger"><b>Inactividad 2 min</b><span>vault:locked</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Zeroize clave</b><span>KeyVaultPort</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>VaultGate</b><span>.btn Desbloquear</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Biometría OK</b><span>.spinner</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node success"><b>Ruta previa</b><span>scroll + filtros</span></div>
+      </div>
+      <div class="d-branch">
+        <div class="d-node error"><b>5 fallos → backoff 30 s</b><span>:disabled con temporizador</span></div>
+        <div class="d-node error"><b>VAULT_LOCKED</b><span>passphrase fallback visible</span></div>
+      </div>
+    </div>
+
+    <div class="diagram reveal d3" style="margin-top:18px">
+      <div class="d-row">
+        <div class="d-node trigger"><b>FAB «Añadir»</b><span>Inicio/Movimientos</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Sheet alta</b><span>.money-input</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Zod valida</b><span>addTransaction</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>tx:created</b><span>evento local</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node success"><b>Fila + balance</b><span>.toast ✓ · spring</span></div>
+      </div>
+      <div class="d-branch">
+        <div class="d-node error"><b>Importe 0 → VALIDATION_FAILED</b><span>field: amount · CTA deshabilitado</span></div>
+        <div class="d-node error"><b>Transf. sin destino</b><span>INTEGRITY_VIOLATION · .toast err</span></div>
+      </div>
+    </div>
+
+    <div class="diagram reveal d1" style="margin-top:18px">
+      <div class="d-row">
+        <div class="d-node trigger"><b>Meta definida</b><span>budgets.upsert</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Gasto acumulado</b><span>evaluateBudgets()</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>≥ 80%</b><span>.progress accent</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>budget:exceeded</b><span>evento</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node success"><b>Toast warn sereno</b><span>4000 ms</span></div>
+      </div>
+      <div class="d-branch">
+        <div class="d-node error"><b>≥ 100% → danger</b><span>nunca rojo de castigo en gasto</span></div>
+        <div class="d-node error"><b>Upsert duplicado</b><span>INTEGRITY_VIOLATION</span></div>
+      </div>
+    </div>
+
+    <div class="diagram reveal d2" style="margin-top:18px">
+      <div class="d-row">
+        <div class="d-node trigger"><b>Exportar (app A)</b><span>ExportPort</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>.monedero.enc</b><span>SHA-256 + AES-GCM</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Share / archivo</b><span>SO</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Importar (app B)</b><span>MonederoFileSchema</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node success"><b>Merge LWW</b><span>ImportSummary ✓</span></div>
+      </div>
+      <div class="d-branch">
+        <div class="d-node error"><b>IMPORT_HASH_MISMATCH</b><span>fichero alterado</span></div>
+        <div class="d-node error"><b>IMPORT_DECRYPT_FAILED</b><span>passphrase · 5 intentos</span></div>
+        <div class="d-node error"><b>IMPORT_FORMAT_UNSUPPORTED</b><span>«actualiza la app»</span></div>
+      </div>
+    </div>
+
+    <div class="diagram reveal d3" style="margin-top:18px">
+      <div class="d-row">
+        <div class="d-node trigger"><b>Zona de peligro</b><span>Ajustes HU-19</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Escribir «BORRAR»</b><span>.input</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Ofrecer export</b><span>educación de custodia</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node action"><b>Modal doble</b><span>.modal ghost rojo</span></div>
+        <span class="d-arrow">→</span>
+        <div class="d-node success"><b>Wipe → Onboarding</b><span>HU-01</span></div>
+      </div>
+      <div class="d-branch">
+        <div class="d-node error"><b>Cancelar → vuelve a Ajustes</b><span>sin cambios</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ALTERNOS ===== -->
+<section id="alternos">
+  <div class="wrap">
+    <div class="sec-tag reveal">5.3 · Inventario de flujos alternativos y de borde</div>
+    <h2 class="reveal d1">Todo lo que puede salir mal, ya está diseñado.</h2>
+    <div class="legend">
+      <div class="leg reveal d1"><b><i style="background:var(--cs-secondary)"></i>F1 · Onboarding</b><p>Happy: passphrase → custodia → biometría → moneda → dashboard. Alterno: mismatch, cancelación del aviso, sin biometría (botón disabled).</p></div>
+      <div class="leg reveal d1"><b><i style="background:var(--cs-primary)"></i>F2 · Desbloqueo</b><p>Happy: inactividad → VaultGate → biometría → ruta previa. Alterno: 5 fallos → backoff 30 s, fallback passphrase.</p></div>
+      <div class="leg reveal d2"><b><i style="background:var(--cs-accent)"></i>F3 · Registrar gasto</b><p>Happy: FAB → sheet → Zod → tx:created. Alterno: importe 0, transferencia sin destino, CTA deshabilitado, deshacer 4 s.</p></div>
+      <div class="leg reveal d2"><b><i style="background:var(--cs-primary)"></i>F4 · Presupuesto</b><p>Happy: meta → 80% → toast warn. Alterno: 100% danger (sin rojo de castigo), upsert duplicado, cancelar meta.</p></div>
+      <div class="leg reveal d3"><b><i style="background:var(--cs-secondary)"></i>F5 · Export ⇄ Import</b><p>Happy: cifrar → compartir → importar → LWW resumen. Alterno: hash mismatch, decrypt failed, formato no soportado, reemplazar cancelado.</p></div>
+      <div class="leg reveal d3"><b><i style="background:var(--cs-danger)"></i>F6 · Borrado total</b><p>Happy: BORRAR → export sugerido → modal doble → wipe → onboarding. Alterno: cancelación restaura Ajustes intacto.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="foot-badges">
+      <span>Clay Serenity SSOT</span><span>6 flujos · 13 rutas · 64 pasos</span><span>Trigger→Acción→Transición</span><span>Rutas de error incluidas</span><span>lang="es"</span>
+    </div>
+    <div style="font-size:13px;color:var(--cs-text-muted)">Artefactos/documentacion/<strong>Flujos</strong>/FLUJOS_VISUAL.html · Paso 5 de 6</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){reduced?el.classList.add('in'):obs.observe(el);});
+  var rb=document.getElementById('readbar');
+  addEventListener('scroll',function(){var h=document.documentElement;rb.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';},{passive:true});
+
+  /* helpers preview */
+  function tx(ic,name,cat,amt,cls){return '<div class="p-tx"><div class="ic">'+ic+'</div><div class="i"><strong>'+name+'</strong><span>'+cat+'</span></div><div class="a '+(cls||'neg')+'">'+amt+'</div></div>';}
+  function toast(t,txt,kind){return '<div class="p-toast '+(kind||'')+'"><span>'+(kind==='err'?'✕':kind==='warn'?'⚠':'✓')+'</span><div><strong>'+t+'</strong><span>'+txt+'</span></div></div>';}
+  function empty(icon,title,desc,cta){return '<div class="p-card p-empty"><div class="art">'+icon+'</div><h5>'+title+'</h5><p>'+desc+'</p><button class="p-btn" style="max-width:210px;margin:0 auto">'+cta+'</button></div>';}
+
+  var FLOWS=[
+  {
+    id:'f1',icon:'🌱',title:'Onboarding y bóveda',route:'F1 · HU-01·02·18',tabs:null,
+    routes:{
+      'Ruta feliz':[
+        {t:'Primera apertura',a:'Mostrar 01 Bienvenida (promesa de soberanía, sin cuentas)',x:'Slides con botón .btn primary «Empezar» — pantalla 1/4',tab:null,
+         h:'<div class="p-card p-empty"><div class="art">🌿</div><h5>Tu dinero, solo tuyo</h5><p>Sin nube, sin cuentas, sin ojos ajenos. Todo cifrado en tu dispositivo.</p><button class="p-btn">Empezar →</button></div><div style="text-align:center;font-size:10.5px;color:var(--cs-text-muted)">Paso 1 de 4</div>',
+         note:'HU-01 — pilar <b>Soberanía</b>: el onboarding nunca pide email ni conexión.'},
+        {t:'Paso 2 — Crear bóveda',a:'Usuario escribe passphrase (≥10) y confirmación en dos .input',x:'Validación en vivo; CTA deshabilitado hasta que formState.isValid',tab:null,
+         h:'<div class="p-card"><div class="p-lbl">Paso 2 de 4 · Crear bóveda</div><div style="font-family:var(--cs-font-display);font-size:16px;font-weight:600;margin:8px 0 12px">Define tu passphrase</div><label class="p-label">Passphrase (mín. 10)</label><div class="p-input focus">🔒 ··········</div><label class="p-label">Confirma la passphrase</label><div class="p-input">🔒 ··········</div><button class="p-btn" disabled>Crear bóveda</button></div>',
+         note:'Componente: <code>.input</code> + <code>.btn:disabled</code> (Skill 1).'},
+        {t:'Confirmación correcta',a:'Abrir modal de custodia obligatorio; usuario marca «Entiendo»',x:'Pulse CTA → modal .modal con aviso de no-recuperación',tab:null,
+         h:'<div class="p-card"><div class="p-lbl">Paso 2 de 4</div><label class="p-label">Confirma la passphrase</label><div class="p-input">🔒 ··········</div><button class="p-btn">Crear bóveda →</button></div><div class="p-row"><span>☑</span><span class="rt">Entiendo que la clave no se puede recuperar</span></div><div class="p-modal"><div class="sheet"><h5>⚠ Sin recuperación</h5><p>No existe «olvidé mi passphrase». Si la pierdes, la bóveda queda cerrada para siempre. ¿Continuar?</p><button class="p-btn">Entiendo, continuar</button><button class="p-btn ghost" style="margin-top:6px">Volver</button></div></div>',
+         note:'Criterio HU-01: el aviso es <b>obligatorio</b> antes de continuar.'},
+        {t:'Derivación de clave',a:'PBKDF2 ≥120.000 iteraciones + creación de settings[\'vault\']',x:'.progress indeterminado → éxito → Ajustes · Seguridad',tab:null,
+         h:'<div class="p-card" style="text-align:center;padding:26px 14px"><div class="p-spin"></div><div style="font-size:12px;color:var(--cs-text-muted);margin-top:12px">Derivando clave segura…</div><div class="p-prog" style="margin-top:12px"><div class="pt"><div class="pf" style="width:70%"></div></div></div></div>',
+         note:'Contrato: <code>KeyVaultPort</code> · nunca registrar la passphrase en logs.'},
+        {t:'Paso 3 — Biometría',a:'Activar .toggle de biometría (FaceID/huella) con fallback visible',x:'Biometría guardada en Keychain/Keystore → paso 4',tab:null,
+         h:'<div class="p-card"><div class="p-lbl">Paso 3 de 4 · Seguridad</div><div class="p-row"><span class="ri">🔐</span><span class="rt">Abrir con biometría</span><span class="p-chip">Activa</span></div><div class="p-row"><span class="ri">🔑</span><span class="rt">Passphrase (alternativa)</span><b>SIEMPRE</b></div><button class="p-btn">Continuar →</button></div>',
+         note:'HU-02 — si el dispositivo no tiene sensor, botón <code>:disabled</code> + explicación.'},
+        {t:'Paso 4 — Moneda base',a:'Elegir COP / USD / EUR y confirmar formato regional',x:'settings[\'currency\'] → Dashboard con estado empty',tab:0,
+         h:'<div class="p-card"><div class="p-lbl">Paso 4 de 4 · Moneda</div><div class="p-seg" style="margin-top:10px"><span class="on">🇨🇴 COP</span><span>🇺🇸 USD</span><span>🇪🇺 EUR</span></div><div class="p-card" style="background:var(--cs-bg-base);box-shadow:none"><div class="p-lbl">Así se verán tus cifras</div><div class="p-val" style="font-size:19px">$ 1.250.000</div></div><button class="p-btn">Entrar a Monedero →</button></div>',
+         note:'HU-18 — COP sin decimales; USD/EUR con 2. Cambiar solo reformatea (sin conversión).'},
+        {t:'Dashboard vacío',a:'Mostrar BalanceCard con $ 0 y estado .empty con CTA',x:'Primer CTA abre el sheet de alta → fin del flujo',tab:0,
+         h:'<div class="p-seg"><span>Semana</span><span class="on">Mes</span><span>Año</span></div><div class="p-card"><div class="p-lbl">Balance total · COP</div><div class="p-val">$ 0</div><div class="p-sub" style="color:var(--cs-text-muted)">Sin movimientos todavía</div></div>'+empty('🌱','Tu bóveda está lista','Registra tu primer ingreso o gasto y aquí verás tu balance.','＋ Añadir primer movimiento'),
+         note:'HU-08 estado <b>empty</b>: un solo CTA (Claridad) que conduce a HU-05.'}
+      ],
+      'Alterna · mismatch':[
+        {t:'Confirmación distinta',a:'Zod detecta confirm !== password',x:'VALIDATION_FAILED field:confirm → .fhint error + .input err',tab:null,
+         h:'<div class="p-card"><div class="p-lbl">Paso 2 de 4 · Crear bóveda</div><label class="p-label">Passphrase (mín. 10)</label><div class="p-input">🔒 ··········</div><label class="p-label">Confirma la passphrase</label><div class="p-input err">🔒 ········</div><div class="p-hint err">⚠ Las passphrases no coinciden. (field: confirm)</div><button class="p-btn" disabled>Crear bóveda</button></div>',
+         note:'Contrato: <code>VALIDATION_FAILED</code> con <code>field</code>. Nunca solo color: ícono + texto.'},
+        {t:'Corregir',a:'Usuario reescribe; validación en vivo reactiva el CTA',x:'formState.isValid → volver a Ruta feliz (paso 2)',tab:null,
+         h:'<div class="p-card"><div class="p-lbl">Paso 2 de 4</div><label class="p-label">Confirma la passphrase</label><div class="p-input focus">🔒 ··········</div><div style="font-size:11px;color:var(--cs-primary);font-weight:600">✓ Coinciden</div><button class="p-btn">Crear bóveda →</button></div>',
+         note:'Recuperación inmediata: el error desaparece al corregir (sin toasts).'}
+      ]
+    }
+  },
+  {
+    id:'f2',icon:'🔐',title:'Bloqueo y desbloqueo',route:'F2 · HU-03·04',tabs:null,
+    routes:{
+      'Ruta feliz':[
+        {t:'Trigger: inactividad',a:'2 min sin tocar o app en 2.º plano → emitir vault:locked',x:'Zeroize de la clave → overlay VaultGate cubre la ruta actual',tab:null,
+         h:'<div class="p-lock"><div class="shield">🔐</div><h5>Bóveda cerrada</h5><p>Tus datos permanecen cifrados. Desbloquea para continuar donde estabas.</p><button class="p-btn" style="max-width:230px">Desbloquear con biometría</button><button class="p-btn sec" style="max-width:230px;margin-top:9px">Usar passphrase</button></div>',
+         note:'Contrato: evento <code>vault:locked</code> + error <code>VAULT_LOCKED</code>.'},
+        {t:'Pulsar desbloquear',a:'Llamar KeyVaultPort.unlock() → prompt biométrico del SO',x:'.spinner + botón deshabilitado mientras valida',tab:null,
+         h:'<div class="p-lock"><div class="shield">🔐</div><h5>Verificando…</h5><p>Confirma tu identidad para abrir la bóveda.</p><div class="p-spin"></div><button class="p-btn" style="margin-top:16px" disabled>Desbloqueando…</button></div>',
+         note:'Componente: <code>.spinner</code> — el estado dura solo lo que el SO.'},
+        {t:'Biometría válida',a:'Restaurar ruta previa con filtros, periodo y scroll intactos',x:'vault:unlocked → pantalla previa (ej. Movimientos con filtro)',tab:1,
+         h:toast('¡Bienvenida de vuelta!','Retomando Movimientos con tu filtro «Octubre»')+'<div class="p-seg"><span class="on">Todos</span><span>Gastos</span><span>Ingresos</span></div><div style="display:flex;gap:6px;margin-bottom:9px"><span class="p-chip">Filtro: Octubre ✕</span></div><div class="p-card" style="padding:8px 14px">'+tx('🛒','Supermercado','Alimentación · Hoy','−$ 180.000')+tx('💼','Nómina','Ingreso · Ayer','+$ 4.500.000','pos')+'</div>',
+         note:'Criterio HU-04: se preserva el <b>contexto</b> (bandera de guarda: redirigir sin perder estado).'}
+      ],
+      'Alterna · 5 fallos':[
+        {t:'Passphrase incorrecta ×5',a:'Contar intentos; al 5.º activar backoff exponencial',x:'Botón :disabled con temporizador 30 s + .fhint error',tab:null,
+         h:'<div class="p-lock"><div class="shield" style="background:var(--cs-danger)">⚠</div><h5>Intento fallido</h5><p>Passphrase incorrecta. Espera 30 s antes de volver a intentarlo.</p><div class="p-input err" style="max-width:230px">🔒 ··········</div><div class="p-hint err" style="justify-content:center">⚠ VAULT_LOCKED — reintento en 30 s</div><button class="p-btn" style="max-width:230px" disabled>Reintentar (28 s)</button></div>',
+         note:'Nunca se borra la bóveda por fallos. Biometría sigue ofreciéndose como alternativa.'},
+        {t:'Temporizador agotado',a:'Reactivar CTA; ofrecer de nuevo ambos métodos',x:'Vuelta al estado VaultGate (Ruta feliz paso 1)',tab:null,
+         h:'<div class="p-lock"><div class="shield">🔐</div><h5>Listo para reintentar</h5><p>Puedes usar biometría (recomendado) o tu passphrase.</p><button class="p-btn" style="max-width:230px">Desbloquear con biometría</button><button class="p-btn sec" style="max-width:230px;margin-top:9px">Usar passphrase</button></div>',
+         note:'Copy sereno: informa, no castiga (emoción: <b>confianza</b>).'}
+      ]
+    }
+  },
+  {
+    id:'f3',icon:'➕',title:'Registrar un gasto',route:'F3 · HU-05·06·07',tabs:1,
+    routes:{
+      'Ruta feliz':[
+        {t:'Trigger: FAB «Añadir»',a:'Abrir bottom sheet de alta desde Inicio/Movimientos',x:'Sheet con defaults: tipo Gasto, cuenta Efectivo',tab:1,
+         h:'<div class="p-card"><div class="p-lbl">Nuevo movimiento</div><div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div><label class="p-label">Importe</label><div class="p-input">COP $ —</div><label class="p-label">Concepto</label><div class="p-input">Ej. Compra semanal</div><button class="p-btn" disabled>Guardar movimiento</button></div>',
+         note:'Componentes: <code>.money-input</code>, <code>.segmented</code>, <code>.chip</code> (Skill 1).'},
+        {t:'Escribir importe y concepto',a:'money-input en decimal (inputmode) + .chip categoría',x:'Zod en tiempo real → CTA se activa al ser válido',tab:1,
+         h:'<div class="p-card"><div class="p-lbl">Nuevo movimiento</div><div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div><label class="p-label">Importe</label><div class="p-input focus" style="font-family:var(--cs-font-display);font-weight:700;font-size:17px;color:var(--cs-text-primary)">COP $ 180.000</div><label class="p-label">Concepto</label><div class="p-input focus" style="color:var(--cs-text-primary)">Supermercado</div><div style="display:flex;gap:6px;margin-bottom:6px"><span class="p-chip">🛒 Alimentación</span><span class="p-chip">💵 Efectivo</span></div><button class="p-btn">Guardar movimiento</button></div>',
+         note:'Criterio HU-05: montos con <code>tabular-nums</code> y formato COP (sin decimales).'},
+        {t:'Pulsar Guardar',a:'addTransaction() → transacción local + evento tx:created',x:'Cierre del sheet con .toast ✓ y fila nueva con spring',tab:1,
+         h:toast('Movimiento guardado','Alimentación · −$ 180.000 · COP')+'<div class="p-seg"><span class="on">Todos</span><span>Gastos</span><span>Ingresos</span></div><div class="p-card" style="padding:8px 14px">'+tx('🛒','Supermercado','Alimentación · Hoy · ¡nuevo!','−$ 180.000')+tx('☕','Café central','Alimentación · Hoy','−$ 8.500')+tx('💼','Nómina','Ingreso · Ayer','+$ 4.500.000','pos')+'</div>',
+         note:'Contrato: <code>tx:created</code> — el BalanceCard anima su contador.'},
+        {t:'Consultar Inicio',a:'BalanceCard recalcula Σ accounts y delta del mes',x:'Contador animado + fila reflejada en la lista',tab:0,
+         h:'<div class="p-seg"><span>Semana</span><span class="on">Mes</span><span>Año</span></div><div class="p-card"><div class="p-lbl">Balance total · COP</div><div class="p-val">$ 12.300.550</div><div class="p-sub">▲ + $ 660.000 este mes</div></div><div class="p-card" style="padding:10px 14px">'+tx('🛒','Supermercado','Alimentación · Hoy','−$ 180.000')+tx('💼','Nómina','Ingreso · Ayer','+$ 4.500.000','pos')+'</div>',
+         note:'Con <code>prefers-reduced-motion</code> el saldo va directo al valor final.'}
+      ],
+      'Alterna · importe 0':[
+        {t:'Importe 0',a:'Zod rechaza amountCents ≤ 0',x:'VALIDATION_FAILED field:amount → error inline, CTA bloqueado',tab:1,
+         h:'<div class="p-card"><div class="p-lbl">Nuevo movimiento</div><div class="p-seg" style="margin-top:10px"><span class="on">Gasto</span><span>Ingreso</span><span>Transf.</span></div><label class="p-label">Importe</label><div class="p-input err" style="font-weight:700">COP $ 0</div><div class="p-hint err">⚠ El importe debe ser mayor que cero. (field: amount)</div><label class="p-label">Concepto</label><div class="p-input">Supermercado</div><button class="p-btn" disabled>Guardar movimiento</button></div>',
+         note:'El error es <b>inline</b> bajo el campo — no se usa toast para validación de formulario.'},
+        {t:'Transf. sin destino',a:'Seleccionar Transferencia sin to_account_id',x:'INTEGRITY_VIOLATION → .toast err + resaltar selector',tab:1,
+         h:toast('Falta la cuenta destino','INTEGRITY_VIOLATION — define a dónde va el dinero','err')+'<div class="p-card"><div class="p-lbl">Nuevo movimiento</div><div class="p-seg" style="margin-top:10px"><span>Gasto</span><span>Ingreso</span><span class="on">Transf.</span></div><label class="p-label">Importe</label><div class="p-input" style="font-weight:700">COP $ 50.000</div><label class="p-label">Cuenta destino</label><div class="p-input err">Selecciona una cuenta</div><div class="p-hint err">⚠ Obligatorio para transferencias (category_id = NULL)</div><button class="p-btn" disabled>Guardar movimiento</button></div>',
+         note:'Criterio HU-06: transferencias exigen destino y no suman a ingresos/gastos.'}
+      ],
+      'Alterna · deshacer':[
+        {t:'Swipe sobre la fila',a:'Abrir sheet de detalle con Editar / Eliminar',x:'Bottom sheet con acciones ≥44px',tab:1,
+         h:'<div class="p-card" style="padding:8px 14px">'+tx('🛒','Supermercado','Alimentación · Hoy','−$ 180.000')+tx('☕','Café central','Alimentación · Hoy','−$ 8.500')+'</div><div class="p-modal"><div class="sheet"><h5>Supermercado</h5><p>−$ 180.000 · COP · Alimentación · 11 oct</p><button class="p-btn sec">✏️ Editar</button><button class="p-btn ghost" style="margin-top:6px">🗑️ Eliminar</button></div></div>',
+         note:'Componente: bottom sheet con swype-to-dismiss (móvil) / modal centrado (PWA).'},
+        {t:'Confirmar borrado',a:'Soft-delete (deleted_at) + toast «Deshacer» 4 s',x:'Fila desaparece con animación; restore reactiva sin perder ID',tab:1,
+         h:toast('Movimiento eliminado','Deshacer disponible durante 4 s','warn')+'<div class="p-seg"><span class="on">Todos</span><span>Gastos</span><span>Ingresos</span></div><div class="p-card" style="padding:8px 14px">'+tx('☕','Café central','Alimentación · Hoy','−$ 8.500')+tx('💼','Nómina','Ingreso · Ayer','+$ 4.500.000','pos')+'</div><button class="p-btn sec">↩ Deshacer</button>',
+         note:'Criterio HU-07: es <b>tombstone</b> — el borrado se propaga en el próximo export (LWW).'}
+      ]
+    }
+  },
+  {
+    id:'f4',icon:'◔',title:'Presupuesto y alertas',route:'F4 · HU-11·12',tabs:2,
+    routes:{
+      'Ruta feliz':[
+        {t:'Crear meta',a:'Elegir categoría + importe para YYYY-MM → budgets.upsert',x:'Upsert idempotente (UNIQUE) → barra en 0%',tab:2,
+         h:'<div class="p-card"><div class="p-lbl">Nuevo presupuesto · Octubre</div><label class="p-label" style="margin-top:8px">Categoría</label><div class="p-input">🛒 Alimentación</div><label class="p-label">Importe mensual</label><div class="p-input focus" style="font-weight:700">COP $ 400.000</div><button class="p-btn">Guardar presupuesto</button></div><div class="p-card"><div style="font-size:13px;font-weight:600">Alimentación</div><div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 0 / $ 400.000</span><span>0%</span></div><div class="pt"><div class="pf" style="width:2%"></div></div></div></div>',
+         note:'Contrato: <code>budgets.upsert</code> — repetir la operación no duplica (UNIQUE category+period).'},
+        {t:'Gasto acumulado ≥ 80%',a:'evaluateBudgets() detecta umbral → progress cambia a accent',x:'Evento budget:exceeded → .toast warn (4000 ms)',tab:2,
+         h:toast('Casi llegas al tope','Alimentación al 85% — te quedan $ 60.000 🌿','warn')+'<div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Alimentación</span><span class="p-chip w">85%</span></div><div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 340.000 / $ 400.000</span><span>Te quedan $ 60.000</span></div><div class="pt"><div class="pf warn" style="width:85%"></div></div></div></div>',
+         note:'Serenidad: el aviso <b>informa</b>, no alarmá. Copy empático, terracota solo en barra.'},
+        {t:'Meta alcanzada (100%)',a:'Umbral 100% → .progress danger + chip «Meta alcanzada»',x:'Sin rojo de castigo en la lista; el danger solo pinta la barra',tab:2,
+         h:toast('Transporte llegó al 100%','Revisa tus gastos del mes 🌿','warn')+'<div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Transporte</span><span class="p-chip out">100%</span></div><div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 120.000 / $ 120.000</span><span>Meta alcanzada</span></div><div class="pt"><div class="pf over" style="width:100%"></div></div></div></div><div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Ocio</span><span class="p-chip">27%</span></div><div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 55.000 / $ 200.000</span><span>En camino</span></div><div class="pt"><div class="pf" style="width:27%"></div></div></div></div>',
+         note:'SSOT: gastos normales <b>nunca</b> en rojo; <code>--cs-danger</code> es solo para errores y umbral extremo.'}
+      ],
+      'Alterna · duplicado':[
+        {t:'Crear meta duplicada',a:'Misma categoría + periodo ya existe → unicidad violada',x:'INTEGRITY_VIOLATION → .toast err + opción «Editar existente»',tab:2,
+         h:toast('Ya existe un presupuesto','INTEGRITY_VIOLATION — Alimentación · Octubre','err')+'<div class="p-card"><div class="p-lbl">Nuevo presupuesto · Octubre</div><label class="p-label" style="margin-top:8px">Categoría</label><div class="p-input err">🛒 Alimentación</div><div class="p-hint err">⚠ Ya tiene meta este mes.</div><button class="p-btn sec">Editar presupuesto existente</button><button class="p-btn ghost" style="margin-top:6px">Cancelar</button></div>',
+         note:'Salida elegante: redirige a editar en lugar de dejar al usuario sin opciones.'},
+        {t:'Cancelar',a:'Descartar cambios → volver a la lista intacta',x:'Sin escrituras en budgets (rollback del formulario)',tab:2,
+         h:'<div class="p-seg"><span>Sep</span><span class="on">Oct</span><span>Nov</span></div><div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Alimentación</span><span class="p-chip w">85%</span></div><div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 340.000 / $ 400.000</span><span>Te quedan $ 60.000</span></div><div class="pt"><div class="pf warn" style="width:85%"></div></div></div></div><div class="p-card"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Ocio</span><span class="p-chip">27%</span></div><div class="p-prog" style="margin-top:8px"><div class="pl"><span>$ 55.000 / $ 200.000</span><span>En camino</span></div><div class="pt"><div class="pf" style="width:27%"></div></div></div></div>',
+         note:'Back predecible: cancelar cierra el sheet <b>sin</b> perder la lista ni los filtros.'}
+      ]
+    }
+  },
+  {
+    id:'f5',icon:'📦',title:'Export ⇄ Import (.monedero)',route:'F5 · HU-14·15·16',tabs:3,
+    routes:{
+      'Ruta feliz':[
+        {t:'Exportar en app A',a:'Ajustes → Datos → passphrase opcional del fichero',x:'Explicación previa: qué saldrá y qué no (sin claves)',tab:3,
+         h:'<div class="p-card"><div class="p-lbl">Datos · Exportar</div><div style="font-family:var(--cs-font-display);font-size:16px;font-weight:600;margin:8px 0 6px">Exportar bóveda</div><div style="font-size:12px;color:var(--cs-text-muted)">Cuentas, movimientos, categorías, presupuestos y etiquetas — sin claves.</div><label class="p-label" style="margin-top:12px">Passphrase del fichero (opcional)</label><div class="p-input">🔒 ··········</div><div style="display:flex;gap:6px;margin-bottom:6px"><span class="p-chip">🔒 .monedero.enc</span><span class="p-chip w">Recomendado</span></div><button class="p-btn">Generar fichero</button></div>',
+         note:'HU-14 — la passphrase nunca se escribe en el fichero ni en logs.'},
+        {t:'Serializar y cifrar',a:'ExportPort: Zod → AES-256-GCM → SHA-256 (integrity)',x:'.progress por etapas → fichero listo para Share',tab:3,
+         h:'<div class="p-card"><div class="p-lbl">Exportando bóveda</div><div class="p-prog" style="margin-top:12px"><div class="pl"><span>Cifrando (AES-256-GCM)</span><span>72%</span></div><div class="pt"><div class="pf" style="width:72%"></div></div></div><div style="font-size:11px;color:var(--cs-text-muted);margin-top:9px">2.418 movimientos · 6 cuentas · 24 categorías</div><button class="p-btn" disabled>Exportando…</button></div>',
+         note:'Contrato: fichero <code>.monedero</code> v1 con <code>integrity.sha256</code>.'},
+        {t:'Compartir',a:'Share del SO / guardar en archivos → transferir al dispositivo B',x:'.toast con ruta + chips «Cifrado ✓ SHA-256 ✓»',tab:3,
+         h:toast('Bóveda exportada','monedero-2026-10-11.monedero.enc · 1,8 MB')+'<div class="p-card"><div class="p-lbl">Fichero generado</div><div style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;margin-top:8px;word-break:break-all">monedero-2026-10-11.monedero.enc</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><span class="p-chip">🔒 Cifrado ✓</span><span class="p-chip">SHA-256 ✓</span><span class="p-chip">formatVersion 1</span></div><button class="p-btn" style="margin-top:12px">Compartir…</button></div>',
+         note:'Frontera única entre apps: solo este archivo cruza (ADR-002).'},
+        {t:'Importar en app B',a:'Elegir fichero + modo Fusionar (default) → validar esquema',x:'MonederoFileSchema OK → merge LWW por updatedAt',tab:3,
+         h:'<div class="p-card"><div class="p-lbl">Datos · Importar</div><div style="font-family:var(--cs-font-display);font-size:16px;font-weight:600;margin:8px 0 10px">Importar bóveda</div><div class="p-seg"><span class="on">Fusionar</span><span>Reemplazar</span></div><div style="font-size:11.5px;color:var(--cs-text-muted)">Fusionar combina por UUID y conserva lo más reciente (LWW).</div><div class="p-card" style="background:var(--cs-bg-base);box-shadow:none;margin-top:10px;font-size:12px">📄 monedero-2026-10-11.monedero.enc <span class="p-chip" style="float:right">✓</span></div><button class="p-btn">Importar fichero</button></div>',
+         note:'Solo <code>shared/export-contract</code> conecta móvil y PWA.'},
+        {t:'Resumen',a:'Mostrar ImportSummary: añadidos/actualizados/conflictos',x:'Volver a Inicio con datos fusionados',tab:0,
+         h:toast('Importación completada','Fusionado desde archivo de la PWA')+'<div class="p-card"><div class="p-lbl">Resumen de importación</div><div class="p-row"><span class="rt">Añadidos</span><b style="color:var(--cs-primary)">+ 312</b></div><div class="p-row"><span class="rt">Actualizados</span><b>48</b></div><div class="p-row"><span class="rt">Borrados propagados</span><b>3</b></div><div class="p-row"><span class="rt">Conflictos (LWW)</span><b style="color:var(--cs-accent-text)">2</b></div><button class="p-btn" style="margin-top:10px">Ver en Inicio</button></div>',
+         note:'Transparencia total (Claridad): el usuario sabe exactamente qué cambió.'}
+      ],
+      'Alterna · errores':[
+        {t:'Hash no coincide',a:'integrity.sha256 del fichero ≠ recalculado',x:'IMPORT_HASH_MISMATCH → fichero rechazado, 0 escrituras',tab:3,
+         h:toast('No se pudo importar','IMPORT_HASH_MISMATCH — el fichero está alterado o dañado','err')+'<div class="p-card"><div class="p-lbl">Detalle</div><div style="font-size:12px;color:var(--cs-text-muted);margin-top:8px">La verificación de integridad falló. Nada se importó: tu bóveda actual está intacta.</div><button class="p-btn sec" style="margin-top:12px">Elegir otro fichero</button><button class="p-btn ghost" style="margin-top:6px">Cancelar</button></div>',
+         note:'Reasegura: <b>0 escrituras</b> — la bóveda actual no se toca ante cualquier error.'},
+        {t:'Passphrase incorrecta',a:'Descifrado falla → contador de intentos',x:'IMPORT_DECRYPT_FAILED → reintento con .fhint error',tab:3,
+         h:toast('No se pudo abrir el fichero','IMPORT_DECRYPT_FAILED — passphrase incorrecta','err')+'<div class="p-card"><label class="p-label">Passphrase del fichero</label><div class="p-input err">🔒 ··········</div><div class="p-hint err">⚠ Passphrase incorrecta. Intento 2 de 5.</div><button class="p-btn">Desbloquear fichero</button><button class="p-btn ghost" style="margin-top:6px">Cancelar importación</button></div>',
+         note:'5 intentos máximos — después se exige empezar la importación de nuevo.'},
+        {t:'Versión no soportada',a:'formatVersion mayor que la soportada por la app',x:'IMPORT_FORMAT_UNSUPPORTED → «actualiza la app»',tab:3,
+         h:toast('Fichero de versión superior','IMPORT_FORMAT_UNSUPPORTED — formato no soportado','err')+'<div class="p-card"><div class="p-lbl">Formato del fichero</div><div class="p-row"><span class="rt">Tu app soporta</span><b>monedero v1</b></div><div class="p-row"><span class="rt">El fichero es</span><b style="color:var(--cs-danger)">monedero v2</b></div><button class="p-btn sec" style="margin-top:10px">Cómo actualizar Monedero</button></div>',
+         note:'Contrato: <b>migraciones solo hacia delante</b> — nunca adivinar campos desconocidos.'},
+        {t:'Reemplazar cancelado',a:'Modo replace exige escribir «REEMPLAZAR» en .modal',x:'Cancelar → snapshot descartado, nada cambia',tab:3,
+         h:'<div class="p-card"><div class="p-lbl">Modo: Reemplazar</div><div style="font-size:12px;color:var(--cs-text-muted);margin-top:6px">Se borrará la bóveda actual. Se hará un snapshot previo automático.</div></div><div class="p-modal"><div class="sheet"><h5>⚠ Reemplazar bóveda</h5><p>Escribe REEMPLAZAR para confirmar. Esta acción borra lo actual.</p><div class="p-input err">REEMPLA…</div><button class="p-btn ghost">Reemplazar ahora</button><button class="p-btn sec" style="margin-top:6px">Cancelar</button></div></div>',
+         note:'HU-16: acción deliberada (doble confirmación) — cancelar es siempre seguro.'}
+      ]
+    }
+  },
+  {
+    id:'f6',icon:'🗑️',title:'Borrado total',route:'F6 · HU-19',tabs:3,
+    routes:{
+      'Ruta feliz':[
+        {t:'Zona de peligro',a:'Ajustes → Borrar todos los datos (.btn ghost rojo)',x:'Nunca es primario verde (jerarquía SSOT)',tab:3,
+         h:'<div class="p-card"><div class="p-lbl">Zona de peligro</div><div style="font-size:12px;color:var(--cs-text-muted);margin-top:6px">Borra cuentas, movimientos, categorías, presupuestos y ajustes de este dispositivo.</div><div class="p-row"><span class="ri">🗑️</span><span class="rt" style="color:var(--cs-danger)">Borrar todos los datos</span><span class="rc">›</span></div></div>',
+         note:'Criterio HU-19: botón <code>.btn ghost</code> con color <code>--cs-danger</code>.'},
+        {t:'Ofrecer exportar',a:'Paso previo educativo: «¿Quieres una copia antes?»',x:'CTA exportar (HU-14) o continuar sin copia',tab:3,
+         h:'<div class="p-card"><div class="p-lbl">Antes de borrar</div><div style="font-family:var(--cs-font-display);font-size:15.5px;font-weight:600;margin:7px 0 5px">¿Quieres una copia?</div><div style="font-size:12px;color:var(--cs-text-muted)">Si borras sin copia, estos datos no se pueden recuperar.</div><button class="p-btn">Exportar bóveda (.monedero)</button><button class="p-btn ghost" style="margin-top:7px">No, continuar sin copia</button></div>',
+         note:'Educación de custodia — el producto enseña, no esconde consecuencias.'},
+        {t:'Doble confirmación',a:'Escribir «BORRAR» en .input + modal destructivo',x:'Validación exacta habilita el botón final',tab:3,
+         h:'<div class="p-modal"><div class="sheet"><h5>⚠ Borrar todo</h5><p>Escribe BORRAR para confirmar. Esta acción es irreversible.</p><div class="p-input focus" style="justify-content:center;font-weight:700;letter-spacing:.1em">BORRAR</div><button class="p-btn" style="background:var(--cs-danger)">Borrar definitivamente</button><button class="p-btn sec" style="margin-top:6px">Cancelar</button></div></div>',
+         note:'Doble barrera: campo + modal. El <code>.modal</code> es la única confirmación destructiva.'},
+        {t:'Wipe y reinicio',a:'DROP tables → onboarding (HU-01) en estado limpio',x:'Vault vacía → ciclo completo reiniciado',tab:null,
+         h:'<div class="p-card p-empty"><div class="art">🌱</div><h5>Bóveda reiniciada</h5><p>Todo borrado. Crea una nueva passphrase para empezar de cero.</p><button class="p-btn" style="max-width:210px;margin:0 auto">Crear nueva bóveda</button></div>',
+         note:'Cierre del ciclo: vuelve al mismo estado de la primera instalación.'}
+      ],
+      'Alterna · cancelar':[
+        {t:'Cancelar en el modal',a:'Usuario pulsa Cancelar (o fuera del modal)',x:'Snapshot descartado · ninguna escritura',tab:3,
+         h:toast('Nada se borró','Cancelaste la operación — tu bóveda está intacta')+'<div class="p-card"><div class="p-lbl">Ajustes</div><div class="p-row"><span class="ri">📦</span><span class="rt">Exportar bóveda</span><span class="rc">›</span></div><div class="p-row"><span class="ri">📥</span><span class="rt">Importar bóveda</span><span class="rc">›</span></div><div class="p-row"><span class="ri">🗑️</span><span class="rt" style="color:var(--cs-danger)">Borrar todos los datos</span><span class="rc">›</span></div></div>',
+         note:'Back predecible: volver a Ajustes con todo intacto, sin toasts de error.'}
+      ]
+    }
+  }
+  ];
+
+  /* ---- render nav ---- */
+  var nav=document.getElementById('flowNav'),fp=document.getElementById('fpPanel'),
+      fBody=document.getElementById('fBody'),fTitle=document.getElementById('fTitle'),
+      fBadge=document.getElementById('fBadge'),fTabs=document.getElementById('fTabs');
+  var curF=0, curR=null, curS=0, playing=false, timer=null;
+
+  FLOWS.forEach(function(f,i){
+    var b=document.createElement('button');
+    b.className='f-item'+(i===0?' on':'');
+    b.innerHTML='<span class="si">'+f.icon+'</span><span class="st"><strong>'+f.title+'</strong><span>'+f.route+'</span></span>';
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.f-item').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); curF=i; curR=Object.keys(FLOWS[i].routes)[0]; curS=0; stop(); render();
+    });
+    nav.appendChild(b);
+  });
+  curR=Object.keys(FLOWS[0].routes);
+
+  function routeKeys(){return Object.keys(FLOWS[curF].routes);}
+
+  function render(){
+    var f=FLOWS[curF], keys=routeKeys();
+    if(!curR||keys.indexOf(curR)<0) curR=keys[0];
+    var steps=f.routes[curR], s=steps[Math.min(curS,steps.length-1)];
+
+    fTitle.textContent=f.title; fBadge.textContent=(s.t||'').length>0?(f.route):f.route;
+    fBadge.textContent=f.route;
+    fBody.style.opacity=0; fBody.style.transform='translateY(8px)';
+    fBody.innerHTML=s.h;
+    requestAnimationFrame(function(){
+      fBody.style.transition='opacity 220ms cubic-bezier(.34,1.56,.64,1), transform 220ms cubic-bezier(.34,1.56,.64,1)';
+      fBody.style.opacity=1; fBody.style.transform='none';
+    });
+    fBody.scrollTop=0;
+
+    fTabs.style.display = (s.tab!==undefined && s.tab!==null) ? 'flex':'none';
+    if(s.tab!==undefined && s.tab!==null){
+      fTabs.querySelectorAll('.ph-tab').forEach(function(t,ix){t.classList.toggle('on',ix===s.tab);});
+    }
+
+    fp.innerHTML=
+      '<div class="fp-head"><span class="bi">'+f.icon+'</span><div><h3>'+f.title+'</h3></div><span class="hu">'+f.route+'</span></div>'+
+      '<div class="routes">'+keys.map(function(k){
+        var alt=k.indexOf('Alterna')===0?' alt':'';
+        return '<button class="route-btn'+alt+(k===curR?' on':'')+'" data-r="'+k+'">'+(k.indexOf('Alterna')===0?'⎇ ':'✓ ')+k+'</button>';
+      }).join('')+'</div>'+
+      '<div class="player-ctl">'+
+        '<button class="ctl-btn" id="prevBtn" title="Paso anterior" aria-label="Paso anterior">‹</button>'+
+        '<button class="ctl-btn main" id="playBtn" title="Play/Pause" aria-label="Reproducir o pausar">'+(playing?'❚❚':'▶')+'</button>'+
+        '<button class="ctl-btn" id="nextBtn" title="Siguiente paso" aria-label="Siguiente paso">›</button>'+
+        '<div class="step-dots">'+steps.map(function(_,ix){
+          return '<i class="'+(ix===curS?'on':(ix<curS?'past':''))+'" data-s="'+ix+'" role="button" aria-label="Ir al paso '+(ix+1)+'"></i>';
+        }).join('')+'</div>'+
+      '</div>'+
+      '<div class="step-card">'+
+        '<div class="step-n">Paso '+(curS+1)+' de '+steps.length+' · '+curR+'</div>'+
+        '<h4>'+s.t+'</h4>'+
+        '<div class="tat">'+
+          '<div class="t1"><b>Trigger</b>'+s.t+'</div>'+
+          '<div class="t2"><b>Acción</b>'+s.a+'</div>'+
+          '<div class="t3"><b>Transición</b>'+s.x+'</div>'+
+        '</div>'+
+        (s.note?'<div class="step-note">◈ '+s.note+'</div>':'')+
+      '</div>';
+
+    fp.querySelectorAll('.route-btn').forEach(function(b){
+      b.addEventListener('click',function(){curR=b.dataset.r;curS=0;stop();render();});
+    });
+    fp.querySelectorAll('.step-dots i').forEach(function(d){
+      d.addEventListener('click',function(){curS=+d.dataset.s;stop();render();});
+    });
+    document.getElementById('prevBtn').addEventListener('click',function(){stop();curS=Math.max(0,curS-1);render();});
+    document.getElementById('nextBtn').addEventListener('click',function(){stop();curS=Math.min(steps.length-1,curS+1);render();});
+    document.getElementById('playBtn').addEventListener('click',function(){playing?stop():play();});
+  }
+
+  function play(){
+    playing=true; render();
+    timer=setInterval(function(){
+      var steps=FLOWS[curF].routes[curR];
+      if(curS>=steps.length-1){stop();render();return;}
+      curS++; render();
+    },2600);
+  }
+  function stop(){playing=false;if(timer){clearInterval(timer);timer=null;}}
+  render();
+})();
+</script>
+</body>
+</html>

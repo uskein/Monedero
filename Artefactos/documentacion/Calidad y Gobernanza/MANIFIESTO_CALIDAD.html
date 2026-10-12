@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monedero — Manifiesto de Calidad | Clay Serenity</title>
+<style>
+  /* ===== TOKENS EXACTOS SSOT Clay Serenity ===== */
+  :root{
+    --cs-bg-base:#F4EFE7; --cs-surface:#FFFFFF; --cs-surface-sunken:#EAE2D6;
+    --cs-primary:#2F7D5B; --cs-primary-hover:#276B4E; --cs-primary-soft:rgba(47,125,91,.12);
+    --cs-accent:#D97757; --cs-accent-text:#B4573A; --cs-secondary:#3D5A80;
+    --cs-danger:#C4453B; --cs-text-primary:#232A31; --cs-text-muted:#6E7681;
+    --cs-text-on-primary:#FFFFFF; --cs-placeholder:#9A938A;
+    --cs-font-display:'Fraunces','Iowan Old Style',Georgia,serif;
+    --cs-font-ui:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    --cs-radius-input:16px; --cs-radius-btn:18px; --cs-radius-card:24px; --cs-radius-pill:999px;
+    --cs-clay:inset 4px 4px 8px rgba(0,0,0,.06), inset -4px -4px 8px rgba(255,255,255,.9), 0 10px 24px rgba(60,50,40,.12);
+    --cs-clay-sm:inset 3px 3px 6px rgba(0,0,0,.05), inset -3px -3px 6px rgba(255,255,255,.9), 0 6px 14px rgba(60,50,40,.10);
+    --cs-clay-press:inset 4px 4px 10px rgba(0,0,0,.10), inset -3px -3px 8px rgba(255,255,255,.8);
+    --cs-ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --cs-dur-base:220ms;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--cs-bg-base);color:var(--cs-text-primary);font-family:var(--cs-font-ui);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+  ::selection{background:var(--cs-primary);color:#fff}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+  .readbar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cs-primary),var(--cs-accent));width:0;z-index:60}
+
+  .topnav{position:sticky;top:0;z-index:50;background:rgba(244,239,231,.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(35,42,49,.07)}
+  .topnav .inner{max-width:1180px;margin:0 auto;padding:13px 28px;display:flex;align-items:center;gap:14px}
+  .wordmark{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+  .wordmark .mark{width:36px;height:36px}
+  .wordmark .name{font-family:var(--cs-font-display);font-weight:700;font-size:20px}
+  .wordmark .name em{font-style:normal;color:var(--cs-primary)}
+  .wordmark .tag{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cs-text-muted);display:block;margin-top:-4px}
+  .topnav nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .topnav nav a{font-size:13px;font-weight:600;color:var(--cs-text-muted);text-decoration:none;padding:7px 14px;border-radius:var(--cs-radius-pill);transition:all var(--cs-dur-base) var(--cs-ease-spring)}
+  .topnav nav a:hover{background:var(--cs-surface);color:var(--cs-primary);box-shadow:var(--cs-clay-sm)}
+  .topnav nav a:focus-visible{outline:3px solid rgba(47,125,91,.45)}
+
+  .hero{position:relative;padding:88px 0 66px;overflow:hidden;text-align:center}
+  .blob{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;opacity:.55}
+  .blob.b1{width:420px;height:420px;background:#CFE3D5;top:-140px;right:-90px;animation:drift 16s ease-in-out infinite alternate}
+  .blob.b2{width:320px;height:320px;background:#F3D2C4;top:130px;left:-110px;animation:drift 20s ease-in-out infinite alternate-reverse}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,24px) scale(1.06)}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--cs-primary);background:var(--cs-surface);padding:8px 18px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-sm);margin-bottom:22px}
+  .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cs-primary);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+  h1{font-family:var(--cs-font-display);font-weight:700;font-size:clamp(38px,6vw,62px);line-height:1.05;letter-spacing:-.02em;max-width:17ch;margin:0 auto}
+  h1 .grad{background:linear-gradient(105deg,var(--cs-primary) 15%,var(--cs-accent) 85%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p.lead{font-size:18px;color:var(--cs-text-muted);max-width:680px;margin:20px auto 0}
+  .hero-stats{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap;justify-content:center}
+  .stat{background:var(--cs-surface);border-radius:20px;padding:16px 22px;box-shadow:var(--cs-clay-sm);min-width:128px}
+  .stat .v{font-family:var(--cs-font-display);font-size:26px;font-weight:700;color:var(--cs-primary)}
+  .stat .l{font-size:11.5px;color:var(--cs-text-muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+  section{padding:70px 0}
+  .sec-tag{font-size:11.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--cs-accent-text);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .sec-tag::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(217,119,87,.5),transparent);max-width:220px}
+  h2{font-family:var(--cs-font-display);font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-.015em;line-height:1.14}
+  .sec-lead{font-size:16.5px;color:var(--cs-text-muted);max-width:720px;margin-top:12px}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--cs-ease-spring),transform .7s var(--cs-ease-spring)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.07s}.reveal.d2{transition-delay:.14s}.reveal.d3{transition-delay:.21s}
+
+  /* No negociables */
+  .nonneg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:36px}
+  .nn{background:var(--cs-surface);border-radius:20px;padding:22px;box-shadow:var(--cs-clay);border-top:5px solid var(--cs-primary);transition:transform var(--cs-dur-base) var(--cs-ease-spring)}
+  .nn:hover{transform:translateY(-5px)}
+  .nn .ico{width:46px;height:46px;border-radius:15px;background:var(--cs-primary-soft);display:flex;align-items:center;justify-content:center;font-size:21px;margin-bottom:12px}
+  .nn h3{font-family:var(--cs-font-display);font-size:17px;font-weight:600}
+  .nn p{font-size:13.5px;color:var(--cs-text-muted);margin-top:5px}
+  .nn code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--cs-primary);background:var(--cs-primary-soft);padding:2px 7px;border-radius:7px}
+
+  /* Estándares acordeón */
+  .stds{display:flex;flex-direction:column;gap:15px;margin-top:40px}
+  .std{background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);overflow:hidden}
+  .std-head{display:flex;align-items:center;gap:15px;padding:19px 22px;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;font-family:inherit;transition:background var(--cs-dur-base)}
+  .std-head:hover{background:rgba(47,125,91,.04)}
+  .std-head:focus-visible{outline:3px solid rgba(47,125,91,.45);outline-offset:-3px}
+  .std-ico{width:48px;height:48px;flex-shrink:0;border-radius:16px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;font-size:21px}
+  .std-title{flex:1;min-width:0}
+  .std-title h3{font-family:var(--cs-font-display);font-size:18.5px;font-weight:600}
+  .std-title p{font-size:12.5px;color:var(--cs-text-muted)}
+  .std-file{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--cs-secondary);background:rgba(61,90,128,.1);padding:4px 11px;border-radius:99px;flex-shrink:0}
+  .chev{width:32px;height:32px;flex-shrink:0;border-radius:11px;background:var(--cs-surface-sunken);box-shadow:var(--cs-clay-press);display:flex;align-items:center;justify-content:center;color:var(--cs-text-muted);transition:transform var(--cs-dur-base) var(--cs-ease-spring)}
+  .std.open .chev{transform:rotate(180deg);background:var(--cs-primary);color:#fff}
+  .std-body{max-height:0;overflow:hidden;transition:max-height .28s cubic-bezier(.2,.8,.2,1)}
+  .std.open .std-body{max-height:1600px}
+  .std-inner{padding:2px 22px 24px;border-top:1px solid var(--cs-bg-base)}
+  .std-inner ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .std-inner li{font-size:14px;color:var(--cs-text-muted);padding-left:26px;position:relative}
+  .std-inner li::before{content:"";position:absolute;left:2px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--cs-primary);box-shadow:0 2px 5px rgba(47,125,91,.4)}
+  .std-inner li b{color:var(--cs-text-primary);font-weight:600}
+  .std-inner code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--cs-secondary);background:var(--cs-bg-base);padding:1px 7px;border-radius:7px}
+
+  /* Adaptaciones */
+  .adapts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:40px}
+  .adapt{background:var(--cs-surface);border-radius:20px;padding:24px;box-shadow:var(--cs-clay);border-left:5px solid var(--cs-accent)}
+  .adapt h3{font-family:var(--cs-font-display);font-size:18px;font-weight:600;display:flex;align-items:center;gap:9px}
+  .adapt .was{font-size:12.5px;color:var(--cs-text-muted);text-decoration:line-through;margin:9px 0 4px}
+  .adapt .now{font-size:14px;color:var(--cs-primary);font-weight:600}
+  .adapt p{font-size:13px;color:var(--cs-text-muted);margin-top:9px}
+
+  /* Gauges gates */
+  .gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:40px}
+  .gate{background:var(--cs-surface);border-radius:19px;padding:20px;box-shadow:var(--cs-clay);text-align:center}
+  .gate .ring{width:86px;height:86px;margin:0 auto 12px;position:relative}
+  .gate .ring svg{transform:rotate(-90deg)}
+  .gate .ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--cs-font-display);font-weight:700;font-size:19px;color:var(--cs-primary)}
+  .gate .ring .val small{font-size:9px;color:var(--cs-text-muted);font-family:var(--cs-font-ui);letter-spacing:.05em}
+  .gate h3{font-family:var(--cs-font-display);font-size:16px;font-weight:600}
+  .gate p{font-size:12.5px;color:var(--cs-text-muted);margin-top:4px}
+
+  /* Auditoría In-Flight */
+  .audit{margin-top:44px;background:var(--cs-surface);border-radius:var(--cs-radius-card);box-shadow:var(--cs-clay);padding:26px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cs-text-muted);padding:14px 16px;background:var(--cs-surface-sunken);font-weight:700}
+  td{padding:13px 16px;border-bottom:1px solid var(--cs-bg-base);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tbody tr{transition:background var(--cs-dur-base)}
+  tbody tr:hover{background:rgba(47,125,91,.04)}
+  .verdict{font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;white-space:nowrap}
+  .verdict.pass{background:var(--cs-primary-soft);color:var(--cs-primary)}
+  .verdict.cond{background:rgba(217,119,87,.14);color:var(--cs-accent-text)}
+  td.detail{color:var(--cs-text-muted);max-width:520px}
+
+  footer{padding:60px 0 50px;background:linear-gradient(180deg,transparent,rgba(234,226,214,.6))}
+  .foot-inner{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;align-items:center}
+  .foot-badges{display:flex;gap:10px;flex-wrap:wrap}
+  .foot-badges span{font-size:12px;font-weight:600;background:var(--cs-surface);padding:8px 16px;border-radius:var(--cs-radius-pill);box-shadow:var(--cs-clay-sm);color:var(--cs-text-muted)}
+
+  @media (max-width:760px){.topnav nav{display:none}section{padding:54px 0}.std-file{display:none}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:80ms !important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="readbar" id="readbar"></div>
+
+<header class="topnav">
+  <div class="inner">
+    <a class="wordmark" href="#top">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="42" height="42" rx="13" fill="#2F7D5B"/>
+        <text x="24" y="34" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="700" font-size="29" fill="#FFFFFF">M</text>
+      </svg>
+      <span class="name">Mone<em>dero</em><span class="tag">Manifiesto de Calidad · Pre-Flight</span></span>
+    </a>
+    <nav>
+      <a href="#inquebrantables">Inquebrantables</a>
+      <a href="#estandares">Estándares</a>
+      <a href="#adaptaciones">Adaptaciones</a>
+      <a href="#gates">Gates</a>
+      <a href="#auditoria">Auditoría</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="wrap">
+    <span class="eyebrow reveal">Fase A · Modo Pre-Flight</span>
+    <h1 class="reveal d1">Calidad sin concesiones:<br><span class="grad">los guardarraíles del sistema.</span></h1>
+    <p class="lead reveal d2">Estándares globales de QA, accesibilidad, i18n, observabilidad y gobernanza que toda implementación de Monedero debe respetar. Adaptados con criterio al ADN local-first del proyecto (cero red, cero telemetría): la calidad no requiere espiar a nadie.</p>
+    <div class="hero-stats reveal d3">
+      <div class="stat"><div class="v">7</div><div class="l">Estándares</div></div>
+      <div class="stat"><div class="v">4</div><div class="l">No negociables</div></div>
+      <div class="stat"><div class="v">80%</div><div class="l">Cobertura negocio</div></div>
+      <div class="stat"><div class="v">AA</div><div class="l">WCAG 2.1</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NO NEGOCIABLES ===== -->
+<section id="inquebrantables">
+  <div class="wrap">
+    <div class="sec-tag reveal">A.0 · Los cuatro pilares</div>
+    <h2 class="reveal d1">Inquebrantables. Sin excepciones.</h2>
+    <p class="sec-lead reveal d2">El Auditor tiene autoridad de veto: ninguna skill ni tarea avanza si viola uno de estos pilares.</p>
+    <div class="nonneg">
+      <div class="nn reveal d1"><div class="ico">♿</div><h3>WCAG 2.1 AA</h3><p>Toda pantalla opera por teclado y lector, con contraste <code>4.5:1</code> y <code>axe-core</code> limpio en CI.</p></div>
+      <div class="nn reveal d2"><div class="ico">🌐</div><h3>Cero strings hardcodeados</h3><p>Todo texto visible pasa por <code>t('clave')</code>. ESLint lo hace fallar en el PR.</p></div>
+      <div class="nn reveal d2"><div class="ico">🧪</div><h3>Cobertura ≥ 80%</h3><p>Código de negocio (dominio, contratos, dinero, merge LWW) medido como gate, no como consejo.</p></div>
+      <div class="nn reveal d3"><div class="ico">✍️</div><h3>Commits semánticos 100%</h3><p>Conventional Commits validados por <code>commitlint</code> en <code>commit-msg</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ESTÁNDARES ===== -->
+<section id="estandares">
+  <div class="wrap">
+    <div class="sec-tag reveal">A.1–A.7 · Documentos maestros</div>
+    <h2 class="reveal d1">Siete estándares, un solo contrato.</h2>
+    <p class="sec-lead reveal d2">Haz clic en cada estándar para expandir sus reglas clave. Cada uno tiene su documento .md como fuente de verdad.</p>
+
+    <div class="stds">
+      <div class="std open reveal d1">
+        <button class="std-head" aria-expanded="true">
+          <span class="std-ico">🧪</span>
+          <span class="std-title"><h3>A.1 · Estrategia de Pruebas</h3><p>Pirámide 70/20/10 · TDD estricto en dominio · DoD completo</p></span>
+          <span class="std-file">ESTRATEGIA_PRUEBAS.md</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>Herramientas:</b> Jest + jest-expo (móvil) · Vitest (PWA/shared) · Maestro (E2E móvil) · Playwright (E2E PWA).</li>
+          <li><b>Cobertura:</b> ≥80% líneas/ramas en negocio; 100% de escenarios en flujos críticos (vault, export/import, dinero).</li>
+          <li><b>TDD estricto</b> en <code>domain/</code>, <code>application/</code>, <code>shared/export-contract</code> y dinero en centavos.</li>
+          <li><b>DoD:</b> código + tests + i18n + a11y + 4 estados + flag (si aplica) + 1 aprobación.</li>
+          <li><b>Fixtures:</b> matriz de ficheros <code>.monedero</code> (v1, corrupto, futuro, hash alterado) en ambas apps.</li>
+        </ul></div></div>
+      </div>
+
+      <div class="std reveal d1">
+        <button class="std-head" aria-expanded="false">
+          <span class="std-ico">🌐</span>
+          <span class="std-title"><h3>A.2 · Internacionalización</h3><p>es-CO SSOT · en-US · Intl.NumberFormat · cero hardcode</p></span>
+          <span class="std-file">ESTANDAR_INTERNACIONALIZACION.md</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>Idiomas:</b> <code>es-CO</code> por defecto (mercado inicial) y <code>en-US</code> (fase 1). Fallback: en-US → es-CO → clave.</li>
+          <li><b>Claves:</b> <code>dominio.pantalla.elemento.variante</code> en JSON por idioma, plurales <code>_one/_other</code>.</li>
+          <li><b>Montos:</b> único módulo <code>formatMoney(amountCents, currency, locale)</code> — COP 0 decimales, USD/EUR 2.</li>
+          <li><b>Test de expansión</b> +30% (simulado de-DE) sin desbordes en CTAs ni cifras.</li>
+          <li>Códigos de error de dominio → mensajes localizados en <code>errors.*</code>; el código crudo solo se loguea.</li>
+        </ul></div></div>
+      </div>
+
+      <div class="std open reveal d2">
+        <button class="std-head" aria-expanded="true">
+          <span class="std-ico">♿</span>
+          <span class="std-title"><h3>A.3 · Accesibilidad WCAG 2.1 AA</h3><p>Contraste validado · ARIA matrix · lector + teclado · reduced-motion</p></span>
+          <span class="std-file">ESTANDAR_ACCESIBILIDAD.md</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>Contraste verificado:</b> primary 5.0:1 · accent-text 4.8:1 · muted 4.6:1. Terracota <code>#D97757</code> solo gráfico; placeholder nunca como única etiqueta.</li>
+          <li><b>ARIA matrix obligatoria:</b> tablist, dialog + focus trap, live regions para toasts, <code>aria-invalid</code> + <code>aria-describedby</code> en errores de campo.</li>
+          <li><b>Objetivos ≥44px</b>, focus-visible 3px, zoom 200%, sin parpadeo.</li>
+          <li><b>Lectores:</b> VoiceOver, TalkBack, NVDA/JAWS. Cifras anuncian moneda y signo.</li>
+          <li><b>Gates:</b> axe-core (PWA), jest-axe, test de props RN, keyboard E2E.</li>
+        </ul></div></div>
+      </div>
+
+      <div class="std reveal d2">
+        <button class="std-head" aria-expanded="false">
+          <span class="std-ico">📡</span>
+          <span class="std-title"><h3>A.4 · Observabilidad (adaptada local-first)</h3><p>Logger JSON local PII-free · diagnóstico bajo demanda · cero red</p></span>
+          <span class="std-file">ESTRATEGIA_OBSERVABILIDAD.md</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>Logger local</b> en ring buffer cifrado: ts, level, traceId, screen, event, code. <b>Nunca</b> importes, textos ni passphrases.</li>
+          <li><b>Error tracking local:</b> ErrorBoundary + handler global → últimos stacks en Diagnóstico; export <code>.log.json</code> bajo decisión del usuario.</li>
+          <li><b>Perf local:</b> Web Vitals en buffer + marcas móviles; presupuestos (arranque &lt;1,5 s, alta &lt;300 ms).</li>
+          <li><b>Gate <code>no-network:</code></b> E2E que falla el build si hay cualquier fetch externo en producción.</li>
+          <li>Prohibidos: Sentry, LogRocket, analytics, SDKs con red.</li>
+        </ul></div></div>
+      </div>
+
+      <div class="std reveal d3">
+        <button class="std-head" aria-expanded="false">
+          <span class="std-ico">🌿</span>
+          <span class="std-title"><h3>A.5 · Gobernanza Git</h3><p>GitHub Flow · Conventional Commits · PR checklist · 1 aprobación</p></span>
+          <span class="std-file">GOBERNANZA_GIT.md</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>GitHub Flow:</b> <code>main</code> siempre desplegable; ramas ≤3 días; squash merge.</li>
+          <li><b>Scopes canónicos:</b> <code>mobile, pwa, shared, contract, ds, i18n, a11y, ci, docs</code>.</li>
+          <li><b>Hooks:</b> husky + lint-staged + commitlint; 2 aprobaciones si toca <code>shared/contract</code> o vault.</li>
+          <li><b>PR template obligatorio</b> con secciones de testing, a11y, i18n, evidencia visual y flags.</li>
+          <li>Releases SemVer por app: <code>mobile@x.y.z</code> · <code>pwa@x.y.z</code>.</li>
+        </ul></div></div>
+      </div>
+
+      <div class="std reveal d3">
+        <button class="std-head" aria-expanded="false">
+          <span class="std-ico">🚩</span>
+          <span class="std-title"><h3>A.6 · Feature Flags (solución propia)</h3><p>Build-time + settings local · ≤8 activos · expiración 90 días</p></span>
+          <span class="std-file">ESTRATEGIA_FEATURE_FLAGS.md</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>Sin SaaS</b> (requieren red): flags en <code>packages/flags</code> con <code>isFlagEnabled()</code> único punto de acceso.</li>
+          <li><b>Nombres:</b> <code>&lt;ámbito&gt;.&lt;funcionalidad&gt;.&lt;versión&gt;</code> — ámbitos feature/experiment/ops/env.</li>
+          <li><b>Ciclo de vida:</b> cada flag con HU y fecha; <code>flags:lint</code> falla CI a los 90 días; eliminar flag ⇒ eliminar código muerto.</li>
+          <li>Prohibidos flags en <code>shared/contract</code>. Tests de ambos caminos mientras exista.</li>
+        </ul></div></div>
+      </div>
+
+      <div class="std reveal d3">
+        <button class="std-head" aria-expanded="false">
+          <span class="std-ico">📚</span>
+          <span class="std-title"><h3>A.7 · Contexto dinámico para IA (RAG)</h3><p>INDICE_DOCUMENTACION.json · inyección mínima por tarea</p></span>
+          <span class="std-file">INDICE_DOCUMENTACION.json</span><span class="chev">▾</span>
+        </button>
+        <div class="std-body"><div class="std-inner"><ul>
+          <li><b>Regla de inyección:</b> por pantalla, cargar solo blueprint + componentes DS usados + contrato/entidad + reglas a11y/i18n. Nunca la documentación completa.</li>
+          <li><b>Índice:</b> mapea BP-01…BP-10 y F6 a sus chunks, historias, flags y estados obligatorios.</li>
+          <li><b>Gates CI globales</b> declarados en el índice: typecheck, lint, test, a11y, tokens, contract, network.</li>
+        </ul></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ADAPTACIONES ===== -->
+<section id="adaptaciones">
+  <div class="wrap">
+    <div class="sec-tag reveal">A.4/A.6 · Decisiones de coherencia con ADR-001/002</div>
+    <h2 class="reveal d1">Adaptaciones deliberadas (requieren tu aprobación).</h2>
+    <p class="sec-lead reveal d2">La skill asume por defecto telemetría y flags en la nube. Monedero es <b>100% local, cero red, cero telemetría</b>: imponer esas herramientas violaría las decisiones ya aprobadas. El Auditor registra la sustitución:</p>
+    <div class="adapts">
+      <div class="adapt reveal d1">
+        <h3>📡 Observabilidad</h3>
+        <div class="was">✗ Sentry + LogRocket + alertas Slack</div>
+        <div class="now">✓ Logger JSON local + export de diagnóstico bajo demanda del usuario</div>
+        <p>Sin red no hay error tracking remoto. El «usuario-soberano» decide si comparte un <code>.log.json</code> cifrado. Alertas = avisos in-app. Gate <code>no-network</code> garantiza el aislamiento.</p>
+      </div>
+      <div class="adapt reveal d2">
+        <h3>🚩 Feature Flags</h3>
+        <div class="was">✗ LaunchDarkly / Unleash</div>
+        <div class="now">✓ Solución propia: build-time (env) + runtime en settings local</div>
+        <p>Los proveedores SaaS requieren red. La solución propia cubre lanzamientos y rollback rápido por rebuild, con ciclo de vida anti-deuda (90 días, ≤8 activos).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GATES ===== -->
+<section id="gates">
+  <div class="wrap">
+    <div class="sec-tag reveal">Pipeline · Umbrales de CI</div>
+    <h2 class="reveal d1">Gates automáticos en cada PR.</h2>
+    <div class="gates">
+      <div class="gate reveal d1"><div class="ring"><svg width="86" height="86"><circle cx="43" cy="43" r="36" fill="none" stroke="#EAE2D6" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="#2F7D5B" stroke-width="9" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="45"/></svg><div class="val">80%<small>cobertura</small></div></div><h3>coverage:gate</h3><p>Negocio ≥80% líneas/ramas; global ≥70%.</p></div>
+      <div class="gate reveal d2"><div class="ring"><svg width="86" height="86"><circle cx="43" cy="43" r="36" fill="none" stroke="#EAE2D6" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="#2F7D5B" stroke-width="9" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="0"/></svg><div class="val">0<small>violaciones</small></div></div><h3>a11y:axe</h3><p>axe-core + jest-axe sin violaciones AA.</p></div>
+      <div class="gate reveal d2"><div class="ring"><svg width="86" height="86"><circle cx="43" cy="43" r="36" fill="none" stroke="#EAE2D6" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="#2F7D5B" stroke-width="9" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="0"/></svg><div class="val">100%<small>t's</small></div></div><h3>i18n:check</h3><p>Cero strings hardcodeados; claves completas por idioma.</p></div>
+      <div class="gate reveal d3"><div class="ring"><svg width="86" height="86"><circle cx="43" cy="43" r="36" fill="none" stroke="#EAE2D6" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="#2F7D5B" stroke-width="9" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="0"/></svg><div class="val">0<small>fetch</small></div></div><h3>no-network</h3><p>Falla si hay intento de red en prod (ADR-001).</p></div>
+      <div class="gate reveal d3"><div class="ring"><svg width="86" height="86"><circle cx="43" cy="43" r="36" fill="none" stroke="#EAE2D6" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="#2F7D5B" stroke-width="9" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="0"/></svg><div class="val">--cs-*<small>solo tokens</small></div></div><h3>tokens:check</h3><p>Sin colores hex sueltos en UI (SSOT).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== AUDITORÍA IN-FLIGHT ===== -->
+<section id="auditoria">
+  <div class="wrap">
+    <div class="sec-tag reveal">Fase B · Auditoría retroactiva Skills 1–3</div>
+    <h2 class="reveal d1">Veredicto del Auditor.</h2>
+    <p class="sec-lead reveal d2">Auditoría In-Flight de los entregables ya aprobados. Registro completo en <code>LOG_AUDITORIA.md</code>. Sin vetos bloqueantes: dos observaciones con acción correctiva obligatoria.</p>
+
+    <div class="audit reveal d2">
+      <table>
+        <thead><tr><th>#</th><th>Skill</th><th>Regla validada</th><th>Veredicto</th><th>Detalle / acción correctiva</th></tr></thead>
+        <tbody>
+          <tr><td>B1-01</td><td>1 · Diseño</td><td>Contraste AA paleta</td><td><span class="verdict pass">PASS</span></td><td class="detail">primary 5.0:1, accent-text 4.8:1, muted 4.6:1. Terracota restringida a gráfico por SSOT.</td></tr>
+          <tr><td>B1-02</td><td>1 · Diseño</td><td>Componentes con ARIA</td><td><span class="verdict cond">COND.</span></td><td class="detail">Focus-ring y roles en SSOT; la matriz ARIA completa se formaliza en ESTANDAR_ACCESIBILIDAD (A.3) y se exige por DoD. Correctivo aplicado: matriz incluida.</td></tr>
+          <tr><td>B1-03</td><td>1 · Diseño</td><td>prefers-reduced-motion</td><td><span class="verdict pass">PASS</span></td><td class="detail">Definido en SSOT (≤80ms, sin contadores); verificado en los 5 showcases con media query.</td></tr>
+          <tr><td>B1-04</td><td>1 · Diseño</td><td>i18n en prototipos</td><td><span class="verdict cond">COND.</span></td><td class="detail">Los HTML de Artefactos son documentación estática (exentos). Acción correctiva: catálogo de componentes en implementación usa claves t(); regla registrada en A.2 §4.3.</td></tr>
+          <tr><td>B2-01</td><td>2 · Arquitectura</td><td>Campos de auditoría BD</td><td><span class="verdict pass">PASS</span></td><td class="detail">created_at/updated_at/deleted_at en las 8 tablas; UUID v4 PKs.</td></tr>
+          <tr><td>B2-02</td><td>2 · Arquitectura</td><td>Errores estructurados</td><td><span class="verdict cond">COND.</span></td><td class="detail">Códigos de dominio completos en CONTRATOS_API. Acción correctiva: añadir traceId (uuid por operación) al logger local — incorporado a A.4 §2.</td></tr>
+          <tr><td>B2-03</td><td>2 · Arquitectura</td><td>Feature flags en config</td><td><span class="verdict cond">COND.</span></td><td class="detail">No previsto originalmente (sin backend). Acción correctiva: A.6 crea la capa flags propia (env + settings). Aprobación requerida.</td></tr>
+          <tr><td>B2-04</td><td>2 · Arquitectura</td><td>Migraciones</td><td><span class="verdict pass">PASS</span></td><td class="detail">Migraciones SQL numeradas forward-only + snapshot previo en import replace. Suficiente para BD local; rollback = snapshot.</td></tr>
+          <tr><td>B3-01</td><td>3 · Producto</td><td>Estados a11y en blueprints</td><td><span class="verdict cond">COND.</span></td><td class="detail">Los 4 estados existen; faltaba checklist a11y por pantalla. Acción correctiva aplicada: checklist en A.3 §9 y exigido en DoD.</td></tr>
+          <tr><td>B3-02</td><td>3 · Producto</td><td>Flujos sin conexión</td><td><span class="verdict pass">PASS</span></td><td class="detail">La app es 100% offline por diseño (ADR-001); «conexión perdida» es intrínsecamente N/A. Gate no-network lo certifica.</td></tr>
+          <tr><td>B3-03</td><td>3 · Producto</td><td>Pruebas i18n en criterios</td><td><span class="verdict cond">COND.</span></td><td class="detail">Las HU no citaban test de expansión. Acción correctiva aplicada: HU-20 ampliada con criterios i18n (estrés +30%, montos por locale) en REQUERIMIENTOS_FUNCIONALES.md.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="foot-badges">
+      <span>Clay Serenity SSOT</span><span>Pre-Flight Aprobado</span><span>11/11 PASS o COND.</span><span>0 vetos bloqueantes</span><span>lang="es"</span>
+    </div>
+    <div style="font-size:13px;color:var(--cs-text-muted)">Artefactos/documentacion/<strong>Calidad y Gobernanza</strong>/MANIFIESTO_CALIDAD.html</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){reduced?el.classList.add('in'):obs.observe(el);});
+  var rb=document.getElementById('readbar');
+  addEventListener('scroll',function(){var h=document.documentElement;rb.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';},{passive:true});
+  document.querySelectorAll('.std-head').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var n=btn.closest('.std');var open=n.classList.toggle('open');
+      btn.setAttribute('aria-expanded',open?'true':'false');
+    });
+  });
+})();
+</script>
+</body>
+</html>

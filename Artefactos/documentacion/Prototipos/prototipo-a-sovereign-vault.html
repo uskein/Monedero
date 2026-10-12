@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototipo A — Sovereign Vault | Identidad Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ===== TOKENS — SOVEREIGN VAULT ===== */
+    --bg-base:#0A0E13;
+    --surface:#131A23;
+    --surface-raised:#1C2531;
+    --border-hairline:#2A3542;
+    --primary:#2FBF71;
+    --primary-hover:#3BD982;
+    --primary-active:#28A863;
+    --primary-disabled:#1E6B45;
+    --accent:#F5A524;
+    --danger:#FF6B5E;
+    --text-primary:#EEF3F8;
+    --text-muted:#8E9BA9;
+    --text-on-primary:#06120B;
+    --chip-in-bg:rgba(47,191,113,.14);
+    --chip-out-bg:rgba(255,107,94,.14);
+    --chip-warn-bg:rgba(245,165,36,.14);
+
+    --radius-card:14px;
+    --radius-btn:12px;
+    --radius-sheet:20px;
+
+    --font-display:'Space Grotesk',sans-serif;
+    --font-ui:'Inter',sans-serif;
+    --font-data:'JetBrains Mono',monospace;
+
+    --ease-out:cubic-bezier(.2,.8,.2,1);
+    --dur-fast:150ms;
+    --dur-base:200ms;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg-base);
+    color:var(--text-primary);
+    font-family:var(--font-ui);
+    font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--primary);color:var(--text-on-primary)}
+
+  /* ===== ESTRUCTURA ===== */
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  header.hero{
+    padding:72px 0 48px;
+    border-bottom:1px solid var(--border-hairline);
+    position:relative;overflow:hidden;
+  }
+  header.hero::before{
+    content:"";position:absolute;top:-180px;left:50%;transform:translateX(-50%);
+    width:640px;height:380px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(47,191,113,.10),transparent 70%);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:var(--font-data);font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--primary);margin-bottom:14px;
+  }
+  h1{font-family:var(--font-display);font-size:clamp(30px,5vw,46px);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+  .hero p.lead{color:var(--text-muted);max-width:640px;margin-top:14px;font-size:17px}
+  .hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+  .hero-meta span{
+    font-family:var(--font-data);font-size:12px;color:var(--text-muted);
+    border:1px solid var(--border-hairline);border-radius:999px;padding:5px 14px;
+  }
+  section{padding:56px 0;border-bottom:1px solid var(--border-hairline)}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:32px}
+  .sec-num{font-family:var(--font-data);font-size:13px;color:var(--primary)}
+  h2{font-family:var(--font-display);font-size:26px;font-weight:600;letter-spacing:-.01em}
+  .sec-sub{color:var(--text-muted);font-size:14px;margin-left:auto;text-align:right}
+
+  /* ===== PALETA ===== */
+  .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .swatch{
+    background:var(--surface);border:1px solid var(--border-hairline);
+    border-radius:var(--radius-card);overflow:hidden;
+    transition:transform var(--dur-base) var(--ease-out);
+  }
+  .swatch:hover{transform:translateY(-3px)}
+  .swatch .color{height:96px;position:relative}
+  .swatch .color code{
+    position:absolute;bottom:8px;right:8px;font-family:var(--font-data);font-size:11px;
+    background:rgba(4,7,10,.65);padding:2px 7px;border-radius:6px;color:#fff;
+  }
+  .swatch .info{padding:12px 14px}
+  .swatch .info strong{display:block;font-size:13px;font-family:var(--font-display);font-weight:600}
+  .swatch .info span{font-size:12px;color:var(--text-muted)}
+  .contrast-note{
+    margin-top:18px;font-size:13px;color:var(--text-muted);
+    border-left:3px solid var(--primary);padding:8px 14px;background:rgba(47,191,113,.06);border-radius:0 8px 8px 0;
+  }
+
+  /* ===== TIPOGRAFÍA ===== */
+  .type-scale{background:var(--surface);border:1px solid var(--border-hairline);border-radius:var(--radius-card);padding:8px 28px}
+  .type-row{display:flex;align-items:baseline;gap:24px;padding:18px 0;border-bottom:1px solid var(--border-hairline)}
+  .type-row:last-child{border-bottom:none}
+  .type-row .meta{font-family:var(--font-data);font-size:11px;color:var(--text-muted);min-width:180px;letter-spacing:.05em}
+  .t-h1{font-family:var(--font-display);font-size:32px;font-weight:700;letter-spacing:-.02em}
+  .t-h2{font-family:var(--font-display);font-size:22px;font-weight:600}
+  .t-body{font-size:16px;color:var(--text-primary)}
+  .t-small{font-size:14px;color:var(--text-muted)}
+  .t-data{font-family:var(--font-data);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--primary)}
+  .font-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:20px}
+  .font-card{background:var(--surface);border:1px solid var(--border-hairline);border-radius:var(--radius-card);padding:20px}
+  .font-card .glyphs{font-size:34px;margin:8px 0 6px}
+  .font-card .fname{font-family:var(--font-data);font-size:12px;color:var(--primary)}
+  .font-card .frole{font-size:13px;color:var(--text-muted)}
+
+  /* ===== COMPONENTES ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+  .demo{
+    background:var(--surface);border:1px solid var(--border-hairline);
+    border-radius:var(--radius-card);padding:22px;
+  }
+  .demo h3{
+    font-family:var(--font-data);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--text-muted);margin-bottom:18px;
+  }
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .row+.row{margin-top:14px}
+
+  /* Botones */
+  .btn{
+    font-family:var(--font-ui);font-size:15px;font-weight:600;
+    height:48px;padding:0 22px;border-radius:var(--radius-btn);
+    border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+    transition:all var(--dur-fast) var(--ease-out);
+  }
+  .btn:focus-visible{outline:2px solid var(--primary-hover);outline-offset:2px}
+  .btn-primary{background:var(--primary);color:var(--text-on-primary)}
+  .btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+  .btn-primary:active{background:var(--primary-active);transform:scale(.98)}
+  .btn-secondary{background:transparent;color:var(--text-primary);border:1px solid var(--border-hairline)}
+  .btn-secondary:hover{border-color:var(--text-muted)}
+  .btn-secondary:active{background:var(--surface-raised)}
+  .btn-ghost{background:transparent;color:var(--danger)}
+  .btn-ghost:hover{background:rgba(255,107,94,.12)}
+  .btn-disabled,.btn:disabled{background:var(--primary-disabled);color:#5E7A6C;cursor:not-allowed;transform:none}
+  .btn-icon{
+    width:40px;height:40px;padding:0;justify-content:center;
+    background:transparent;color:var(--text-primary);border-radius:10px;
+  }
+  .btn-icon:hover{background:var(--surface-raised)}
+  .btn-sm{height:38px;font-size:13px;padding:0 16px}
+
+  /* Tab bar simulada */
+  .tabbar{
+    display:flex;background:rgba(19,26,35,.9);border:1px solid var(--border-hairline);
+    border-radius:16px;padding:8px;gap:4px;backdrop-filter:blur(12px);
+  }
+  .tabbar .tab{
+    flex:1;text-align:center;padding:10px 4px 8px;border-radius:10px;cursor:pointer;
+    color:var(--text-muted);font-size:11px;font-weight:500;position:relative;
+    transition:all var(--dur-fast) var(--ease-out);
+  }
+  .tabbar .tab .ic{display:block;font-size:19px;margin-bottom:3px}
+  .tabbar .tab.active{color:var(--primary);background:rgba(47,191,113,.10)}
+  .tabbar .tab.active::after{
+    content:"";position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--primary);
+  }
+  .tabbar .tab:hover{color:var(--text-primary)}
+
+  /* Segmented + chips */
+  .segmented{display:inline-flex;background:var(--surface);border:1px solid var(--border-hairline);border-radius:10px;padding:4px;gap:4px}
+  .segmented .seg{
+    padding:7px 18px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-muted);
+    cursor:pointer;transition:all var(--dur-fast) var(--ease-out);
+  }
+  .segmented .seg.active{background:var(--surface-raised);color:var(--text-primary)}
+  .chip{
+    font-size:12px;font-weight:600;padding:5px 13px;border-radius:999px;cursor:default;
+  }
+  .chip-in{background:var(--chip-in-bg);color:var(--primary)}
+  .chip-out{background:var(--chip-out-bg);color:var(--danger)}
+  .chip-warn{background:var(--chip-warn-bg);color:var(--accent)}
+  .chip-neutral{background:var(--surface-raised);color:var(--text-muted)}
+
+  /* Cards / list */
+  .card{background:var(--surface-raised);border:1px solid var(--border-hairline);border-radius:var(--radius-card);padding:18px}
+  .balance-card{position:relative;overflow:hidden}
+  .balance-card::before{
+    content:"";position:absolute;top:-60px;right:-40px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(47,191,113,.14),transparent 70%);
+  }
+  .balance-label{font-size:12px;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-data)}
+  .balance-value{font-family:var(--font-data);font-size:36px;font-weight:600;margin-top:6px;font-variant-numeric:tabular-nums}
+  .balance-delta{font-family:var(--font-data);font-size:13px;color:var(--primary);margin-top:4px}
+
+  .tx{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-hairline)}
+  .tx:last-child{border-bottom:none}
+  .tx .ic{
+    width:40px;height:40px;border-radius:12px;background:var(--surface-raised);
+    display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+    border:1px solid var(--border-hairline);
+  }
+  .tx .info{flex:1;min-width:0}
+  .tx .info strong{display:block;font-size:15px;font-weight:500}
+  .tx .info span{font-size:12px;color:var(--text-muted)}
+  .tx .amount{font-family:var(--font-data);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .amount.pos{color:var(--primary)}
+  .amount.neg{color:var(--danger)}
+
+  /* Forms */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:7px}
+  .input{
+    width:100%;height:52px;background:var(--surface);border:1px solid var(--border-hairline);
+    border-radius:var(--radius-btn);color:var(--text-primary);font-size:16px;font-family:var(--font-ui);
+    padding:0 16px;transition:all var(--dur-fast) var(--ease-out);
+  }
+  .input::placeholder{color:var(--text-muted)}
+  .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,191,113,.18)}
+  .input.error{border-color:var(--danger)}
+  .input.error:focus{box-shadow:0 0 0 3px rgba(255,107,94,.18)}
+  .input:disabled{background:#0F151C;color:#5E6874;cursor:not-allowed}
+  .helper{font-size:12px;margin-top:6px;color:var(--text-muted);display:flex;gap:6px;align-items:center}
+  .helper.err{color:var(--danger)}
+  .money-input{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border-hairline);border-radius:var(--radius-btn);padding:0 16px;height:52px;gap:10px;transition:all var(--dur-fast) var(--ease-out)}
+  .money-input:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,191,113,.18)}
+  .money-input .cur{color:var(--text-muted);font-family:var(--font-data);font-size:16px}
+  .money-input input{flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-family:var(--font-data);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .money-input input::placeholder{color:var(--text-muted);font-weight:500}
+
+  .check{display:flex;align-items:center;gap:11px;cursor:pointer;font-size:14px;user-select:none}
+  .check input{position:absolute;opacity:0}
+  .check .box{
+    width:22px;height:22px;border:1.5px solid var(--border-hairline);border-radius:6px;
+    display:flex;align-items:center;justify-content:center;transition:all var(--dur-fast) var(--ease-out);
+    font-size:13px;color:transparent;flex-shrink:0;
+  }
+  .check input:checked+.box{background:var(--primary);border-color:var(--primary);color:var(--text-on-primary)}
+  .check input:focus-visible+.box{outline:2px solid var(--primary-hover);outline-offset:2px}
+  .check.radio .box{border-radius:50%}
+  .check.radio input:checked+.box::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--text-on-primary)}
+
+  .toggle{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}
+  .toggle input{opacity:0;width:0;height:0}
+  .toggle .track{
+    position:absolute;inset:0;background:var(--surface-raised);border:1px solid var(--border-hairline);
+    border-radius:999px;cursor:pointer;transition:all var(--dur-base) var(--ease-out);
+  }
+  .toggle .track::before{
+    content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform var(--dur-base) var(--ease-out);
+  }
+  .toggle input:checked+.track{background:var(--primary);border-color:var(--primary)}
+  .toggle input:checked+.track::before{transform:translateX(20px)}
+  .toggle input:focus-visible+.track{outline:2px solid var(--primary-hover);outline-offset:2px}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--border-hairline);font-size:14px}
+  .toggle-row:last-child{border-bottom:none}
+  .toggle-row small{display:block;color:var(--text-muted);font-size:12px}
+
+  /* Feedback */
+  .toast{
+    display:flex;gap:12px;align-items:flex-start;background:var(--surface-raised);
+    border:1px solid var(--border-hairline);border-left:3px solid var(--primary);
+    border-radius:10px;padding:13px 16px;font-size:14px;
+  }
+  .toast.warn{border-left-color:var(--accent)}
+  .toast.err{border-left-color:var(--danger)}
+  .toast strong{display:block;font-weight:600;font-size:14px}
+  .toast span{color:var(--text-muted);font-size:13px}
+  .progress{height:8px;background:var(--surface-raised);border-radius:999px;overflow:hidden;border:1px solid var(--border-hairline)}
+  .progress .fill{height:100%;background:var(--primary);border-radius:999px;transition:width .6s var(--ease-out)}
+  .progress .fill.warn{background:var(--accent)}
+  .progress .fill.over{background:var(--danger)}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:7px;font-family:var(--font-data)}
+  .spinner{
+    width:36px;height:36px;border:3px solid var(--surface-raised);border-top-color:var(--primary);
+    border-radius:50%;animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty{text-align:center;padding:22px 10px}
+  .empty .art{
+    width:76px;height:76px;margin:0 auto 14px;border:1.5px dashed var(--border-hairline);border-radius:22px;
+    display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--text-muted);
+  }
+  .empty h4{font-family:var(--font-display);font-size:17px;font-weight:600}
+  .empty p{font-size:13px;color:var(--text-muted);margin:6px 0 16px}
+
+  /* Avatar */
+  .avatar{
+    width:40px;height:40px;border-radius:50%;border:1px solid var(--border-hairline);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text-primary);
+    background:var(--surface-raised);flex-shrink:0;
+  }
+  .avatar.sm{width:32px;height:32px;font-size:12px}
+  .avatar.lg{width:56px;height:56px;font-size:19px}
+  .avatar.g1{background:#1E3A2F;color:#5FE0A0}
+  .avatar.g2{background:#3A2E1E;color:#F5C97A}
+  .avatar.g3{background:#1E2E3A;color:#7AB8E0}
+
+  /* Modal / tooltip demo */
+  .modal-demo{background:var(--surface-raised);border:1px solid var(--border-hairline);border-radius:var(--radius-sheet);padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .modal-demo h4{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:8px}
+  .modal-demo p{font-size:14px;color:var(--text-muted);margin-bottom:20px}
+  .tooltip-demo{position:relative;display:inline-block;font-size:14px;color:var(--text-muted);border-bottom:1px dashed var(--text-muted);cursor:help}
+  .tooltip-demo .tip{
+    position:absolute;bottom:130%;left:50%;transform:translateX(-50%) translateY(4px);
+    background:var(--surface-raised);border:1px solid var(--border-hairline);color:var(--text-primary);
+    font-size:12px;padding:8px 11px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;
+    transition:all var(--dur-base) var(--ease-out);box-shadow:0 6px 18px rgba(0,0,0,.5);z-index:5;
+  }
+  .tooltip-demo:hover .tip,.tooltip-demo:focus .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Backdrop modal real */
+  .overlay{
+    position:fixed;inset:0;background:rgba(4,7,10,.72);backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;padding:24px;z-index:100;
+    opacity:0;visibility:hidden;transition:all var(--dur-base) var(--ease-out);
+  }
+  .overlay.open{opacity:1;visibility:visible}
+  .overlay .modal-demo{width:100%;max-width:400px;transform:scale(.96);transition:transform var(--dur-base) var(--ease-out)}
+  .overlay.open .modal-demo{transform:scale(1)}
+
+  footer{padding:44px 0 64px;color:var(--text-muted);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer code{font-family:var(--font-data);color:var(--primary);font-size:12px}
+
+  @media (max-width:640px){
+    .sec-sub{display:none}
+    .type-row{flex-direction:column;gap:6px}
+    .type-row .meta{min-width:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;transition-duration:80ms !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Prototipo A · Estilo Principal</div>
+    <h1>Sovereign Vault</h1>
+    <p class="lead">Dark fintech con corte editorial-suizo. La bóveda: superficies casi negras, bordes hairline, datos en tipografía monoespaciada tabular. Transmite discreción, precisión y soberanía sobre tus finanzas.</p>
+    <div class="hero-meta">
+      <span>Dark-first</span><span>Space Grotesk · Inter · JetBrains Mono</span><span>Radius 12–14px</span><span>Contraste WCAG AA/AAA</span><span>Mobile-first + PWA</span>
+    </div>
+  </div>
+</header>
+
+<!-- 01 PALETA -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Paleta de Colores</h2><span class="sec-sub">Roles semánticos · HEX</span></div>
+    <div class="palette">
+      <div class="swatch"><div class="color" style="background:#0A0E13"><code>#0A0E13</code></div><div class="info"><strong>bg-base</strong><span>Fondo principal de la app</span></div></div>
+      <div class="swatch"><div class="color" style="background:#131A23"><code>#131A23</code></div><div class="info"><strong>surface</strong><span>Cards, listas, tab bar</span></div></div>
+      <div class="swatch"><div class="color" style="background:#1C2531"><code>#1C2531</code></div><div class="info"><strong>surface-raised</strong><span>Modales, sheets, hovers</span></div></div>
+      <div class="swatch"><div class="color" style="background:#2A3542"><code>#2A3542</code></div><div class="info"><strong>border-hairline</strong><span>Bordes de 1px, separadores</span></div></div>
+      <div class="swatch"><div class="color" style="background:#2FBF71"><code>#2FBF71</code></div><div class="info"><strong>primary</strong><span>Confianza · CTA · Ingresos · 7.6:1</span></div></div>
+      <div class="swatch"><div class="color" style="background:#3BD982"><code>#3BD982</code></div><div class="info"><strong>primary-hover</strong><span>Estado interactivo</span></div></div>
+      <div class="swatch"><div class="color" style="background:#1E6B45"><code>#1E6B45</code></div><div class="info"><strong>primary-disabled</strong><span>CTA deshabilitado</span></div></div>
+      <div class="swatch"><div class="color" style="background:#F5A524"><code>#F5A524</code></div><div class="info"><strong>accent</strong><span>Alertas · Presupuestos · 9.8:1</span></div></div>
+      <div class="swatch"><div class="color" style="background:#FF6B5E"><code>#FF6B5E</code></div><div class="info"><strong>danger</strong><span>Gastos · Errores · 6.9:1</span></div></div>
+      <div class="swatch"><div class="color" style="background:#EEF3F8"><code>#EEF3F8</code></div><div class="info"><strong>text-primary</strong><span>Texto principal · 16.4:1 AAA</span></div></div>
+      <div class="swatch"><div class="color" style="background:#8E9BA9"><code>#8E9BA9</code></div><div class="info"><strong>text-muted</strong><span>Texto secundario · 7.1:1 AAA</span></div></div>
+      <div class="swatch"><div class="color" style="background:#06120B"><code>#06120B</code></div><div class="info"><strong>text-on-primary</strong><span>Texto sobre verde · 9.1:1</span></div></div>
+    </div>
+    <p class="contrast-note">✓ Verificación WCAG: todos los pares texto/fondo alcanzan AA; los marcados AAA superan 7:1. El modo oscuro es el modo base; modo claro disponible como variante con <code style="font-family:var(--font-data)">primary → #1F9D5F</code>.</p>
+  </div>
+</section>
+
+<!-- 02 TIPOGRAFÍA -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Tipografía</h2><span class="sec-sub">Display · UI · Datos tabulares</span></div>
+    <div class="type-scale">
+      <div class="type-row"><span class="meta">DISPLAY / 32 / 700</span><span class="t-h1">Resumen financiero</span></div>
+      <div class="type-row"><span class="meta">DISPLAY / 22 / 600</span><span class="t-h2">Movimientos recientes</span></div>
+      <div class="type-row"><span class="meta">INTER / 16 / 400</span><span class="t-body">Registra, categoriza y analiza tus ingresos y gastos sin conexión.</span></div>
+      <div class="type-row"><span class="meta">INTER / 14 / 400</span><span class="t-small">Tus datos se cifran y permanecen solo en tu dispositivo.</span></div>
+      <div class="type-row"><span class="meta">JETBRAINS MONO / 24 / 600</span><span class="t-data">€ 12.480,55</span></div>
+    </div>
+    <div class="font-grid">
+      <div class="font-card"><div class="fname">Space Grotesk — 600/700</div><div class="glyphs" style="font-family:'Space Grotesk',sans-serif;font-weight:700">Aa 123</div><div class="frole">Títulos y cifras hero. Geométrica con carácter técnico.</div></div>
+      <div class="font-card"><div class="fname">Inter — 400/500/600</div><div class="glyphs" style="font-family:'Inter',sans-serif;font-weight:500">Aa 123</div><div class="frole">Texto corrido y UI. Neutra, altamente legible en móvil.</div></div>
+      <div class="font-card"><div class="fname">JetBrains Mono — tabular-nums</div><div class="glyphs" style="font-family:'JetBrains Mono',monospace;font-weight:600">€ 1.234,56</div><div class="frole">Saldos, montos y fechas. Dígitos alineados en columna.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 ACCIONES -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Elementos de Acción</h2><span class="sec-sub">Todos los estados</span></div>
+    <div class="grid">
+      <div class="demo">
+        <h3>Botón primario · estados</h3>
+        <div class="row">
+          <button class="btn btn-primary">Añadir movimiento</button>
+          <button class="btn btn-primary" style="background:var(--primary-hover);transform:translateY(-1px)">Hover</button>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" style="background:var(--primary-active);transform:scale(.98)">Active</button>
+          <button class="btn btn-primary" disabled>Disabled</button>
+        </div>
+        <div class="row" style="margin-top:14px"><span style="font-size:12px;color:var(--text-muted)">focus-visible → ring 2px #3BD982 / offset 2px</span></div>
+      </div>
+      <div class="demo">
+        <h3>Secundario · fantasma · icono</h3>
+        <div class="row">
+          <button class="btn btn-secondary">Cancelar</button>
+          <button class="btn btn-ghost">Eliminar</button>
+        </div>
+        <div class="row">
+          <button class="btn btn-icon" aria-label="Buscar">⌕</button>
+          <button class="btn btn-icon" aria-label="Filtrar">≡</button>
+          <button class="btn btn-icon" aria-label="Más">⋯</button>
+          <button class="btn btn-secondary btn-sm">Secundario S</button>
+        </div>
+      </div>
+      <div class="demo">
+        <h3>Enlaces & foco</h3>
+        <div class="row" style="flex-direction:column;align-items:flex-start;gap:10px">
+          <a href="#" style="color:var(--primary);text-decoration:none;font-weight:500" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Ver informe completo →</a>
+          <a href="#" style="color:var(--primary);text-decoration:underline">Enlace visitado con subrayado</a>
+          <span class="tooltip-demo" tabindex="0">Concepto con tooltip<span class="tip">Cuenta cifrada con SQLCipher 🔒</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 NAVEGACIÓN -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Navegación</h2><span class="sec-sub">Móvil (tab bar) · PWA (segmented)</span></div>
+    <div class="grid">
+      <div class="demo">
+        <h3>Tab bar inferior (móvil)</h3>
+        <div class="tabbar">
+          <div class="tab active" data-tab><span class="ic">◧</span>Inicio</div>
+          <div class="tab" data-tab><span class="ic">⇄</span>Movimientos</div>
+          <div class="tab" data-tab><span class="ic">◔</span>Presupuestos</div>
+          <div class="tab" data-tab><span class="ic">☰</span>Ajustes</div>
+        </div>
+      </div>
+      <div class="demo">
+        <h3>Segmented control</h3>
+        <div class="segmented" data-seg>
+          <span class="seg active">Semana</span><span class="seg">Mes</span><span class="seg">Año</span>
+        </div>
+        <div class="row" style="margin-top:18px">
+          <span class="chip chip-neutral">Todas</span>
+          <span class="chip chip-in">Ingresos</span>
+          <span class="chip chip-out">Gastos</span>
+        </div>
+      </div>
+      <div class="demo">
+        <h3>Top app bar (referencia)</h3>
+        <div style="display:flex;align-items:center;gap:14px;background:var(--bg-base);border:1px solid var(--border-hairline);border-radius:12px;padding:12px 16px">
+          <button class="btn btn-icon" aria-label="Volver">←</button>
+          <strong style="font-family:var(--font-display);font-size:18px;font-weight:600">Bóveda</strong>
+          <span style="margin-left:auto" class="chip chip-in">Offline ✓</span>
+        </div>
+        <div class="row" style="margin-top:16px;font-size:12px;color:var(--text-muted)">PWA: sidebar 248px → colapsable 72px, activo con barra vertical 3px primary.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 CONTENEDORES -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Contenedores y Superposiciones</h2><span class="sec-sub">Cards · Modal · Sheet</span></div>
+    <div class="grid">
+      <div class="demo">
+        <h3>Card de saldo</h3>
+        <div class="card balance-card">
+          <div class="balance-label">Balance total</div>
+          <div class="balance-value">€ 12.480,55</div>
+          <div class="balance-delta">▲ +€ 840,00 este mes</div>
+        </div>
+        <div class="row" style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="document.getElementById('ov').classList.add('open')">Abrir modal</button></div>
+      </div>
+      <div class="demo">
+        <h3>Lista de movimientos</h3>
+        <div class="card">
+          <div class="tx"><div class="ic">🛒</div><div class="info"><strong>Supermercado</strong><span>Alimentación · Hoy</span></div><span class="amount neg">−€ 42,30</span></div>
+          <div class="tx"><div class="ic">💼</div><div class="info"><strong>Nómina</strong><span>Ingreso · Ayer</span></div><span class="amount pos">+€ 2.150,00</span></div>
+          <div class="tx"><div class="ic">⚡</div><div class="info"><strong>Luz y gas</strong><span>Servicios · 12 sep</span></div><span class="amount neg">−€ 68,90</span></div>
+        </div>
+      </div>
+      <div class="demo">
+        <h3>Modal / Bottom sheet</h3>
+        <div class="modal-demo">
+          <h4>¿Cifrar con biometría?</h4>
+          <p>La base de datos local se protegerá con tu huella o rostro. Solo tú puedes abrirla.</p>
+          <div class="row">
+            <button class="btn btn-primary btn-sm">Activar</button>
+            <button class="btn btn-secondary btn-sm">Ahora no</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:16px;font-size:12px;color:var(--text-muted)">Móvil: bottom sheet arrastrable con handle 36×4. Backdrop rgba(4,7,10,.7).</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 FORMULARIOS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Entrada de Datos</h2><span class="sec-sub">Estados de validación</span></div>
+    <div class="grid">
+      <div class="demo">
+        <h3>Inputs · estados</h3>
+        <div class="field"><label>Concepto</label><input class="input" placeholder="Ej. Compra semanal"></div>
+        <div class="field">
+          <label>IBAN</label><input class="input error" value="ES00 0000">
+          <div class="helper err">⚠ IBAN no válido — revisa los dígitos.</div>
+        </div>
+        <div class="field" style="margin-bottom:0"><label>Categoría (deshabilitada)</label><input class="input" disabled value="Selecciona primero una cuenta"></div>
+      </div>
+      <div class="demo">
+        <h3>Campo monetario & toggle</h3>
+        <div class="field">
+          <label>Importe</label>
+          <div class="money-input"><span class="cur">€</span><input inputmode="decimal" placeholder="0,00" value="42,30"></div>
+          <div class="helper">Cifras en JetBrains Mono tabulares, alineación perfecta.</div>
+        </div>
+        <div class="toggle-row"><div>Categorización automática<small>Reglas locales, sin nube</small></div><label class="toggle"><input type="checkbox" checked><span class="track"></span></label></div>
+        <div class="toggle-row"><div>Sincronizar PWA<small>Desactivado por privacidad</small></div><label class="toggle"><input type="checkbox"><span class="track"></span></label></div>
+      </div>
+      <div class="demo">
+        <h3>Checks & radios</h3>
+        <div class="row" style="flex-direction:column;align-items:flex-start;gap:12px">
+          <label class="check"><input type="checkbox" checked><span class="box">✓</span>Recordar categorías frecuentes</label>
+          <label class="check"><input type="checkbox"><span class="box">✓</span>Incluir transferencias internas</label>
+          <label class="check radio"><input type="radio" name="pa" checked><span class="box"></span>Cuenta corriente</label>
+          <label class="check radio"><input type="radio" name="pa"><span class="box"></span>Efectivo</label>
+        </div>
+        <div class="field" style="margin-top:18px;margin-bottom:0">
+          <label>Fecha</label>
+          <div class="money-input" style="font-family:var(--font-data);font-size:14px;color:var(--text-muted)">📅 11/10/2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 FEEDBACK -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Feedback del Sistema</h2><span class="sec-sub">Toasts · Badges · Estados</span></div>
+    <div class="grid">
+      <div class="demo">
+        <h3>Toast / Alertas</h3>
+        <div class="row" style="flex-direction:column;align-items:stretch;gap:10px">
+          <div class="toast"><span>✓</span><div><strong>Movimiento guardado</strong><span>Alimentación · −€ 42,30</span></div></div>
+          <div class="toast warn"><span>⚠</span><div><strong>Presupuesto al 85%</strong><span>Te quedan € 30 este mes</span></div></div>
+          <div class="toast err"><span>✕</span><div><strong>Error al exportar</strong><span>Reintenta o revisa el permiso</span></div></div>
+        </div>
+      </div>
+      <div class="demo">
+        <h3>Badges & progreso</h3>
+        <div class="row" style="margin-bottom:18px">
+          <span class="chip chip-in">+ Ingreso</span><span class="chip chip-out">− Gasto</span><span class="chip chip-warn">Pendiente</span>
+        </div>
+        <div class="progress-label"><span>Alimentación</span><span>340 / 400 €</span></div>
+        <div class="progress"><div class="fill warn" style="width:85%"></div></div>
+        <div class="progress-label" style="margin-top:16px"><span>Transporte</span><span>120 / 120 €</span></div>
+        <div class="progress"><div class="fill over" style="width:100%"></div></div>
+        <div class="progress-label" style="margin-top:16px"><span>Ocio</span><span>55 / 200 €</span></div>
+        <div class="progress"><div class="fill" style="width:27%"></div></div>
+      </div>
+      <div class="demo">
+        <h3>Spinner & empty state</h3>
+        <div class="row"><div class="spinner" role="status" aria-label="Cargando"></div><span style="font-size:13px;color:var(--text-muted)">Descifrando bóveda…</span></div>
+        <div class="empty">
+          <div class="art">∅</div>
+          <h4>Sin movimientos aún</h4>
+          <p>Registra tu primer ingreso o gasto para empezar a ver tu balance.</p>
+          <button class="btn btn-primary btn-sm">Añadir movimiento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 USUARIO -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Elementos de Usuario</h2><span class="sec-sub">Avatares · Identidad</span></div>
+    <div class="grid">
+      <div class="demo">
+        <h3>Avatares</h3>
+        <div class="row">
+          <div class="avatar g1">CV</div><div class="avatar g2 sm">MR</div><div class="avatar g3 lg">JL</div>
+          <div class="avatar">?</div>
+        </div>
+        <div class="row" style="margin-top:14px;font-size:12px;color:var(--text-muted)">40px · iniciales Space Grotesk 14/600 · color derivado del hash del nombre.</div>
+      </div>
+      <div class="demo">
+        <h3>Perfil (tarjeta)</h3>
+        <div class="row">
+          <div class="avatar g1 lg">CV</div>
+          <div>
+            <strong style="font-family:var(--font-display);font-size:16px">Cuenta principal</strong>
+            <div style="font-size:13px;color:var(--text-muted)">Sincronizada localmente · Última copia: hoy</div>
+          </div>
+          <span class="chip chip-in" style="margin-left:auto">Verificada</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <span>Prototipo A — <strong style="color:var(--text-primary)">Sovereign Vault</strong> · Estilo Principal</span>
+  <span>Tokens listos para <code>--sv-* CSS custom properties</code></span>
+</footer>
+
+<!-- MODAL REAL -->
+<div class="overlay" id="ov" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-demo">
+    <h4>¿Cifrar con biometría?</h4>
+    <p>La base de datos local se protegerá con tu huella o rostro. Solo tú puedes abrirla. Los datos nunca salen de tu dispositivo.</p>
+    <div class="row">
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('ov').classList.remove('open')">Activar cifrado</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('ov').classList.remove('open')">Ahora no</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tabs
+  document.querySelectorAll('[data-tab]').forEach(t=>t.addEventListener('click',()=>{
+    t.parentElement.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
+  }));
+  // Segmented
+  document.querySelectorAll('[data-seg] .seg').forEach(s=>s.addEventListener('click',()=>{
+    s.parentElement.querySelectorAll('.seg').forEach(x=>x.classList.remove('active'));s.classList.add('active');
+  }));
+  // Animación de contador en el saldo (microinteracción --ease-data)
+  const el=document.querySelector('.balance-value');
+  if(el && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const target=12480.55;const start=performance.now();const dur=900;
+    const fmt=n=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const step=now=>{const p=Math.min((now-start)/dur,1);const e=1-Math.pow(1-p,3);
+      el.textContent='€ '+fmt(target*e);if(p<1)requestAnimationFrame(step);};
+    el.textContent='€ 0,00';requestAnimationFrame(step);
+  }
+</script>
+</body>
+</html>

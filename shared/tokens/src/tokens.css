@@ -1,0 +1,88 @@
+/* ============================================================
+   MONEDERO — Design Tokens «Clay Serenity» (SSOT)
+   Fuente: Artefactos/documentacion/Diseño Visual/manual-identidad-visual.md §3.2
+   Prohibido: colores hex fuera de este archivo en UI (gate tokens:check)
+   ============================================================ */
+:root {
+  /* Color */
+  --cs-bg-base: #F4EFE7;
+  --cs-surface: #FFFFFF;
+  --cs-surface-sunken: #EAE2D6;
+  --cs-primary: #2F7D5B;
+  --cs-primary-hover: #276B4E;
+  --cs-primary-soft: rgba(47, 125, 91, 0.12);
+  --cs-accent: #D97757;
+  --cs-accent-text: #B4573A;
+  --cs-secondary: #3D5A80;
+  --cs-danger: #C4453B;
+  --cs-text-primary: #232A31;
+  --cs-text-muted: #6E7681;
+  --cs-text-on-primary: #FFFFFF;
+  --cs-placeholder: #9A938A;
+
+  /* Tipografía */
+  --cs-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --cs-font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Espaciado (base 4px) */
+  --cs-space-1: 4px;
+  --cs-space-2: 8px;
+  --cs-space-3: 12px;
+  --cs-space-4: 16px;
+  --cs-space-5: 24px;
+  --cs-space-6: 32px;
+  --cs-space-7: 48px;
+  --cs-space-8: 64px;
+
+  /* Radios */
+  --cs-radius-input: 16px;
+  --cs-radius-btn: 18px;
+  --cs-radius-card: 24px;
+  --cs-radius-sheet: 24px 24px 0 0;
+  --cs-radius-pill: 999px;
+
+  /* Elevación clay */
+  --cs-clay: inset 4px 4px 8px rgba(0, 0, 0, 0.06), inset -4px -4px 8px rgba(255, 255, 255, 0.9), 0 10px 24px rgba(60, 50, 40, 0.12);
+  --cs-clay-sm: inset 3px 3px 6px rgba(0, 0, 0, 0.05), inset -3px -3px 6px rgba(255, 255, 255, 0.9), 0 6px 14px rgba(60, 50, 40, 0.1);
+  --cs-clay-press: inset 4px 4px 10px rgba(0, 0, 0, 0.1), inset -3px -3px 8px rgba(255, 255, 255, 0.8);
+  --cs-focus-ring: 0 0 0 4px rgba(47, 125, 91, 0.15);
+  --cs-focus-outline: 3px solid rgba(47, 125, 91, 0.45);
+
+  /* Movimiento */
+  --cs-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --cs-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --cs-dur-fast: 150ms;
+  --cs-dur-base: 220ms;
+  --cs-dur-slow: 280ms;
+
+  /* Z-index */
+  --cs-z-bg: 0;
+  --cs-z-content: 1;
+  --cs-z-sticky: 50;
+  --cs-z-modal: 100;
+}
+
+/* Modo oscuro — tierra profunda (SSOT §11). Nunca negro puro. */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme] { /* override manual reservado */ }
+}
+
+:root[data-theme='dark'] {
+  --cs-bg-base: #1B1815;
+  --cs-surface: #26221E;
+  --cs-surface-sunken: #332E29;
+  --cs-primary: #6FCF97;
+  --cs-accent: #E89B84;
+  --cs-text-primary: #F4EFE7;
+  --cs-text-muted: #A79F95;
+  --cs-danger: #EF8078;
+}
+
+/* Accesibilidad del motion (SSOT §8): todo ≤80ms o none */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --cs-dur-fast: 80ms;
+    --cs-dur-base: 80ms;
+    --cs-dur-slow: 80ms;
+  }
+}
