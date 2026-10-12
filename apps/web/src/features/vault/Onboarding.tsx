@@ -1,39 +1,21 @@
 /**
  * Onboarding — blueprint BP-01 (REQUERIMIENTOS_FUNCIONALES.md).
- * 4 pasos: bienvenida → crear passphrase → confirmar → éxito (VaultGate).
- * 4 estados por pantalla (DoD): loading (busy), empty (paso inicial), success, error (VALIDATION_FAILED).
- * Copy: TODO vía props i18n — aquí se reciben como strings (caller resuelve t('...')).
+ * 3 pasos + éxito (renderizado por VaultGate como paso 4/4).
+ * i18n: TODO el copy vía useT() — cero strings hardcodeados (gate i18n:check).
+ * 4 estados (DoD): loading (busy), empty (paso inicial), success, error (validación).
  */
 import { useState } from 'react';
+import { useT } from '@monedero/i18n/react';
 import { Button, Card, Field, Input, Progress } from '../../design-system';
 
-export interface OnboardingStrings {
-  welcomeTitle: string;
-  welcomeCopy: string;
-  createTitle: string;
-  createCopy: string;
-  passphraseLabel: string;
-  passphraseHint: string;
-  confirmLabel: string;
-  confirmHint: string;
-  errorMin: string;
-  errorMatch: string;
-  next: string;
-  back: string;
-  finish: string;
-  loading: string;
-  successTitle: string;
-  successCopy: string;
-}
-
 export interface OnboardingProps {
-  s: OnboardingStrings;
   onCreate: (passphrase: string, confirm: string) => Promise<boolean>;
 }
 
 type Step = 0 | 1 | 2;
 
-export function Onboarding({ s, onCreate }: OnboardingProps) {
+export function Onboarding({ onCreate }: OnboardingProps) {
+  const t = useT();
   const [step, setStep] = useState<Step>(0);
   const [pass, setPass] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -47,43 +29,56 @@ export function Onboarding({ s, onCreate }: OnboardingProps) {
     // Éxito: el padre (VaultGate) monta la pantalla 4/4 vía su estado local.
     const ok = await onCreate(pass, confirm);
     setBusy(false);
-    if (!ok) setError(s.errorMin); // validación fallida (store → VALIDATION_FAILED)
+    if (!ok) setError(t('vault.onboarding.error.min'));
   }
 
   return (
     <Card aria-labelledby="onb-title">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <span style={{ fontSize: 12, color: 'var(--cs-text-muted)' }}>
-          {step + 1}/{total}
+          {t('vault.onboarding.step', { current: step + 1, total })}
         </span>
         <span style={{ width: '60%' }}>
-          <Progress percent={((step + 1) / total) * 100} label={`${step + 1} de ${total}`} />
+          <Progress
+            percent={((step + 1) / total) * 100}
+            label={t('vault.onboarding.step', { current: step + 1, total })}
+          />
         </span>
       </div>
 
       {step === 0 && (
         <section>
           <h1 id="onb-title" style={{ fontFamily: 'var(--cs-font-display)', fontSize: 30, margin: '0 0 8px' }}>
-            {s.welcomeTitle}
+            {t('vault.onboarding.welcome.title')}
           </h1>
-          <p style={{ color: 'var(--cs-text-muted)', fontSize: 15, marginBottom: 24 }}>{s.welcomeCopy}</p>
-          <Button onClick={() => setStep(1)}>{s.next}</Button>
+          <p style={{ color: 'var(--cs-text-muted)', fontSize: 15, marginBottom: 24 }}>
+            {t('vault.onboarding.welcome.copy')}
+          </p>
+          <Button onClick={() => setStep(1)}>{t('common.next')}</Button>
         </section>
       )}
 
       {step === 1 && (
         <section>
           <h1 id="onb-title" style={{ fontFamily: 'var(--cs-font-display)', fontSize: 22, margin: '0 0 8px' }}>
-            {s.createTitle}
+            {t('vault.onboarding.create.title')}
           </h1>
-          <p style={{ color: 'var(--cs-text-muted)', fontSize: 14, marginBottom: 20 }}>{s.createCopy}</p>
-          <Field label={s.passphraseLabel} hint={s.passphraseHint} error={error ?? undefined}>
-            {({ inputId }) => (
+          <p style={{ color: 'var(--cs-text-muted)', fontSize: 14, marginBottom: 20 }}>
+            {t('vault.onboarding.create.copy')}
+          </p>
+          <Field
+            label={t('vault.onboarding.passphrase')}
+            hint={t('vault.onboarding.passphrase.hint')}
+            error={error ?? undefined}
+          >
+            {({ inputId, describedBy, invalid }) => (
               <Input
                 inputId={inputId}
+                describedBy={describedBy}
+                invalid={invalid}
                 type="password"
                 autoComplete="new-password"
-                placeholder={s.passphraseHint}
+                placeholder={t('vault.onboarding.passphrase.hint')}
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
               />
@@ -91,18 +86,18 @@ export function Onboarding({ s, onCreate }: OnboardingProps) {
           </Field>
           <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
             <Button variant="secondary" onClick={() => setStep(0)}>
-              {s.back}
+              {t('common.back')}
             </Button>
             <Button
               onClick={() => {
-                if (pass.length < 8) setError(s.errorMin);
+                if (pass.length < 8) setError(t('vault.onboarding.error.min'));
                 else {
                   setError(null);
                   setStep(2);
                 }
               }}
             >
-              {s.next}
+              {t('common.next')}
             </Button>
           </div>
         </section>
@@ -111,9 +106,12 @@ export function Onboarding({ s, onCreate }: OnboardingProps) {
       {step === 2 && (
         <section>
           <h1 id="onb-title" style={{ fontFamily: 'var(--cs-font-display)', fontSize: 22, margin: '0 0 8px' }}>
-            {s.confirmLabel}
+            {t('vault.onboarding.confirm')}
           </h1>
-          <Field label={s.confirmLabel} error={error !== null && confirm.length > 0 && confirm !== pass ? s.errorMatch : undefined}>
+          <Field
+            label={t('vault.onboarding.confirm')}
+            error={confirm.length > 0 && confirm !== pass ? t('vault.onboarding.error.match') : error ?? undefined}
+          >
             {({ inputId, describedBy, invalid }) => (
               <Input
                 inputId={inputId}
@@ -121,7 +119,7 @@ export function Onboarding({ s, onCreate }: OnboardingProps) {
                 invalid={invalid}
                 type="password"
                 autoComplete="new-password"
-                placeholder={s.confirmHint}
+                placeholder={t('vault.onboarding.confirm.hint')}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
               />
@@ -129,10 +127,10 @@ export function Onboarding({ s, onCreate }: OnboardingProps) {
           </Field>
           <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
             <Button variant="secondary" onClick={() => setStep(1)} disabled={busy}>
-              {s.back}
+              {t('common.back')}
             </Button>
             <Button onClick={finish} disabled={busy}>
-              {busy ? s.loading : s.finish}
+              {busy ? t('vault.onboarding.busy') : t('vault.onboarding.finish')}
             </Button>
           </div>
         </section>

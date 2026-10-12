@@ -1,29 +1,17 @@
 /**
  * VaultGate — blueprint BP-02 (pantalla de bloqueo).
- * 4 estados: loading (busy), empty (sin bóveda → Onboarding), locked (formulario), error (passphrase).
- * Fuente: BLUEPRINTS_DE_PANTALLAS.md BP-02 · HU-02.
+ * Estados: boot (carga) · no-vault → Onboarding BP-01 · locked · unlocked → children · éxito (local).
+ * i18n: copy vía useT() (gate i18n:check) · Fuente: BLUEPRINTS BP-02 · HU-02.
  */
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useT } from '@monedero/i18n/react';
 import { Button, Card, Field, Input } from '../../design-system';
-import type { OnboardingStrings } from './Onboarding';
 import { Onboarding } from './Onboarding';
 import { useVaultStore } from './store';
 
-export interface VaultGateStrings {
-  lockTitle: string;
-  lockCopy: string;
-  passphraseLabel: string;
-  unlock: string;
-  loading: string;
-  errorWrong: string;
-  successTitle: string;
-  successCopy: string;
-  successCta: string;
-  onboarding: OnboardingStrings;
-}
-
-export function VaultGate({ s, children }: { s: VaultGateStrings; children?: ReactNode }) {
+export function VaultGate({ children }: { children?: ReactNode }) {
+  const t = useT();
   const status = useVaultStore((st) => st.status);
   const error = useVaultStore((st) => st.error);
   const busy = useVaultStore((st) => st.busy);
@@ -45,7 +33,8 @@ export function VaultGate({ s, children }: { s: VaultGateStrings; children?: Rea
     return (
       <Card>
         <p role="status" style={{ textAlign: 'center', color: 'var(--cs-text-muted)' }}>
-          <span className="ds-spinner" style={{ display: 'inline-block' }} role="presentation" /> …
+          <span className="ds-spinner" style={{ display: 'inline-block' }} role="presentation" aria-hidden="true" />{' '}
+          {t('common.loading')}
         </p>
       </Card>
     );
@@ -54,7 +43,6 @@ export function VaultGate({ s, children }: { s: VaultGateStrings; children?: Rea
   if (status === 'no-vault' && !justCreated) {
     return (
       <Onboarding
-        s={s.onboarding}
         onCreate={async (pass, confirm) => {
           const ok = await createVault(pass, confirm);
           if (ok) setJustCreated(true); // BP-01 paso 4: éxito lo renderiza el gate (evita desmonte)
@@ -73,11 +61,11 @@ export function VaultGate({ s, children }: { s: VaultGateStrings; children?: Rea
             🔐
           </div>
           <h1 style={{ fontFamily: 'var(--cs-font-display)', fontSize: 24, margin: '0 0 8px' }}>
-            {s.successTitle}
+            {t('vault.success.title')}
           </h1>
-          <p style={{ color: 'var(--cs-text-muted)', fontSize: 14, marginBottom: 24 }}>{s.successCopy}</p>
+          <p style={{ color: 'var(--cs-text-muted)', fontSize: 14, marginBottom: 24 }}>{t('vault.success.copy')}</p>
           <Button onClick={() => setJustCreated(false)} style={{ width: '100%' }}>
-            {s.successCta}
+            {t('vault.success.cta')}
           </Button>
         </section>
       </Card>
@@ -89,15 +77,21 @@ export function VaultGate({ s, children }: { s: VaultGateStrings; children?: Rea
     return <>{children}</>;
   }
 
+  // ── locked (BP-02) ──
   return (
     <Card aria-labelledby="vg-title">
       <div className="ds-empty__icon" aria-hidden="true" style={{ margin: '0 auto 12px' }}>
         🔐
       </div>
-      <h1 id="vg-title" style={{ fontFamily: 'var(--cs-font-display)', fontSize: 24, textAlign: 'center', margin: '0 0 8px' }}>
-        {s.lockTitle}
+      <h1
+        id="vg-title"
+        style={{ fontFamily: 'var(--cs-font-display)', fontSize: 24, textAlign: 'center', margin: '0 0 8px' }}
+      >
+        {t('vault.lock.title')}
       </h1>
-      <p style={{ color: 'var(--cs-text-muted)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>{s.lockCopy}</p>
+      <p style={{ color: 'var(--cs-text-muted)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
+        {t('vault.lock.copy')}
+      </p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -105,7 +99,10 @@ export function VaultGate({ s, children }: { s: VaultGateStrings; children?: Rea
           void unlock(String(data.get('pass') ?? ''));
         }}
       >
-        <Field label={s.passphraseLabel} error={error === 'VAULT_WRONG_PASSPHRASE' ? s.errorWrong : undefined}>
+        <Field
+          label={t('vault.lock.passphrase')}
+          error={error === 'VAULT_WRONG_PASSPHRASE' ? t('vault.lock.error.wrong') : undefined}
+        >
           {({ inputId, describedBy, invalid }) => (
             <Input
               inputId={inputId}
@@ -114,13 +111,13 @@ export function VaultGate({ s, children }: { s: VaultGateStrings; children?: Rea
               name="pass"
               type="password"
               autoComplete="current-password"
-              placeholder={s.passphraseLabel}
+              placeholder={t('vault.lock.passphrase')}
               disabled={busy}
             />
           )}
         </Field>
         <Button type="submit" disabled={busy} style={{ width: '100%', marginTop: 20 }}>
-          {busy ? s.loading : s.unlock}
+          {busy ? t('vault.lock.busy') : t('vault.lock.submit')}
         </Button>
       </form>
     </Card>

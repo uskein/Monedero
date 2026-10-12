@@ -1,0 +1,29 @@
+{
+  "name": "@monedero/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "i18n local-first: diccionarios es-CO/en-US + formateo monetario regional (formatMoney único por HU-18). Sin dependencias de red.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true }
+  },
+  "devDependencies": {
+    "react": "19.3.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0",
+    "@vitest/coverage-v8": "3.2.7"
+  }
+}

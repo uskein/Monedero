@@ -1,46 +1,14 @@
 /**
- * Bootstrap de la PWA — BP-01/BP-02 (vault) + showcase DS en /design-system.
- * i18n: copy de producción resuelto por el caller (bloque es-CO embebido hasta S1.4 i18n pkg;
- * marcado data-i18n para el gate de detección de strings).
+ * Bootstrap de la PWA — I18nProvider + BP-01/BP-02 (vault) + showcase DS en /design-system.
+ * i18n: cero strings hardcodeados → useT() (gate i18n:check).
  * Trazabilidad: ESTRUCTURA_DIRECTORIOS.md → apps/web/src/app/App.tsx
  */
 import { useSyncExternalStore } from 'react';
 import { csColors, csLogo } from '@monedero/tokens';
+import { I18nProvider, useT } from '@monedero/i18n/react';
 import Showcase from '../design-system/Showcase';
 import '../design-system/components.css';
 import { VaultGate } from '../features/vault/VaultGate';
-import type { VaultGateStrings } from '../features/vault/VaultGate';
-
-/** copy es-CO (exento como bloque i18n inicial; migrado a shared/i18n en S1.4). */
-const ES: VaultGateStrings = {
-  lockTitle: 'Bóveda bloqueada',
-  lockCopy: 'Introduce tu contraseña maestra para descifrar tus datos locales.',
-  passphraseLabel: 'Contraseña maestra',
-  unlock: 'Desbloquear',
-  loading: 'Descifrando…',
-  errorWrong: 'Contraseña incorrecta. Tus datos siguen protegidos.',
-  successTitle: '¡Bóveda lista!',
-  successCopy: 'Tus datos están cifrados en este dispositivo.',
-  successCta: 'Empezar',
-  onboarding: {
-    welcomeTitle: 'Bienvenido a Monedero',
-    welcomeCopy: 'Tus gastos viven solo en este dispositivo. Sin nube, sin cuentas, sin telemetría.',
-    createTitle: 'Crea tu contraseña maestra',
-    createCopy: 'Cifra todo con AES-256-GCM. Si la olvidas, nadie —ni nosotros— puede recuperarla.',
-    passphraseLabel: 'Contraseña maestra',
-    passphraseHint: 'Mínimo 8 caracteres',
-    confirmLabel: 'Repite la contraseña',
-    confirmHint: 'Escribe la misma contraseña',
-    errorMin: 'La contraseña debe tener al menos 8 caracteres.',
-    errorMatch: 'Las contraseñas no coinciden.',
-    next: 'Continuar',
-    back: 'Atrás',
-    finish: 'Crear bóveda',
-    loading: 'Cifrando…',
-    successTitle: '¡Bóveda lista!',
-    successCopy: 'Tus datos están cifrados en este dispositivo.',
-  },
-};
 
 function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(
@@ -54,6 +22,7 @@ function usePrefersReducedMotion(): boolean {
 }
 
 function Hero({ reducedMotion }: { reducedMotion: boolean }) {
+  const t = useT();
   return (
     <div>
       <div
@@ -86,7 +55,7 @@ function Hero({ reducedMotion }: { reducedMotion: boolean }) {
           margin: 0,
         }}
       >
-        Monedero
+        {t('app.name')}
       </h1>
       <p
         role="status"
@@ -98,19 +67,15 @@ function Hero({ reducedMotion }: { reducedMotion: boolean }) {
           margin: '12px auto 0',
         }}
       >
-        Gestor de gastos local — tus datos nunca salen de tu dispositivo.
+        {t('home.lead')}
       </p>
     </div>
   );
 }
 
-export default function App() {
+function Shell() {
+  const t = useT();
   const reducedMotion = usePrefersReducedMotion();
-
-  // Ruta interna de desarrollo: galería viva del Design System (Paso 3).
-  const isShowcase =
-    typeof window !== 'undefined' && window.location.pathname.startsWith('/design-system');
-  if (isShowcase) return <Showcase />;
 
   return (
     <main
@@ -128,12 +93,25 @@ export default function App() {
     >
       <Hero reducedMotion={reducedMotion} />
       <div style={{ width: 'min(440px, 100%)', textAlign: 'left' }}>
-        <VaultGate s={ES}>
+        <VaultGate>
           <p role="status" style={{ textAlign: 'center', color: csColors.primary, fontSize: 14 }}>
-            Bóveda desbloqueada — dashboard en construcción (S3).
+            {t('home.unlocked')}
           </p>
         </VaultGate>
       </div>
     </main>
+  );
+}
+
+export default function App() {
+  // Ruta interna de desarrollo: galería viva del Design System (Paso 3).
+  const isShowcase =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/design-system');
+  if (isShowcase) return <Showcase />;
+
+  return (
+    <I18nProvider>
+      <Shell />
+    </I18nProvider>
   );
 }

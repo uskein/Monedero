@@ -17,6 +17,7 @@
     "typecheck": "turbo run typecheck",
     "tokens:check": "node tools/tokens-check.mjs",
     "contract:check": "node tools/sync-contract.mjs",
+    "i18n:check": "node tools/i18n-check.mjs",
     "audit": "pnpm audit --audit-level=high"
   },
   "devDependencies": {
