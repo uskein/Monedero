@@ -4,13 +4,14 @@
  * «Meta alcanzada» · toast sereno budget:exceeded de 4000 ms no bloqueante ·
  * F4: slot ocupado → «editar existente». El repo se inyecta (hexagonal).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '@monedero/i18n/react';
 import { formatAmountLive } from '@monedero/i18n';
 import type { CurrencyCode } from '@monedero/i18n';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, MoneyInput, ProgressBar, Toast } from '../design-system';
+import { useThemeColors } from '../theme';
 import { parseAmountToCents } from '../../core/domain/money';
 import { currentPeriod } from '../../core/domain/budget';
 import { useBudgetsStore, type BudgetRow, type BudgetsRepo } from '../../state/budgets.store';
@@ -36,6 +37,8 @@ export interface BudgetsScreenProps {
 
 export function BudgetsScreen({ budgets, txRepo, categories, period, currency: currencyProp = 'COP' }: BudgetsScreenProps) {
   const { t, money, locale } = useI18n();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const status = useBudgetsStore((s) => s.status);
   const items = useBudgetsStore((s) => s.items);
   const duplicate = useBudgetsStore((s) => s.duplicate);
@@ -280,37 +283,39 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency: c
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.bgBase },
   content: { gap: csSpace.s4, padding: csSpace.s4 },
-  title: { fontSize: 20, fontWeight: '700', color: csColors.textPrimary },
-  hint: { fontSize: 13, color: csColors.textMuted },
-  copy: { fontSize: 14, lineHeight: 22, color: csColors.textMuted },
+  title: { fontSize: 20, fontWeight: '700', color: c.textPrimary },
+  hint: { fontSize: 13, color: c.textMuted },
+  copy: { fontSize: 14, lineHeight: 22, color: c.textMuted },
   card: { gap: csSpace.s3 },
   gap: { gap: csSpace.s3 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: csColors.textPrimary },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: c.textPrimary },
   rowHeader: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s2, flexWrap: 'wrap' },
-  rowName: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary, flexShrink: 1 },
+  rowName: { fontSize: 15, fontWeight: '600', color: c.textPrimary, flexShrink: 1 },
   chipExceeded: {
-    backgroundColor: csColors.danger,
+    backgroundColor: c.danger,
     borderRadius: csRadius.pill,
     paddingHorizontal: csSpace.s3,
     paddingVertical: csSpace.s1,
   },
-  chipExceededText: { fontSize: 12, fontWeight: '600', color: csColors.textOnPrimary },
+  chipExceededText: { fontSize: 12, fontWeight: '600', color: c.textOnPrimary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
   chip: {
     minHeight: 44,
     justifyContent: 'center',
     paddingHorizontal: csSpace.s4,
     borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
+    backgroundColor: c.surfaceSunken,
     // Nombres largos sin cortar: el chip encoge y el texto fluye.
     flexShrink: 1,
     maxWidth: '100%',
   },
-  chipSelected: { backgroundColor: csColors.primary },
-  chipLabel: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary, flexShrink: 1 },
-  chipLabelSelected: { color: csColors.textOnPrimary },
-  errorText: { fontSize: 14, color: csColors.danger },
-});
+  chipSelected: { backgroundColor: c.primary },
+  chipLabel: { fontSize: 15, fontWeight: '600', color: c.textPrimary, flexShrink: 1 },
+  chipLabelSelected: { color: c.textOnPrimary },
+  errorText: { fontSize: 14, color: c.danger },
+  });
+}

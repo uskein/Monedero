@@ -3,11 +3,12 @@
  * El repo se inyecta (hexagonal): en prod será SQLCipher, en tests/dev sql.js.
  * 4 estados delegados a TransactionList. Trazabilidad: features/transactions → móvil.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useT } from '@monedero/i18n/react';
-import { csColors, csSpace } from '@monedero/tokens';
+import { csSpace } from '@monedero/tokens';
 import { Button } from '../design-system';
+import { useThemeColors } from '../theme';
 import { TransactionForm } from './TransactionForm';
 import { TransactionList } from './TransactionList';
 import { CATEGORY_NAMES, DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES } from './catalog';
@@ -24,6 +25,8 @@ export interface TransactionsScreenProps {
 
 export function TransactionsScreen({ repo, currency = 'COP', addSignal = 0 }: TransactionsScreenProps) {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const status = useTransactionsStore((s) => s.status);
   const items = useTransactionsStore((s) => s.items);
   const error = useTransactionsStore((s) => s.error);
@@ -85,8 +88,10 @@ export function TransactionsScreen({ repo, currency = 'COP', addSignal = 0 }: Tr
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
-  content: { gap: csSpace.s4, padding: csSpace.s4 },
-  formWrap: { gap: csSpace.s2 },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.bgBase },
+    content: { gap: csSpace.s4, padding: csSpace.s4 },
+    formWrap: { gap: csSpace.s2 },
+  });
+}

@@ -109,6 +109,11 @@ export const enUS: Dictionary = {
   'categories.group.income': 'Income',
   'categories.back': 'Back to Settings',
 
+  'settings.theme': 'Theme',
+  'settings.theme.light': 'Light',
+  'settings.theme.dark': 'Dark',
+  'settings.theme.system': 'System',
+
   'budgets.title': 'Budgets',
   'budgets.add': 'Set limit',
   'budgets.form.category': 'Category',

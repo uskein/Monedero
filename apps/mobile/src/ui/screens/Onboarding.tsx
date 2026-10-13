@@ -5,11 +5,12 @@
  * empty (paso inicial), success (delegado al padre), error (validación local
  * con role=alert). Trazabilidad: BLUEPRINTS BP-01 · F1 · HU-01.
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@monedero/i18n/react';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, BusyIndicator, Card, Input } from '../design-system';
+import { useThemeColors } from '../theme';
 
 export interface OnboardingProps {
   /** Crea la bóveda (store); false si la validación falla (error en el paso). */
@@ -25,6 +26,8 @@ const FONT_DISPLAY = 'Fraunces';
 
 export function Onboarding({ onCreate }: OnboardingProps) {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const [step, setStep] = useState<Step>(0);
   const [pass, setPass] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -131,16 +134,18 @@ export function Onboarding({ onCreate }: OnboardingProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.bgBase },
   content: { padding: csSpace.s4 },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3, marginBottom: csSpace.s4 },
-  stepText: { fontSize: 12, color: csColors.textMuted },
-  track: { flex: 1, height: 6, borderRadius: csRadius.pill, backgroundColor: csColors.surfaceSunken },
-  fill: { height: 6, borderRadius: csRadius.pill, backgroundColor: csColors.primary },
+  stepText: { fontSize: 12, color: c.textMuted },
+  track: { flex: 1, height: 6, borderRadius: csRadius.pill, backgroundColor: c.surfaceSunken },
+  fill: { height: 6, borderRadius: csRadius.pill, backgroundColor: c.primary },
   section: { gap: csSpace.s3 },
-  title: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 30, color: csColors.textPrimary },
-  titleSmall: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 22, color: csColors.textPrimary },
-  copy: { fontSize: 15, color: csColors.textMuted },
+  title: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 30, color: c.textPrimary },
+  titleSmall: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 22, color: c.textPrimary },
+  copy: { fontSize: 15, color: c.textMuted },
   actions: { flexDirection: 'row', gap: csSpace.s3, marginTop: csSpace.s2 },
-});
+  });
+}

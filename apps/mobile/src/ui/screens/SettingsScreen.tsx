@@ -1,39 +1,41 @@
 /**
  * SettingsScreen (móvil) — BP-08 (raíz de Ajustes) + sub Categorías (HU-10).
- * Espejo de la PWA (features/settings). S5: el hub vive con la única sección
- * funcional «Categorías»; seguridad/datos/apariencia llegan en S6/S7.
- * 4 estados: loading | empty | success | error. Color restringido a tokens.
+ * S6: hub con TEMO (HU-17: Claro/Oscuro/Sistema) y MONEDA global (HU-18:
+ * COP/USD/EUR) persistidas en prefs + gestión de categorías (HU-10).
+ * Estilos TEMÁTICOS: colores vía useThemeColors + useMemo (SSOT csColors/Dark).
+ * Copy i18n — cero strings hardcodeados (gate i18n:check).
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useT } from '@monedero/i18n/react';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, Input } from '../design-system';
+import { useThemeColors } from '../theme';
+import { usePrefsStore, type ThemePreference } from '../../state/prefs.store';
 import { useCategoriesStore, type CategoriesRepo } from '../../state/categories.store';
 import type { Category, CategoryType } from '../../core/domain/category';
-
-/** Paleta restringida a tokens --cs-* (criterio HU-10). */
-export const CATEGORY_SWATCHES = [
-  { token: 'primary', color: csColors.primary },
-  { token: 'secondary', color: csColors.secondary },
-  { token: 'accent', color: csColors.accent },
-  { token: 'danger', color: csColors.danger },
-] as const;
-
-export type SwatchToken = (typeof CATEGORY_SWATCHES)[number]['token'];
-
-/** Color de la fila: SOLO valores token (si el dato no coincide, sunken). */
-export function swatchColorFor(categoryColor: string): string {
-  return CATEGORY_SWATCHES.find((s) => s.color === categoryColor)?.color ?? csColors.surfaceSunken;
-}
 
 export interface SettingsScreenProps {
   categories: CategoriesRepo;
 }
 
+const THEME_OPTIONS: Array<{ value: ThemePreference; key: 'settings.theme.light' | 'settings.theme.dark' | 'settings.theme.system'; icon: 'sunny' | 'moon' | 'phone-portrait' }> = [
+  { value: 'light', key: 'settings.theme.light', icon: 'sunny' },
+  { value: 'dark', key: 'settings.theme.dark', icon: 'moon' },
+  { value: 'system', key: 'settings.theme.system', icon: 'phone-portrait' },
+];
+
+const CURRENCY_OPTIONS = ['COP', 'USD', 'EUR'] as const;
+
+/** Paleta restringida a tokens --cs-* (criterio HU-10). */
+const SWATCH_TOKENS = ['primary', 'secondary', 'accent', 'danger'] as const;
+type SwatchToken = (typeof SWATCH_TOKENS)[number];
+
 export function SettingsScreen({ categories }: SettingsScreenProps) {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const [view, setView] = useState<'hub' | 'categories'>('hub');
 
   if (view === 'categories') {
@@ -43,65 +45,97 @@ export function SettingsScreen({ categories }: SettingsScreenProps) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} accessibilityLabel={t('settings.title')}>
       <Text style={styles.title}>{t('settings.title')}</Text>
+
+      {/* HU-17 · tema */}
       <Card style={styles.card}>
-        <Text style={styles.copy}>{t('settings.subtitle')}</Text>
+        <Text style={styles.cardTitle}>{t('settings.theme')}</Text>
+        <View accessibilityRole="radiogroup" accessibilityLabel={t('settings.theme')} style={styles.chips}>
+          {THEME_OPTIONS.map((opt) => (
+            <ThemeChip key={opt.value} option={opt} />
+          ))}
+        </View>
+      </Card>
+
+      {/* HU-18 · moneda global */}
+      <CurrencyCard styles={styles} />
+
+      {/* HU-10 · categorías */}
+      <Card style={styles.card}>
+        <Text style={styles.copy}>{t('settings.categories.copy')}</Text>
         <Button variant="secondary" label={t('settings.categories')} onPress={() => setView('categories')} />
-        <Text style={styles.hint}>{t('settings.categories.copy')}</Text>
       </Card>
     </ScrollView>
   );
 }
 
-/** Type chips (Gasto/Ingreso) con rol radio — espejo del Segmented de la PWA. */
-function TypeChips({ value, onChange }: { value: CategoryType; onChange: (v: CategoryType) => void }) {
+function ThemeChip({
+  option,
+}: {
+  option: { value: ThemePreference; key: 'settings.theme.light' | 'settings.theme.dark' | 'settings.theme.system'; icon: 'sunny' | 'moon' | 'phone-portrait' };
+}) {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
+  const theme = usePrefsStore((s) => s.theme);
+  const setTheme = usePrefsStore((s) => s.setTheme);
+  const selected = theme === option.value;
   return (
-    <View accessibilityLabel={t('categories.form.type')} style={styles.chips}>
-      {(
-        [
-          { v: 'expense' as const, label: t('tx.type.expense') },
-          { v: 'income' as const, label: t('tx.type.income') },
-        ]
-      ).map((opt) => (
-        <Pressable
-          key={opt.v}
-          accessibilityRole="radio"
-          accessibilityState={{ checked: value === opt.v }}
-          onPress={() => onChange(opt.v)}
-          style={[styles.chip, value === opt.v && styles.chipSelected]}
-        >
-          <Text style={[styles.chipLabel, value === opt.v && styles.chipLabelSelected]}>{opt.label}</Text>
-        </Pressable>
-      ))}
-    </View>
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected }}
+      accessibilityLabel={t(option.key)}
+      onPress={() => void setTheme(option.value)}
+      style={[styles.chip, selected && styles.chipSelected]}
+    >
+      <Ionicons name={option.icon} size={15} color={selected ? c.textOnPrimary : c.textMuted} />
+      <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{t(option.key)}</Text>
+    </Pressable>
   );
 }
 
-/** Selector de color (radiogroup) — SOLO swatches de tokens --cs-*. */
-function SwatchPicker({ value, onPick }: { value: SwatchToken; onPick: (v: SwatchToken) => void }) {
+function CurrencyCard({ styles }: { styles: ReturnType<typeof makeStyles> }) {
   const t = useT();
+  const currency = usePrefsStore((s) => s.currency);
+  const setCurrency = usePrefsStore((s) => s.setCurrency);
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel={t('categories.form.color')} style={styles.swatches}>
-      {CATEGORY_SWATCHES.map((s) => (
-        <Pressable
-          key={s.token}
-          accessibilityRole="radio"
-          accessibilityState={{ checked: value === s.token }}
-          accessibilityLabel={s.token}
-          onPress={() => onPick(s.token)}
-          style={[
-            styles.swatch,
-            { backgroundColor: s.color },
-            value === s.token && styles.swatchSelected,
-          ]}
-        />
-      ))}
-    </View>
+    <Card style={styles.card}>
+      <Text style={styles.cardTitle}>{t('common.currency')}</Text>
+      <View accessibilityRole="radiogroup" accessibilityLabel={t('common.currency')} style={styles.chips}>
+        {CURRENCY_OPTIONS.map((code) => {
+          const selected = currency === code;
+          return (
+            <Pressable
+              key={code}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              accessibilityLabel={code}
+              onPress={() => void setCurrency(code)}
+              style={[styles.chip, selected && styles.chipSelected]}
+            >
+              <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{code}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </Card>
   );
+}
+
+/** Devuelve los colores del swatch desde los tokens activos (tema-aware). */
+function swatchColorFor(color: string, c: ReturnType<typeof useThemeColors>): string {
+  const palette: Record<SwatchToken, string> = {
+    primary: c.primary,
+    secondary: c.secondary,
+    accent: c.accent,
+    danger: c.danger,
+  };
+  return Object.values(palette).includes(color) ? color : c.surfaceSunken;
 }
 
 export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBack: () => void }) {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const status = useCategoriesStore((s) => s.status);
   const items = useCategoriesStore((s) => s.items);
   const formError = useCategoriesStore((s) => s.formError);
@@ -112,7 +146,6 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
   const archive = useCategoriesStore((s) => s.archive);
   const remove = useCategoriesStore((s) => s.remove);
   const clearFormError = useCategoriesStore((s) => s.clearFormError);
-
   const [mode, setMode] = useState<'list' | 'create' | 'edit'>('list');
   const [editing, setEditing] = useState<Category | null>(null);
   const [name, setName] = useState('');
@@ -145,8 +178,14 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
     setEditing(category);
     setName(category.name);
     setType(category.type);
-    const match = CATEGORY_SWATCHES.find((s) => s.color === category.color);
-    setSwatch(match?.token ?? 'primary');
+    const palette: Record<SwatchToken, string> = {
+      primary: c.primary,
+      secondary: c.secondary,
+      accent: c.accent,
+      danger: c.danger,
+    };
+    const match = (Object.keys(palette) as SwatchToken[]).find((k) => palette[k] === category.color);
+    setSwatch(match ?? 'primary');
     setColorDirty(false);
     setNameError(null);
   }
@@ -158,7 +197,13 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
       return;
     }
     setNameError(null);
-    const color = CATEGORY_SWATCHES.find((s) => s.token === swatch)?.color;
+    const palette: Record<SwatchToken, string> = {
+      primary: c.primary,
+      secondary: c.secondary,
+      accent: c.accent,
+      danger: c.danger,
+    };
+    const color = palette[swatch];
     const ok =
       mode === 'edit' && editing
         ? await update(editing.id, colorDirty ? { name: trimmed, color } : { name: trimmed })
@@ -186,7 +231,7 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
       </View>
 
       {status === 'error' ? (
-        <View style={styles.errorBox}>
+        <View style={styles.gap}>
           <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.errorText}>
             {t('categories.error')}
           </Text>
@@ -206,10 +251,13 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
             error={nameError ?? undefined}
           />
           {mode === 'create' && <TypeChips value={type} onChange={setType} />}
-          <SwatchPicker value={swatch} onPick={(v) => {
-            setSwatch(v);
-            setColorDirty(true);
-          }} />
+          <SwatchPicker
+            value={swatch}
+            onPick={(v) => {
+              setSwatch(v);
+              setColorDirty(true);
+            }}
+          />
           {formErrorMessage && (
             <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.errorText}>
               {formErrorMessage}
@@ -227,7 +275,7 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
           />
         </Card>
       ) : (
-        <View style={styles.cardGap}>
+        <View style={styles.gap}>
           {removeFailed && (
             <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.errorText}>
               {t('categories.error.delete')}
@@ -240,24 +288,24 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
               <Button label={t('categories.add')} onPress={startCreate} />
             </Card>
           ) : (
-            <View style={styles.cardGap}>
+            <View style={styles.gap}>
               {(['expense', 'income'] as const).map((groupType) => {
-                const group = items.filter((c) => c.type === groupType);
+                const group = items.filter((cat) => cat.type === groupType);
                 if (group.length === 0) return null;
                 return (
-                  <View key={groupType} style={styles.cardGap}>
+                  <View key={groupType} style={styles.gap}>
                     <Text style={styles.groupTitle}>
                       {groupType === 'expense' ? t('categories.group.expense') : t('categories.group.income')}
                     </Text>
                     <Card style={styles.card}>
-                      {group.map((c) => (
-                        <View key={c.id} style={[styles.row, c.parentId ? styles.rowChild : null]}>
+                      {group.map((cat) => (
+                        <View key={cat.id} style={[styles.row, cat.parentId ? styles.rowChild : null]}>
                           <View style={styles.rowMain}>
                             <View
                               accessibility-hidden="true"
-                              style={[styles.dot, { backgroundColor: swatchColorFor(c.color) }]}
+                              style={[styles.dot, { backgroundColor: swatchColorFor(cat.color, c) }]}
                             />
-                            <Text style={styles.rowName}>{c.name}</Text>
+                            <Text style={styles.rowName}>{cat.name}</Text>
                           </View>
                           {/* Acciones por ICONO (el texto desbordaba); el
                               nombre accesible sigue siendo «Editar/Archivar/
@@ -265,24 +313,24 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
                           <View style={styles.rowActions}>
                             <IconButton
                               icon="create-outline"
-                              label={`${t('categories.edit')} ${c.name}`}
-                              onPress={() => startEdit(c)}
+                              label={`${t('categories.edit')} ${cat.name}`}
+                              onPress={() => startEdit(cat)}
                             />
                             <IconButton
                               icon="archive-outline"
-                              label={`${t('categories.archive')} ${c.name}`}
+                              label={`${t('categories.archive')} ${cat.name}`}
                               onPress={() => {
                                 setRemoveFailed(false);
-                                void archive(c.id);
+                                void archive(cat.id);
                               }}
                             />
                             <IconButton
                               icon="trash-outline"
-                              label={`${t('common.delete')} ${c.name}`}
+                              label={`${t('common.delete')} ${cat.name}`}
                               danger
                               onPress={() => {
                                 setRemoveFailed(false);
-                                void remove(c.id).then((ok) => setRemoveFailed(!ok));
+                                void remove(cat.id).then((ok) => setRemoveFailed(!ok));
                               }}
                             />
                           </View>
@@ -301,6 +349,60 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
   );
 }
 
+/** Type chips (Gasto/Ingreso) con rol radio - espejo del Segmented de la PWA. */
+function TypeChips({ value, onChange }: { value: CategoryType; onChange: (v: CategoryType) => void }) {
+  const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
+  return (
+    <View accessibilityLabel={t('categories.form.type')} style={styles.chips}>
+      {(
+        [
+          { v: 'expense' as const, label: t('tx.type.expense') },
+          { v: 'income' as const, label: t('tx.type.income') },
+        ]
+      ).map((opt) => (
+        <Pressable
+          key={opt.v}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: value === opt.v }}
+          onPress={() => onChange(opt.v)}
+          style={[styles.chip, value === opt.v && styles.chipSelected]}
+        >
+          <Text style={[styles.chipLabel, value === opt.v && styles.chipLabelSelected]}>{opt.label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/** Selector de color (radiogroup) - SOLO swatches de tokens --cs-*. */
+function SwatchPicker({ value, onPick }: { value: SwatchToken; onPick: (v: SwatchToken) => void }) {
+  const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
+  const palette: Record<SwatchToken, string> = {
+    primary: c.primary,
+    secondary: c.secondary,
+    accent: c.accent,
+    danger: c.danger,
+  };
+  return (
+    <View accessibilityRole="radiogroup" accessibilityLabel={t('categories.form.color')} style={styles.swatches}>
+      {SWATCH_TOKENS.map((token) => (
+        <Pressable
+          key={token}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: value === token }}
+          accessibilityLabel={token}
+          onPress={() => onPick(token)}
+          style={[styles.swatch, { backgroundColor: palette[token] }, value === token && styles.swatchSelected]}
+        />
+      ))}
+    </View>
+  );
+}
+
 /** Botón de acción por icono (44 dp de área táctil) con nombre accesible. */
 function IconButton({
   icon,
@@ -313,6 +415,8 @@ function IconButton({
   danger?: boolean;
   onPress: () => void;
 }) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <Pressable
       accessibilityRole="button"
@@ -321,52 +425,57 @@ function IconButton({
       hitSlop={6}
       style={styles.iconBtn}
     >
-      <Ionicons name={icon} size={20} color={danger ? csColors.danger : csColors.textPrimary} />
+      <Ionicons name={icon} size={20} color={danger ? c.danger : c.textPrimary} />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
-  content: { gap: csSpace.s4, padding: csSpace.s4 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
-  title: { fontSize: 20, fontWeight: '700', color: csColors.textPrimary },
-  card: { gap: csSpace.s3 },
-  cardGap: { gap: csSpace.s3 },
-  copy: { fontSize: 14, lineHeight: 22, color: csColors.textMuted },
-  hint: { fontSize: 13, color: csColors.textMuted },
-  groupTitle: { fontSize: 13, fontWeight: '600', color: csColors.textMuted },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: csColors.textPrimary },
-  row: { gap: csSpace.s2, paddingVertical: csSpace.s2 },
-  rowChild: { paddingLeft: csSpace.s4 },
-  rowMain: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3, minHeight: 40 },
-  dot: { width: 12, height: 12, borderRadius: 6 },
-  rowName: { fontSize: 15, color: csColors.textPrimary, flexShrink: 1 },
-  rowActions: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2, marginTop: csSpace.s1 },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-  },
-  chips: { flexDirection: 'row', gap: csSpace.s2 },
-  chip: {
-    flex: 1,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-    paddingHorizontal: csSpace.s2,
-  },
-  chipSelected: { backgroundColor: csColors.primary },
-  chipLabel: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary, flexShrink: 1, textAlign: 'center' },
-  chipLabelSelected: { color: csColors.textOnPrimary },
-  swatches: { flexDirection: 'row', gap: csSpace.s3 },
-  swatch: { width: 32, height: 32, borderRadius: 16, borderWidth: 3, borderColor: 'transparent' },
-  swatchSelected: { borderColor: csColors.textPrimary },
-  errorBox: { gap: csSpace.s3 },
-  errorText: { fontSize: 14, color: csColors.danger },
-});
+/** Estilos temáticos: se recrean al cambiar el tema (SSOT csColors/Dark). */
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.bgBase },
+    content: { gap: csSpace.s4, padding: csSpace.s4 },
+    header: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
+    title: { fontSize: 20, fontWeight: '700', color: c.textPrimary },
+    cardTitle: { fontSize: 15, fontWeight: '700', color: c.textPrimary },
+    card: { gap: csSpace.s3 },
+    copy: { fontSize: 14, lineHeight: 22, color: c.textMuted },
+    gap: { gap: csSpace.s3 },
+    emptyTitle: { fontSize: 16, fontWeight: '700', color: c.textPrimary },
+    groupTitle: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    row: { gap: csSpace.s2, paddingVertical: csSpace.s2 },
+    rowChild: { paddingLeft: csSpace.s4 },
+    rowMain: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3, minHeight: 40, flexShrink: 1 },
+    dot: { width: 12, height: 12, borderRadius: 6, flexShrink: 0 },
+    rowName: { fontSize: 15, color: c.textPrimary, flexShrink: 1 },
+    rowActions: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2, marginTop: csSpace.s1 },
+    iconBtn: {
+      width: 44,
+      height: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+    },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: csSpace.s2,
+      minHeight: 44,
+      justifyContent: 'center',
+      paddingHorizontal: csSpace.s4,
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+      flexShrink: 1,
+      maxWidth: '100%',
+    },
+    chipSelected: { backgroundColor: c.primary },
+    chipLabel: { fontSize: 15, fontWeight: '600', color: c.textPrimary, flexShrink: 1 },
+    chipLabelSelected: { color: c.textOnPrimary },
+    swatches: { flexDirection: 'row', gap: csSpace.s3 },
+    swatch: { width: 32, height: 32, borderRadius: 16, borderWidth: 3, borderColor: 'transparent' },
+    swatchSelected: { borderColor: c.textPrimary },
+    errorText: { fontSize: 14, color: c.danger },
+  });
+}

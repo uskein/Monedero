@@ -2,11 +2,13 @@
  * ProgressBar (móvil) — barra presupuestaria Clay (manual SSOT §7.5).
  * Filosofía serena: base → accent al 80 % → danger al 100 %. Combinar SIEMPRE
  * con texto/porcentaje visible en la UI (nunca solo color). RN: rol
- * progressbar + accessibilityValue (VoiceOver/TalkBack anuncian el avance).
+ * progressbar + accessibilityValue. Temático (HU-17).
  */
+import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { DimensionValue } from 'react-native';
-import { csColors, csRadius } from '@monedero/tokens';
+import { csRadius } from '@monedero/tokens';
+import { useThemeColors } from '../theme';
 
 export interface ProgressBarProps {
   /** 0–100+; >100 se satura al 100 % con tono over (danger). */
@@ -16,6 +18,8 @@ export interface ProgressBarProps {
 }
 
 export function ProgressBar({ percent, label }: ProgressBarProps) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const clamped = Math.max(0, Math.min(100, percent));
   const tone = percent >= 100 ? 'over' : percent >= 80 ? 'warn' : 'base';
   return (
@@ -36,18 +40,20 @@ export function ProgressBar({ percent, label }: ProgressBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  track: {
-    height: 10,
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.primary,
-  },
-  warn: { backgroundColor: csColors.accent },
-  over: { backgroundColor: csColors.danger },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    track: {
+      height: 10,
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+      overflow: 'hidden',
+    },
+    fill: {
+      height: '100%',
+      borderRadius: csRadius.pill,
+      backgroundColor: c.primary,
+    },
+    warn: { backgroundColor: c.accent },
+    over: { backgroundColor: c.danger },
+  });
+}

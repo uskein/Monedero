@@ -6,11 +6,12 @@
  * Copy vía useT() — cero strings hardcodeados (gate i18n:check).
  * Trazabilidad: BLUEPRINTS BP-01/BP-02 · F1/F2 · HU-02·03·04.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useT } from '@monedero/i18n/react';
-import { csColors, csSpace } from '@monedero/tokens';
+import { csSpace } from '@monedero/tokens';
 import { Button, BusyIndicator, Card, Input } from '../design-system';
+import { useThemeColors } from '../theme';
 import { Onboarding } from './Onboarding';
 import { useVaultStore } from '../../state/vault.store';
 
@@ -22,6 +23,8 @@ const FONT_DISPLAY = 'Fraunces';
 
 export function VaultGate({ children }: VaultGateProps) {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const status = useVaultStore((s) => s.status);
   const error = useVaultStore((s) => s.error);
   const busy = useVaultStore((s) => s.busy);
@@ -115,14 +118,16 @@ export function VaultGate({ children }: VaultGateProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.bgBase },
   content: { padding: csSpace.s4 },
   // Separación explícita Input ↔ botón (el Card no tiene gap propio y
   // el estilo clay los fundía visualmente).
   card: { gap: csSpace.s4 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: csColors.bgBase },
-  title: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 24, color: csColors.textPrimary },
-  copy: { fontSize: 15, color: csColors.textMuted },
-  muted: { fontSize: 15, color: csColors.textMuted },
-});
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bgBase },
+  title: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 24, color: c.textPrimary },
+  copy: { fontSize: 15, color: c.textMuted },
+  muted: { fontSize: 15, color: c.textMuted },
+  });
+}

@@ -72,9 +72,15 @@
   --cs-surface: #26221E;
   --cs-surface-sunken: #332E29;
   --cs-primary: #6FCF97;
+  --cs-primary-hover: #5CBF87;
+  --cs-primary-soft: rgba(111, 207, 151, 0.14);
   --cs-accent: #E89B84;
+  --cs-accent-text: #F0B49F;
+  --cs-secondary: #8FA9C9;
   --cs-text-primary: #F4EFE7;
   --cs-text-muted: #A79F95;
+  --cs-text-on-primary: #14201A;
+  --cs-placeholder: #8A8279;
   --cs-danger: #EF8078;
 }
 

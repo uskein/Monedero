@@ -6,13 +6,14 @@
  * transferencia), MoneyInput con formato EN VIVO (HU-18) y secciones con
  * iconos. Copy i18n vía useT() — cero strings hardcodeados (gate i18n:check).
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import { formatAmountLive } from '@monedero/i18n';
-import { csColors, csLogo, csRadius, csSpace } from '@monedero/tokens';
+import { csLogo, csRadius, csSpace } from '@monedero/tokens';
 import { Button, Input, MoneyInput } from '../design-system';
+import { useThemeColors } from '../theme';
 import { parseAmountToCents } from '../../core/domain/money';
 import type { TxInput, TxType } from '../../core/domain/transaction';
 
@@ -40,6 +41,8 @@ const TYPE_ICON = {
 
 export function TransactionForm({ categories, accounts, currency, busy = false, error = null, onSubmit }: TransactionFormProps) {
   const { t, locale } = useI18n();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const [type, setType] = useState<TxType>('expense');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -184,6 +187,8 @@ function Chip({
   selected: boolean;
   onPress: () => void;
 }) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <Pressable
       onPress={onPress}
@@ -196,7 +201,7 @@ function Chip({
         <Ionicons
           name={icon}
           size={15}
-          color={selected ? csColors.textOnPrimary : csColors.textMuted}
+          color={selected ? c.textOnPrimary : c.textMuted}
         />
       ) : null}
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>
@@ -204,34 +209,36 @@ function Chip({
   );
 }
 
-const styles = StyleSheet.create({
-  form: { gap: csSpace.s4, padding: csSpace.s4 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
-  titleTile: {
-    width: 36,
-    height: 36,
-    borderRadius: 36 * csLogo.radiusRatio,
-    backgroundColor: csLogo.tileBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { fontFamily: csLogo.font, fontWeight: '700', fontSize: 20, color: csColors.textPrimary },
-  label: { fontSize: 13, fontWeight: '600', color: csColors.textMuted, marginTop: csSpace.s2 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: csSpace.s1,
-    minHeight: 40,
-    paddingHorizontal: csSpace.s3,
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-    // Los nombres largos nunca se cortan: el chip encoge y el texto fluye.
-    flexShrink: 1,
-    maxWidth: '100%',
-  },
-  chipSelected: { backgroundColor: csColors.primary },
-  chipLabel: { fontSize: 14, color: csColors.textPrimary, flexShrink: 1 },
-  chipLabelSelected: { color: csColors.textOnPrimary, fontWeight: '600' },
-  error: { fontSize: 13, color: csColors.danger },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    form: { gap: csSpace.s4, padding: csSpace.s4 },
+    titleRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
+    titleTile: {
+      width: 36,
+      height: 36,
+      borderRadius: 36 * csLogo.radiusRatio,
+      backgroundColor: csLogo.tileBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: { fontFamily: csLogo.font, fontWeight: '700', fontSize: 20, color: c.textPrimary },
+    label: { fontSize: 13, fontWeight: '600', color: c.textMuted, marginTop: csSpace.s2 },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: csSpace.s1,
+      minHeight: 40,
+      paddingHorizontal: csSpace.s3,
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+      // Los nombres largos nunca se cortan: el chip encoge y el texto fluye.
+      flexShrink: 1,
+      maxWidth: '100%',
+    },
+    chipSelected: { backgroundColor: c.primary },
+    chipLabel: { fontSize: 14, color: c.textPrimary, flexShrink: 1 },
+    chipLabelSelected: { color: c.textOnPrimary, fontWeight: '600' },
+    error: { fontSize: 13, color: c.danger },
+  });
+}

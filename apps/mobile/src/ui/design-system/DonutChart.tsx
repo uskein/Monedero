@@ -5,9 +5,10 @@
  * acompaña de la tabla alternativa visible en la pantalla (nunca solo color).
  * Sectores vía strokeDasharray sobre círculos (react-native-svg).
  */
+import { useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import { csColors } from '@monedero/tokens';
+import { useThemeColors } from '../theme';
 
 export interface DonutSegment {
   key: string;
@@ -26,6 +27,8 @@ export interface DonutChartProps {
 }
 
 export function DonutChart({ segments, label, size = 180, thickness = 26 }: DonutChartProps) {
+  const c = useThemeColors();
+  const trackColor = useMemo(() => c.surfaceSunken, [c]);
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
@@ -41,12 +44,12 @@ export function DonutChart({ segments, label, size = 180, thickness = 26 }: Donu
       style={{ width: size, height: size, alignSelf: 'center' }}
     >
       <Svg width={size} height={size}>
-        {/* Pista base (token, nunca literal) */}
+        {/* Pista base (token temático, nunca literal) */}
         <Circle
           cx={center}
           cy={center}
           r={radius}
-          stroke={csColors.surfaceSunken}
+          stroke={trackColor}
           strokeWidth={thickness}
           fill="none"
         />

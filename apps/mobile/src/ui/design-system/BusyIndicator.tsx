@@ -5,9 +5,10 @@
  * y sereno. Respeta «reducir movimiento» (AccessibilityInfo). Nunca roba
  * el foco; anuncia el estado vía accessibilityRole progressbar + liveRegion.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
-import { csColors, csLogo, csSpace } from '@monedero/tokens';
+import { csLogo, csSpace } from '@monedero/tokens';
+import { useThemeColors } from '../theme';
 
 export interface BusyIndicatorProps {
   /** Estado actual («Descifrando…», «Cifrando…», «Cargando…») — i18n en caller. */
@@ -17,6 +18,8 @@ export interface BusyIndicatorProps {
 }
 
 export function BusyIndicator({ label, copy }: BusyIndicatorProps) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -59,41 +62,43 @@ export function BusyIndicator({ label, copy }: BusyIndicatorProps) {
 
 const TILE_SIZE = 64;
 
-const styles = StyleSheet.create({
-  wrap: {
-    alignItems: 'center',
-    gap: csSpace.s3,
-    paddingVertical: csSpace.s4,
-  },
-  tile: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: TILE_SIZE * csLogo.radiusRatio,
-    backgroundColor: csLogo.tileBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgb(60, 50, 40)',
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-  },
-  tileLetter: {
-    color: csLogo.tileLetter,
-    fontFamily: csLogo.font,
-    fontWeight: '700',
-    fontSize: 32,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: csColors.textPrimary,
-  },
-  copy: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: csColors.textMuted,
-    textAlign: 'center',
-    maxWidth: 280,
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    wrap: {
+      alignItems: 'center',
+      gap: csSpace.s3,
+      paddingVertical: csSpace.s4,
+    },
+    tile: {
+      width: TILE_SIZE,
+      height: TILE_SIZE,
+      borderRadius: TILE_SIZE * csLogo.radiusRatio,
+      backgroundColor: csLogo.tileBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: 'rgb(60, 50, 40)',
+      shadowOpacity: 0.18,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 4,
+    },
+    tileLetter: {
+      color: csLogo.tileLetter,
+      fontFamily: csLogo.font,
+      fontWeight: '700',
+      fontSize: 32,
+    },
+    label: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: c.textPrimary,
+    },
+    copy: {
+      fontSize: 13,
+      lineHeight: 20,
+      color: c.textMuted,
+      textAlign: 'center',
+      maxWidth: 280,
+    },
+  });
+}

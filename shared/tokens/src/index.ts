@@ -31,10 +31,16 @@ export const csColorsDark = {
   surface: raw.colorDark.surface,
   surfaceSunken: raw.colorDark.surfaceSunken,
   primary: raw.colorDark.primary,
+  primaryHover: raw.colorDark.primaryHover,
+  primarySoft: raw.colorDark.primarySoft,
   accent: raw.colorDark.accent,
+  accentText: raw.colorDark.accentText,
+  secondary: raw.colorDark.secondary,
+  danger: raw.colorDark.danger,
   textPrimary: raw.colorDark.textPrimary,
   textMuted: raw.colorDark.textMuted,
-  danger: raw.colorDark.danger,
+  textOnPrimary: raw.colorDark.textOnPrimary,
+  placeholder: raw.colorDark.placeholder,
 } as const;
 
 export const csRadius = {

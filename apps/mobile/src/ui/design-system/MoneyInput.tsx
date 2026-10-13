@@ -5,10 +5,12 @@
  * El valor es controlado y YA formateado: el caller reformatea en cada cambio
  * con formatAmountLive. Label SIEMPRE visible (nunca placeholder solo).
  */
+import { useMemo } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import type { CurrencyCode } from '@monedero/i18n';
 import { symbolFor } from '@monedero/i18n';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
+import { useThemeColors } from '../theme';
 
 export interface MoneyInputProps {
   label: string;
@@ -29,6 +31,8 @@ export function MoneyInput({
   error,
   disabled = false,
 }: MoneyInputProps) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const invalid = Boolean(error);
   return (
     <View style={styles.field}>
@@ -44,7 +48,7 @@ export function MoneyInput({
           value={value}
           onChangeText={(raw) => onValueChange(raw)}
           placeholder="0"
-          placeholderTextColor={csColors.placeholder}
+          placeholderTextColor={c.placeholder}
           keyboardType="decimal-pad"
           accessibilityLabel={label}
           accessibilityState={{ disabled }}
@@ -63,27 +67,29 @@ export function MoneyInput({
   );
 }
 
-const styles = StyleSheet.create({
-  field: { gap: csSpace.s2 },
-  label: { fontSize: 13, fontWeight: '600', color: csColors.textMuted },
-  box: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: csSpace.s2,
-    backgroundColor: csColors.surfaceSunken,
-    borderRadius: csRadius.input,
-    paddingHorizontal: csSpace.s4,
-    minHeight: 56,
-  },
-  boxError: { borderWidth: 1.5, borderColor: csColors.danger },
-  disabled: { opacity: 0.5 },
-  prefix: { fontSize: 20, fontWeight: '700', color: csColors.textMuted },
-  input: {
-    flex: 1,
-    fontSize: 22,
-    fontWeight: '700',
-    color: csColors.textPrimary,
-    paddingVertical: csSpace.s2,
-  },
-  error: { fontSize: 13, color: csColors.danger },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    field: { gap: csSpace.s2 },
+    label: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    box: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: csSpace.s2,
+      backgroundColor: c.surfaceSunken,
+      borderRadius: csRadius.input,
+      paddingHorizontal: csSpace.s4,
+      minHeight: 56,
+    },
+    boxError: { borderWidth: 1.5, borderColor: c.danger },
+    disabled: { opacity: 0.5 },
+    prefix: { fontSize: 20, fontWeight: '700', color: c.textMuted },
+    input: {
+      flex: 1,
+      fontSize: 22,
+      fontWeight: '700',
+      color: c.textPrimary,
+      paddingVertical: csSpace.s2,
+    },
+    error: { fontSize: 13, color: c.danger },
+  });
+}

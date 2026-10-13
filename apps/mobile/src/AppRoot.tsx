@@ -9,19 +9,21 @@
  * Trazabilidad: ESTRUCTURA_DIRECTORIOS → apps/mobile/src/AppRoot.tsx ·
  * BLUEPRINTS BP-01..05 · PLAN_DE_SPRINTS 4.4 (Gate S4).
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nProvider, useT } from '@monedero/i18n/react';
-import { csColors, csLogo, csRadius, csSpace } from '@monedero/tokens';
+import { csLogo, csRadius, csSpace } from '@monedero/tokens';
 import { configureVaultStorage, getVaultPort } from './state/vault.store';
 import { createSecureStoreStorage } from './infrastructure/security/secureStoreStorage';
 import { createDevRepository, type DevRepository } from './infrastructure/db/createDevRepository';
 import { VaultGate } from './ui/screens/VaultGate';
 import { AppErrorBoundary } from './ui/AppErrorBoundary';
 import { BusyIndicator } from './ui/design-system';
+import { ThemeProvider, useThemeColors, useThemeScheme } from './ui/theme';
+import { usePrefsStore } from './state/prefs.store';
 import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { TransactionsScreen } from './ui/screens/TransactionsScreen';
 import { BudgetsScreen } from './ui/screens/BudgetsScreen';
@@ -36,10 +38,17 @@ import { SettingsScreen } from './ui/screens/SettingsScreen';
 configureVaultStorage(createSecureStoreStorage());
 
 export default function AppRoot() {
+  // Preferencias (tema HU-17 · moneda HU-18): se cargan una vez; los defaults
+  // ('light'/'COP') se aplican al instante y el store re-renderiza al llegar.
+  useEffect(() => {
+    void usePrefsStore.getState().init();
+  }, []);
   return (
     <I18nProvider>
       <SafeAreaProvider>
-        <Shell />
+        <ThemeProvider>
+          <Shell />
+        </ThemeProvider>
       </SafeAreaProvider>
     </I18nProvider>
   );
@@ -47,9 +56,12 @@ export default function AppRoot() {
 
 function Shell() {
   const t = useT();
+  const c = useThemeColors();
+  const scheme = useThemeScheme();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <SafeAreaView style={styles.root}>
-      <StatusBar style="dark" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       {/* Marca mínima en la esquina: el protagonismo es de la app. */}
       <View style={styles.header} accessibilityRole="image" accessibilityLabel="Monedero, logotipo">
         <View style={styles.tile}>
@@ -80,6 +92,10 @@ function Shell() {
  */
 function AppShell() {
   const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
+  /** Moneda GLOBAL (HU-18) — la de Ajustes; cada pantalla puede sobre-escribir. */
+  const currency = usePrefsStore((s) => s.currency);
   const [tab, setTab] = useState<'home' | 'tx' | 'budgets' | 'reports' | 'settings'>('home');
   const [addSignal, setAddSignal] = useState(0);
   const [dev, setDev] = useState<DevRepository | null>(null);
@@ -114,6 +130,7 @@ function AppShell() {
       <View style={[styles.panel, tab !== 'home' && styles.hidden]}>
         <DashboardScreen
           repo={dev.repo}
+          currency={currency}
           onAddFirst={() => {
             setTab('tx');
             setAddSignal((n) => n + 1);
@@ -122,13 +139,13 @@ function AppShell() {
         />
       </View>
       <View style={[styles.panel, tab !== 'tx' && styles.hidden]}>
-        <TransactionsScreen repo={dev.repo} addSignal={addSignal} />
+        <TransactionsScreen repo={dev.repo} currency={currency} addSignal={addSignal} />
       </View>
       <View style={[styles.panel, tab !== 'budgets' && styles.hidden]}>
-        <BudgetsScreen budgets={dev.budgets} txRepo={dev.repo} categories={dev.categories} />
+        <BudgetsScreen budgets={dev.budgets} txRepo={dev.repo} categories={dev.categories} currency={currency} />
       </View>
       <View style={[styles.panel, tab !== 'reports' && styles.hidden]}>
-        <ReportsScreen repo={dev.repo} />
+        <ReportsScreen repo={dev.repo} currency={currency} />
       </View>
       <View style={[styles.panel, tab !== 'settings' && styles.hidden]}>
         <SettingsScreen categories={dev.categories} />
@@ -154,6 +171,8 @@ function NavTab({
   selected: boolean;
   onPress: () => void;
 }) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <Pressable
       accessibilityRole="tab"
@@ -165,52 +184,54 @@ function NavTab({
       <Ionicons
         name={icon}
         size={22}
-        color={selected ? csColors.textOnPrimary : csColors.textPrimary}
+        color={selected ? c.textOnPrimary : c.textPrimary}
       />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: csColors.bgBase },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: csSpace.s4,
-    paddingTop: csSpace.s2,
-    paddingBottom: csSpace.s1,
-  },
-  tile: {
-    width: 36,
-    height: 36,
-    borderRadius: 36 * csLogo.radiusRatio,
-    backgroundColor: csLogo.tileBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tileLetter: { color: csLogo.tileLetter, fontFamily: csLogo.font, fontWeight: '700', fontSize: 20 },
-  // minHeight: seguro contra colapso de altura en arranques nativos raros
-  // (el contenido del VaultGate es flex:1; sin cota mínima quedaría invisible).
-  body: { flex: 1, minHeight: 320 },
-  footer: {
-    fontSize: 11,
-    lineHeight: 16,
-    color: csColors.textMuted,
-    textAlign: 'center',
-    paddingHorizontal: csSpace.s5,
-    paddingVertical: csSpace.s2,
-  },
-  shell: { flex: 1 },
-  tabs: { flexDirection: 'row', gap: csSpace.s2, paddingHorizontal: csSpace.s4, paddingBottom: csSpace.s2 },
-  tab: {
-    flex: 1,
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-  },
-  tabSelected: { backgroundColor: csColors.primary },
-  panel: { flex: 1 },
-  hidden: { display: 'none' },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.bgBase },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: csSpace.s4,
+      paddingTop: csSpace.s2,
+      paddingBottom: csSpace.s1,
+    },
+    tile: {
+      width: 36,
+      height: 36,
+      borderRadius: 36 * csLogo.radiusRatio,
+      backgroundColor: csLogo.tileBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tileLetter: { color: csLogo.tileLetter, fontFamily: csLogo.font, fontWeight: '700', fontSize: 20 },
+    // minHeight: seguro contra colapso de altura en arranques nativos raros
+    // (el contenido del VaultGate es flex:1; sin cota mínima quedaría invisible).
+    body: { flex: 1, minHeight: 320 },
+    footer: {
+      fontSize: 11,
+      lineHeight: 16,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingHorizontal: csSpace.s5,
+      paddingVertical: csSpace.s2,
+    },
+    shell: { flex: 1 },
+    tabs: { flexDirection: 'row', gap: csSpace.s2, paddingHorizontal: csSpace.s4, paddingBottom: csSpace.s2 },
+    tab: {
+      flex: 1,
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+    },
+    tabSelected: { backgroundColor: c.primary },
+    panel: { flex: 1 },
+    hidden: { display: 'none' },
+  });
+}

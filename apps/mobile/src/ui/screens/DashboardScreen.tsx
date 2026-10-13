@@ -6,14 +6,15 @@
  * error (retry). Copy vía useI18n() — cero strings hardcodeados (i18n:check).
  * Trazabilidad: BLUEPRINTS BP-03 · PLAN_DE_SPRINTS 4.2/4.3.
  */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import { formatMonthLabel, monthKeyOf, previousMonthKey } from '@monedero/i18n';
 import type { TranslationKey } from '@monedero/i18n';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card } from '../design-system';
+import { useThemeColors } from '../theme';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useCountUp } from '../hooks/useCountUp';
 import { CATEGORY_NAMES } from './catalog';
@@ -53,6 +54,8 @@ function categoryLabel(tx: Transaction, t: (key: TranslationKey) => string): str
 
 export function DashboardScreen({ repo, currency = 'COP', onAddFirst, onSeeAll }: DashboardScreenProps) {
   const { t, locale, money, moneySigned } = useI18n();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const status = useDashboardStore((s) => s.status);
   const month = useDashboardStore((s) => s.month);
   const summary = useDashboardStore((s) => s.summary);
@@ -166,7 +169,7 @@ export function DashboardScreen({ repo, currency = 'COP', onAddFirst, onSeeAll }
                     <Ionicons
                       name={TYPE_ICON[tx.type]}
                       size={20}
-                      color={tx.type === 'income' ? csColors.primary : csColors.textPrimary}
+                      color={tx.type === 'income' ? c.primary : c.textPrimary}
                     />
                   </View>
                   <View style={styles.txBody}>
@@ -187,6 +190,8 @@ export function DashboardScreen({ repo, currency = 'COP', onAddFirst, onSeeAll }
 }
 
 function PeriodTab({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <Pressable
       onPress={onPress}
@@ -199,57 +204,59 @@ function PeriodTab({ label, selected, onPress }: { label: string; selected: bool
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
-  content: { gap: csSpace.s4, padding: csSpace.s4 },
-  center: { alignItems: 'center', gap: csSpace.s3, paddingVertical: csSpace.s6 },
-  muted: { fontSize: 13, color: csColors.textMuted },
-  error: { fontSize: 14, color: csColors.danger, textAlign: 'center' },
-  balanceLabel: { fontSize: 14, color: csColors.textMuted },
-  balanceValue: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 34, color: csColors.textPrimary },
-  periodRow: { flexDirection: 'row', gap: csSpace.s2, marginTop: csSpace.s3 },
-  periodTab: {
-    minHeight: 36,
-    paddingHorizontal: csSpace.s3,
-    paddingVertical: csSpace.s2,
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-  },
-  periodTabSelected: { backgroundColor: csColors.primary },
-  periodLabel: { fontSize: 13, color: csColors.textPrimary },
-  periodLabelSelected: { color: csColors.textOnPrimary, fontWeight: '600' },
-  sectionTitle: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 18, color: csColors.textPrimary },
-  reportRow: { flexDirection: 'row', justifyContent: 'space-between', gap: csSpace.s3, paddingVertical: csSpace.s1 },
-  reportAmount: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
-  latestBlock: { gap: csSpace.s2 },
-  latestHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: csSpace.s3 },
-  txRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: csSpace.s3,
-    paddingVertical: csSpace.s2,
-    paddingHorizontal: csSpace.s3,
-    marginVertical: csSpace.s1,
-    backgroundColor: csColors.surface,
-    borderRadius: csRadius.card,
-    shadowColor: 'rgb(60, 50, 40)',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  },
-  txIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  txIconIncome: { backgroundColor: csColors.primarySoft },
-  txBody: { flex: 1, gap: 2 },
-  txTitle: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
-  txAmount: { fontSize: 15, fontWeight: '700', color: csColors.textPrimary },
-  income: { color: csColors.primary },
-  emptyTitle: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 18, color: csColors.textPrimary },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.bgBase },
+    content: { gap: csSpace.s4, padding: csSpace.s4 },
+    center: { alignItems: 'center', gap: csSpace.s3, paddingVertical: csSpace.s6 },
+    muted: { fontSize: 13, color: c.textMuted },
+    error: { fontSize: 14, color: c.danger, textAlign: 'center' },
+    balanceLabel: { fontSize: 14, color: c.textMuted },
+    balanceValue: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 34, color: c.textPrimary },
+    periodRow: { flexDirection: 'row', gap: csSpace.s2, marginTop: csSpace.s3 },
+    periodTab: {
+      minHeight: 36,
+      paddingHorizontal: csSpace.s3,
+      paddingVertical: csSpace.s2,
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+    },
+    periodTabSelected: { backgroundColor: c.primary },
+    periodLabel: { fontSize: 13, color: c.textPrimary },
+    periodLabelSelected: { color: c.textOnPrimary, fontWeight: '600' },
+    sectionTitle: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 18, color: c.textPrimary },
+    reportRow: { flexDirection: 'row', justifyContent: 'space-between', gap: csSpace.s3, paddingVertical: csSpace.s1 },
+    reportAmount: { fontSize: 15, fontWeight: '600', color: c.textPrimary },
+    latestBlock: { gap: csSpace.s2 },
+    latestHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: csSpace.s3 },
+    txRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: csSpace.s3,
+      paddingVertical: csSpace.s2,
+      paddingHorizontal: csSpace.s3,
+      marginVertical: csSpace.s1,
+      backgroundColor: c.surface,
+      borderRadius: csRadius.card,
+      shadowColor: 'rgb(60, 50, 40)',
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 2,
+    },
+    txIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    txIconIncome: { backgroundColor: c.primarySoft },
+    txBody: { flex: 1, gap: 2 },
+    txTitle: { fontSize: 15, fontWeight: '600', color: c.textPrimary },
+    txAmount: { fontSize: 15, fontWeight: '700', color: c.textPrimary },
+    income: { color: c.primary },
+    emptyTitle: { fontFamily: FONT_DISPLAY, fontWeight: '700', fontSize: 18, color: c.textPrimary },
+  });
+}

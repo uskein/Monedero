@@ -2,8 +2,10 @@
  * Input (móvil) — manual SSOT §7.4. Label SIEMPRE visible; error con role=alert.
  * RN: accessibilityLabel + accessibilityState invalid; font ≥16 (anti-zoom iOS).
  */
+import { useMemo } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
+import { useThemeColors } from '../theme';
 
 export interface InputProps {
   label: string;
@@ -16,6 +18,8 @@ export interface InputProps {
 }
 
 export function Input({ label, value, onValueChange, placeholder, error, disabled, secureTextEntry }: InputProps) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <View style={styles.field}>
       <Text style={styles.label} nativeID={`${label}-label`}>
@@ -26,7 +30,7 @@ export function Input({ label, value, onValueChange, placeholder, error, disable
         value={value}
         onChangeText={onValueChange}
         placeholder={placeholder}
-        placeholderTextColor={csColors.placeholder}
+        placeholderTextColor={c.placeholder}
         editable={!disabled}
         secureTextEntry={secureTextEntry}
         accessibilityLabel={label}
@@ -43,20 +47,22 @@ export function Input({ label, value, onValueChange, placeholder, error, disable
   );
 }
 
-const styles = StyleSheet.create({
-  field: { gap: csSpace.s2 },
-  label: { fontSize: 13, fontWeight: '600', color: csColors.textMuted },
-  input: {
-    minHeight: 54,
-    paddingHorizontal: csSpace.s4,
-    backgroundColor: csColors.surfaceSunken,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    borderRadius: csRadius.input,
-    fontSize: 16,
-    color: csColors.textPrimary,
-  },
-  inputError: { borderColor: csColors.danger },
-  disabled: { color: csColors.placeholder },
-  error: { fontSize: 12, color: csColors.danger },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    field: { gap: csSpace.s2 },
+    label: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    input: {
+      minHeight: 54,
+      paddingHorizontal: csSpace.s4,
+      backgroundColor: c.surfaceSunken,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      borderRadius: csRadius.input,
+      fontSize: 16,
+      color: c.textPrimary,
+    },
+    inputError: { borderColor: c.danger },
+    disabled: { color: c.placeholder },
+    error: { fontSize: 12, color: c.danger },
+  });
+}

@@ -116,6 +116,12 @@ export const esCO = {
   'categories.group.income': 'Ingresos',
   'categories.back': 'Volver a Ajustes',
 
+  // ── Ajustes: apariencia y moneda (HU-17 · HU-18) ──
+  'settings.theme': 'Tema',
+  'settings.theme.light': 'Claro',
+  'settings.theme.dark': 'Oscuro',
+  'settings.theme.system': 'Sistema',
+
   // ── Presupuestos BP-06 — HU-11·12 ──
   'budgets.title': 'Presupuestos',
   'budgets.add': 'Definir tope',

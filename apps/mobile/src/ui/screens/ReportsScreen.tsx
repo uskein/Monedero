@@ -5,23 +5,20 @@
  * 4 estados DoD · mes segmentado (Este mes / Mes anterior) · reevalúa ante
  * eventos de movimientos (store). Copy i18n — cero strings hardcodeados.
  */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '@monedero/i18n/react';
 import { monthKeyOf, previousMonthKey } from '@monedero/i18n';
-import { csColors, csRadius, csSpace } from '@monedero/tokens';
+import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, DonutChart } from '../design-system';
+import { useThemeColors, type ThemeColors } from '../theme';
 import { CATEGORY_NAMES } from './catalog';
 import { useReportsStore, type ReportsRepo } from '../../state/reports.store';
 
-/** Paleta del donut: SOLO tokens --cs-* (HU-13 «paleta semántica»). */
-const DONUT_COLORS = [
-  csColors.primary,
-  csColors.secondary,
-  csColors.accent,
-  csColors.textMuted,
-  csColors.primarySoft,
-] as const;
+/** Paleta del donut: SOLO tokens --cs-* de la PALETA ACTIVA (HU-13). */
+function donutColors(c: ThemeColors): string[] {
+  return [c.primary, c.secondary, c.accent, c.textMuted, c.primarySoft];
+}
 
 export interface ReportsScreenProps {
   repo: ReportsRepo;
@@ -30,6 +27,8 @@ export interface ReportsScreenProps {
 
 export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
   const { t, money } = useI18n();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   const month = useReportsStore((s) => s.month);
   const status = useReportsStore((s) => s.status);
   const report = useReportsStore((s) => s.report);
@@ -99,24 +98,24 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
           <Card style={styles.card}>
             <DonutChart
               label={`${t('reports.chart')}: ${money(report.expenseCents, currency)}`}
-              segments={report.byCategory.map((c, i) => ({
-                key: c.categoryId || 'sin-categoria',
-                percent: c.percent,
-                color: DONUT_COLORS[i % DONUT_COLORS.length] ?? csColors.primary,
+              segments={report.byCategory.map((i2, i) => ({
+                key: i2.categoryId || 'sin-categoria',
+                percent: i2.percent,
+                color: donutColors(c)[i % donutColors(c).length] ?? c.primary,
               }))}
             />
             <View style={styles.legend}>
-              {report.byCategory.map((c, i) => (
-                <View key={c.categoryId || 'sin-categoria'} style={styles.legendRow}>
+              {report.byCategory.map((i2, i) => (
+                <View key={i2.categoryId || 'sin-categoria'} style={styles.legendRow}>
                   <View
                     accessibility-hidden="true"
-                    style={[styles.dot, { backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] ?? csColors.primary }]}
+                    style={[styles.dot, { backgroundColor: donutColors(c)[i % donutColors(c).length] ?? c.primary }]}
                   />
                   <Text style={styles.legendName}>
-                    {c.categoryId ? (CATEGORY_NAMES[c.categoryId] ?? c.categoryId) : t('reports.uncategorized')}
+                    {i2.categoryId ? (CATEGORY_NAMES[i2.categoryId] ?? i2.categoryId) : t('reports.uncategorized')}
                   </Text>
-                  <Text style={styles.legendAmount}>{money(c.amountCents, currency)}</Text>
-                  <Text style={styles.muted}>{`${Math.round(c.percent)} %`}</Text>
+                  <Text style={styles.legendAmount}>{money(i2.amountCents, currency)}</Text>
+                  <Text style={styles.muted}>{`${Math.round(i2.percent)} %`}</Text>
                 </View>
               ))}
             </View>
@@ -128,6 +127,8 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
 }
 
 function MonthChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
   return (
     <Pressable
       onPress={onPress}
@@ -140,31 +141,33 @@ function MonthChip({ label, selected, onPress }: { label: string; selected: bool
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: csColors.bgBase },
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.bgBase },
   content: { gap: csSpace.s4, padding: csSpace.s4 },
-  title: { fontSize: 20, fontWeight: '700', color: csColors.textPrimary },
+  title: { fontSize: 20, fontWeight: '700', color: c.textPrimary },
   monthRow: { flexDirection: 'row', gap: csSpace.s2 },
   monthChip: {
     minHeight: 36,
     paddingHorizontal: csSpace.s3,
     paddingVertical: csSpace.s2,
     borderRadius: csRadius.pill,
-    backgroundColor: csColors.surfaceSunken,
+    backgroundColor: c.surfaceSunken,
   },
-  monthChipSelected: { backgroundColor: csColors.primary },
-  monthLabel: { fontSize: 13, color: csColors.textPrimary },
-  monthLabelSelected: { color: csColors.textOnPrimary, fontWeight: '600' },
-  muted: { fontSize: 13, color: csColors.textMuted },
-  error: { fontSize: 14, color: csColors.danger, textAlign: 'center' },
+  monthChipSelected: { backgroundColor: c.primary },
+  monthLabel: { fontSize: 13, color: c.textPrimary },
+  monthLabelSelected: { color: c.textOnPrimary, fontWeight: '600' },
+  muted: { fontSize: 13, color: c.textMuted },
+  error: { fontSize: 14, color: c.danger, textAlign: 'center' },
   center: { alignItems: 'center', gap: csSpace.s3, paddingVertical: csSpace.s6 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: csColors.textPrimary },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: c.textPrimary },
   card: { gap: csSpace.s3 },
   reportRow: { flexDirection: 'row', justifyContent: 'space-between', gap: csSpace.s3, paddingVertical: csSpace.s1 },
-  reportAmount: { fontSize: 15, fontWeight: '600', color: csColors.textPrimary },
+  reportAmount: { fontSize: 15, fontWeight: '600', color: c.textPrimary },
   legend: { gap: csSpace.s2 },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
   dot: { width: 12, height: 12, borderRadius: 6, flexShrink: 0 },
-  legendName: { flex: 1, fontSize: 14, color: csColors.textPrimary, flexShrink: 1 },
-  legendAmount: { fontSize: 14, fontWeight: '600', color: csColors.textPrimary },
-});
+  legendName: { flex: 1, fontSize: 14, color: c.textPrimary, flexShrink: 1 },
+  legendAmount: { fontSize: 14, fontWeight: '600', color: c.textPrimary },
+  });
+}
