@@ -30,6 +30,11 @@ function getDb(): Promise<Database> {
   return dbPending;
 }
 
+/** BD de la sesión para BP-09/BP-10 (export/import .monedero, S7). */
+export function getSessionDb(): Promise<Database> {
+  return getDb();
+}
+
 /** Devuelve el repo de movimientos de la sesión (abre la BD la primera vez). */
 export function getTxRepo(): Promise<SqlJsTransactionRepository> {
   if (repo) return Promise.resolve(repo);

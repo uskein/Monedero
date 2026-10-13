@@ -26,8 +26,7 @@ const PASS = 'clave-maestra-1';
 const WAIT = { timeout: 15000 };
 
 /** Región visible de cada panel (getByRole excluye lo oculto). */
-const budgets = () => within(screen.getByRole('region', { name: 'Presupuestos' }));
-const movs = () => within(screen.getByRole('region', { name: 'Movimientos' }));
+const budgets = () => within(screen.getByRole('region', { name: 'Presupuestos' }));const movs = () => within(screen.getByRole('region', { name: 'Movimientos' }));
 const tab = (name: string) => screen.getByRole('tab', { name });
 
 /** Gasto en Comida vía BP-05 (categoryId del catálogo sembrado). */

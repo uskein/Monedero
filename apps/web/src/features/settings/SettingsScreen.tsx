@@ -9,6 +9,7 @@ import { csColors } from '@monedero/tokens';
 import { useT } from '@monedero/i18n/react';
 import { Button, Card } from '../../design-system';
 import { CategoriesManager, type CategoriesManagerProps } from './CategoriesManager';
+import { DataPanel } from './DataPanel';
 
 export interface SettingsScreenProps {
   /** Solo tests: repo en memoria para no tocar sql.js en la UI. */
@@ -17,10 +18,13 @@ export interface SettingsScreenProps {
 
 export function SettingsScreen({ categoriesRepoOverride }: SettingsScreenProps) {
   const t = useT();
-  const [view, setView] = useState<'hub' | 'categories'>('hub');
+  const [view, setView] = useState<'hub' | 'categories' | 'data'>('hub');
 
   if (view === 'categories') {
     return <CategoriesManager repoOverride={categoriesRepoOverride} onBack={() => setView('hub')} />;
+  }
+  if (view === 'data') {
+    return <DataPanel onBack={() => setView('hub')} />;
   }
 
   return (
@@ -32,6 +36,12 @@ export function SettingsScreen({ categoriesRepoOverride }: SettingsScreenProps) 
           {t('settings.categories')}
         </Button>
         <p style={{ margin: 0, fontSize: 13, color: csColors.textMuted }}>{t('settings.categories.copy')}</p>
+      </Card>
+      <Card style={{ display: 'grid', gap: 'var(--cs-space-3)', textAlign: 'left' }}>
+        <p style={{ margin: 0, fontWeight: 700 }}>{t('data.title')}</p>
+        <Button variant="secondary" onClick={() => setView('data')}>
+          {t('data.export')}
+        </Button>
       </Card>
     </section>
   );
