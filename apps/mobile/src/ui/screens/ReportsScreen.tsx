@@ -5,15 +5,24 @@
  * 4 estados DoD · mes segmentado (Este mes / Mes anterior) · reevalúa ante
  * eventos de movimientos (store). Copy i18n — cero strings hardcodeados.
  */
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '@monedero/i18n/react';
-import { monthKeyOf, previousMonthKey } from '@monedero/i18n';
-import { csRadius, csSpace } from '@monedero/tokens';
+import { formatMonthLabel, monthKeyOf, previousMonthKey } from '@monedero/i18n';
+import type { TranslationKey } from '@monedero/i18n';
+import { csLogo, csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, DonutChart } from '../design-system';
 import { useThemeColors, type ThemeColors } from '../theme';
+import { buildReportHtml, shareReportPdf, shareViewShot } from '../../infrastructure/export/reportExport';
+import { ReportSummaryCard } from './ReportSummaryCard';
 import { CATEGORY_NAMES } from './catalog';
 import { useReportsStore, type ReportsRepo } from '../../state/reports.store';
+
+const TYPE_LABEL: Record<'expense' | 'income' | 'transfer', TranslationKey> = {
+  expense: 'tx.type.expense',
+  income: 'tx.type.income',
+  transfer: 'tx.type.transfer',
+};
 
 /** Paleta del donut: SOLO tokens --cs-* de la PALETA ACTIVA (HU-13). */
 function donutColors(c: ThemeColors): string[] {
@@ -26,18 +35,106 @@ export interface ReportsScreenProps {
 }
 
 export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
-  const { t, money } = useI18n();
+  const { t, money, moneySigned, locale } = useI18n();
   const c = useThemeColors();
   const styles = useMemo(() => makeStyles(c), [c]);
   const month = useReportsStore((s) => s.month);
   const status = useReportsStore((s) => s.status);
   const report = useReportsStore((s) => s.report);
+  const transactions = useReportsStore((s) => s.transactions);
   const init = useReportsStore((s) => s.init);
   const setMonth = useReportsStore((s) => s.setMonth);
+  const summaryRef = useRef<View>(null);
+  const [exporting, setExporting] = useState<'pdf' | 'image' | null>(null);
+  const [exportError, setExportError] = useState(false);
 
   useEffect(() => {
     void init(repo);
   }, [init, repo]);
+
+  function categoryText(categoryId: string | null): string {
+    return categoryId ? (CATEGORY_NAMES[categoryId] ?? categoryId) : t('reports.uncategorized');
+  }
+
+  async function exportPdf() {
+    if (!report) return;
+    setExporting('pdf');
+    setExportError(false);
+    try {
+      const html = buildReportHtml({
+        monthLabel: formatMonthLabel(month, locale),
+        tagline: t('home.lead'),
+        labels: {
+          chart: t('reports.chart'),
+          movements: t('reports.export.movements'),
+          income: t('home.month.income'),
+          expense: t('reports.total'),
+          balance: t('home.month.balance'),
+          date: t('tx.form.date'),
+          payee: t('tx.form.payee'),
+          category: t('tx.form.category'),
+          type: t('tx.form.type'),
+          amount: t('tx.form.amount'),
+        },
+        incomeText: money(report.incomeCents, currency),
+        expenseText: money(report.expenseCents, currency),
+        balanceText: money(report.balanceCents, currency),
+        reportMax: {
+          income: report.incomeCents,
+          expense: report.expenseCents,
+          max: Math.max(report.incomeCents, report.expenseCents, 1),
+        },
+        categories: report.byCategory.map((cat, i) => ({
+          name: categoryText(cat.categoryId),
+          amountText: money(cat.amountCents, currency),
+          percent: cat.percent,
+          color: donutColors(c)[i % donutColors(c).length] ?? c.primary,
+        })),
+        transactions: transactions.map((tx) => ({
+          dateText: tx.date,
+          payee: tx.payee ?? t('tx.form.payee'),
+          category: categoryText(tx.categoryId),
+          typeLabel: t(TYPE_LABEL[tx.type]),
+          amountText: moneySigned(tx.amountCents, currency, tx.type === 'income'),
+          kind: tx.type,
+        })),
+        colors: {
+          bgBase: c.bgBase,
+          surface: c.surface,
+          surfaceSunken: c.surfaceSunken,
+          primary: c.primary,
+          primarySoft: c.primarySoft,
+          accent: c.accent,
+          secondary: c.secondary,
+          textPrimary: c.textPrimary,
+          textMuted: c.textMuted,
+          danger: c.danger,
+          textOnPrimary: c.textOnPrimary,
+          tileBg: csLogo.tileBg,
+          tileLetter: csLogo.tileLetter,
+          tileFont: csLogo.font,
+        },
+      });
+      await shareReportPdf(html);
+    } catch {
+      setExportError(true);
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function exportImage() {
+    if (!report || !summaryRef.current) return;
+    setExporting('image');
+    setExportError(false);
+    try {
+      await shareViewShot(summaryRef.current);
+    } catch {
+      setExportError(true);
+    } finally {
+      setExporting(null);
+    }
+  }
 
   const currentMonth = monthKeyOf(new Date());
   const previousMonth = previousMonthKey(currentMonth);
@@ -78,21 +175,24 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
         </View>
       ) : (
         <>
-          {/* Resumen del mes */}
-          <Card style={styles.card}>
-            <View style={styles.reportRow}>
-              <Text style={styles.muted}>{t('home.month.income')}</Text>
-              <Text style={styles.reportAmount}>{money(report.incomeCents, currency)}</Text>
-            </View>
-            <View style={styles.reportRow}>
-              <Text style={styles.muted}>{t('reports.total')}</Text>
-              <Text style={styles.reportAmount}>{money(report.expenseCents, currency)}</Text>
-            </View>
-            <View style={styles.reportRow}>
-              <Text style={styles.muted}>{t('home.month.balance')}</Text>
-              <Text style={styles.reportAmount}>{money(report.balanceCents, currency)}</Text>
-            </View>
-          </Card>
+          {/* Tarjeta-resumen con IDENTIDAD (HU-13) — misma vista que la imagen exportada */}
+          <ReportSummaryCard
+            ref={summaryRef}
+            monthLabel={formatMonthLabel(month, locale)}
+            incomeText={money(report.incomeCents, currency)}
+            expenseText={money(report.expenseCents, currency)}
+            balanceText={money(report.balanceCents, currency)}
+            compare={{
+              income: report.incomeCents,
+              expense: report.expenseCents,
+              max: Math.max(report.incomeCents, report.expenseCents, 1),
+            }}
+            categories={report.byCategory.slice(0, 5).map((cat, i) => ({
+              name: categoryText(cat.categoryId),
+              percent: cat.percent,
+              color: donutColors(c)[i % donutColors(c).length] ?? c.primary,
+            }))}
+          />
 
           {/* Donut (HU-13: role=image + label) + tabla alternativa visible */}
           <Card style={styles.card}>
@@ -120,6 +220,27 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
               ))}
             </View>
           </Card>
+
+          {/* Exportación (HU-13): PDF con todo el mes + imagen de la tarjeta */}
+          <View style={styles.exportRow}>
+            <Button
+              variant="secondary"
+              label={exporting === 'pdf' ? t('reports.export.generating') : t('reports.export.pdf')}
+              disabled={exporting !== null}
+              onPress={() => void exportPdf()}
+            />
+            <Button
+              variant="secondary"
+              label={exporting === 'image' ? t('reports.export.generating') : t('reports.export.image')}
+              disabled={exporting !== null}
+              onPress={() => void exportImage()}
+            />
+          </View>
+          {exportError ? (
+            <Text accessibilityRole="alert" style={styles.error}>
+              {t('reports.export.error')}
+            </Text>
+          ) : null}
         </>
       )}
     </ScrollView>
@@ -162,6 +283,7 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
   center: { alignItems: 'center', gap: csSpace.s3, paddingVertical: csSpace.s6 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: c.textPrimary },
   card: { gap: csSpace.s3 },
+  exportRow: { flexDirection: 'row', gap: csSpace.s3, flexWrap: 'wrap' },
   reportRow: { flexDirection: 'row', justifyContent: 'space-between', gap: csSpace.s3, paddingVertical: csSpace.s1 },
   reportAmount: { fontSize: 15, fontWeight: '600', color: c.textPrimary },
   legend: { gap: csSpace.s2 },

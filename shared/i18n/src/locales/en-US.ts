@@ -147,4 +147,9 @@ export const enUS: Dictionary = {
   'reports.empty.copy': 'Your monthly report will appear once you record expenses.',
   'reports.error': 'Could not generate the report.',
   'reports.uncategorized': 'Uncategorized',
+  'reports.export.movements': 'Transactions of the month',
+  'reports.export.pdf': 'Export PDF',
+  'reports.export.image': 'Export image',
+  'reports.export.generating': 'Generating…',
+  'reports.export.error': 'Could not export the report.',
 };

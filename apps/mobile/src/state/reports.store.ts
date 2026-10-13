@@ -17,10 +17,23 @@ export interface ReportsRepo {
 
 export type ReportsStatus = 'loading' | 'empty' | 'success' | 'error';
 
+/** Movimiento del mes con lo necesario para la tabla de exportación. */
+export interface ReportTx {
+  type: 'income' | 'expense' | 'transfer';
+  amountCents: number;
+  categoryId: string | null;
+  date: string;
+  deletedAt: string | null;
+  payee?: string | null;
+  note?: string | null;
+}
+
 interface ReportsState {
   month: string;
   status: ReportsStatus;
   report: MonthReport | null;
+  /** Todos los movimientos del mes (para la tabla del PDF, HU-13). */
+  transactions: ReportTx[];
   error: string | null;
   repo: ReportsRepo | null;
 
@@ -28,14 +41,18 @@ interface ReportsState {
   setMonth: (month: string) => Promise<void>;
 }
 
-async function recompute(repo: ReportsRepo, month: string): Promise<Pick<ReportsState, 'status' | 'report' | 'error'>> {
+async function recompute(
+  repo: ReportsRepo,
+  month: string,
+): Promise<Pick<ReportsState, 'status' | 'report' | 'transactions' | 'error'>> {
   try {
     const txs = await repo.list({});
     const report = computeMonthReport(month, txs);
+    const transactions = txs.filter((tx) => !tx.deletedAt && tx.date.slice(0, 7) === month);
     const isEmpty = report.expenseCents === 0 && report.incomeCents === 0;
-    return { status: isEmpty ? 'empty' : 'success', report, error: null };
+    return { status: isEmpty ? 'empty' : 'success', report, transactions, error: null };
   } catch {
-    return { status: 'error', report: null, error: 'STORAGE_UNAVAILABLE' };
+    return { status: 'error', report: null, transactions: [], error: 'STORAGE_UNAVAILABLE' };
   }
 }
 
@@ -43,6 +60,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   month: monthKeyOf(new Date()),
   status: 'loading',
   report: null,
+  transactions: [],
   error: null,
   repo: null,
 

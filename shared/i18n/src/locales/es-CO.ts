@@ -158,6 +158,11 @@ export const esCO = {
   'reports.empty.copy': 'Cuando registres gastos aparecerá tu reporte mensual.',
   'reports.error': 'No se pudo generar el reporte.',
   'reports.uncategorized': 'Sin categoría',
+  'reports.export.movements': 'Movimientos del mes',
+  'reports.export.pdf': 'Exportar PDF',
+  'reports.export.image': 'Exportar imagen',
+  'reports.export.generating': 'Generando…',
+  'reports.export.error': 'No se pudo exportar el reporte.',
 } as const;
 
 export type TranslationKey = keyof typeof esCO;

@@ -21,9 +21,14 @@
     },
     "android": {
       "package": "app.monedero.local",
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ],
       "allowBackup": false
     },
-    "plugins": []
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }

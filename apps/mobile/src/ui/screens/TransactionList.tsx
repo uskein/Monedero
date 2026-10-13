@@ -8,7 +8,7 @@
  * gasto ordinario — SSOT de color). Copy i18n vía useT().
  */
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import type { TranslationKey } from '@monedero/i18n';
@@ -140,38 +140,38 @@ export function TransactionList({
 
       {lastDeletedId ? <UndoToast label={t('tx.list.undo')} undoLabel={t('tx.list.undo.cta')} onUndo={onUndo} /> : null}
 
-      <FlatList
-        data={visible}
-        keyExtractor={(tx) => tx.id}
-        renderItem={({ item }) => {
-          const categoryName = item.categoryId
-            ? (categoryNames[item.categoryId] ?? item.categoryId)
-            : item.type === 'transfer'
-              ? t('tx.type.transfer')
-              : null;
-          const meta = [categoryName, shortDate(item.date, locale)].filter(Boolean).join(' · ');
-          return (
-            <View style={styles.txRow}>
-              <View
-                accessibility-hidden="true"
-                style={[styles.txIcon, item.type === 'income' && styles.txIconIncome]}
-              >
-                <Ionicons
-                  name={TYPE_ICON[item.type]}
-                  size={20}
-                  color={item.type === 'income' ? c.primary : c.textPrimary}
-                />
-              </View>
-              <View style={styles.txBody}>
-                <Text style={styles.txTitle}>{item.payee ?? t('tx.form.payee')}</Text>
-                {meta ? <Text style={styles.muted}>{meta}</Text> : null}
-              </View>
-              <Text style={[styles.txAmount, item.type === 'income' && styles.income]}>
-                {moneySigned(item.amountCents, currency, item.type === 'income')}
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${t('common.delete')} ${item.payee ?? t('tx.form.payee')}`}
+      {/* Filas simples (NO FlatList): la pantalla es un ScrollView y anidar
+          VirtualizedLists rompe el windowing (aviso de RN). Los datos son
+          locales y el virtualizado no aportaba. */}
+      {visible.map((item) => {
+        const categoryName = item.categoryId
+          ? (categoryNames[item.categoryId] ?? item.categoryId)
+          : item.type === 'transfer'
+            ? t('tx.type.transfer')
+            : null;
+        const meta = [categoryName, shortDate(item.date, locale)].filter(Boolean).join(' · ');
+        return (
+          <View key={item.id} style={styles.txRow}>
+            <View
+              accessibility-hidden="true"
+              style={[styles.txIcon, item.type === 'income' && styles.txIconIncome]}
+            >
+              <Ionicons
+                name={TYPE_ICON[item.type]}
+                size={20}
+                color={item.type === 'income' ? c.primary : c.textPrimary}
+              />
+            </View>
+            <View style={styles.txBody}>
+              <Text style={styles.txTitle}>{item.payee ?? t('tx.form.payee')}</Text>
+              {meta ? <Text style={styles.muted}>{meta}</Text> : null}
+            </View>
+            <Text style={[styles.txAmount, item.type === 'income' && styles.income]}>
+              {moneySigned(item.amountCents, currency, item.type === 'income')}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${t('common.delete')} ${item.payee ?? t('tx.form.payee')}`}
                 onPress={() => onDelete(item.id)}
                 style={styles.deleteBtn}
                 hitSlop={8}
@@ -180,8 +180,7 @@ export function TransactionList({
               </Pressable>
             </View>
           );
-        }}
-      />
+        })}
     </View>
   );
 }
