@@ -116,7 +116,8 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
         },
       });
       await shareReportPdf(html);
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[monedero] export pdf falló', err);
       setExportError(true);
     } finally {
       setExporting(null);
@@ -129,7 +130,8 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
     setExportError(false);
     try {
       await shareViewShot(summaryRef.current);
-    } catch {
+    } catch (err) {
+      if (__DEV__) console.warn('[monedero] export image falló', err);
       setExportError(true);
     } finally {
       setExporting(null);

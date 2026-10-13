@@ -199,22 +199,61 @@ export function buildReportHtml(input: ReportHtmlInput): string {
 
 /** Comparte el PDF generado (expo-print + expo-sharing; fallback al diálogo de impresión). */
 export async function shareReportPdf(html: string): Promise<void> {
-  const Print = await import('expo-print');
-  const Sharing = await import('expo-sharing');
-  const { uri } = await Print.printToFileAsync({ html });
-  if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
-  } else {
+  let uri: string;
+  try {
+    const Print = await import('expo-print');
+    uri = (await Print.printToFileAsync({ html })).uri;
+  } catch (err) {
+    // Etapa 1: generación del archivo (la más frágil en algunos dispositivos).
+    if (__DEV__) console.warn('[monedero] export pdf: printToFileAsync falló', err);
+    throw new Error(`PDF_PRINT_FAILED: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  try {
+    const Sharing = await import('expo-sharing');
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: 'Monedero' });
+      return;
+    }
+  } catch (err) {
+    if (__DEV__) console.warn('[monedero] export pdf: shareAsync falló', err);
+    // Sin compartir → cae al diálogo de impresión del sistema.
+  }
+  try {
+    const Print = await import('expo-print');
     await Print.printAsync({ html });
+  } catch (err) {
+    if (__DEV__) console.warn('[monedero] export pdf: printAsync falló', err);
+    throw new Error(`PDF_PRINT_FAILED: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
-/** Captura una vista como PNG y la comparte (tarjeta-resumen, HU-13). */
+/**
+ * Captura una vista como PNG y la comparte (tarjeta-resumen, HU-13).
+ * `snapshot: true` usa el trazado de dibujo de Android (más fiable con el
+ * nuevo motor/Fabric, donde la captura por defecto sale en blanco). Verifica
+ * además que el archivo tenga contenido real (una captura vacía <5 KB lanza).
+ */
 export async function shareViewShot(viewRef: unknown): Promise<void> {
   const ViewShot = await import('react-native-view-shot');
+  // Pequeña pausa: asegura el layout completo antes del snapshot.
+  await new Promise<void>((resolve) => setTimeout(resolve, 250));
+  let uri: string;
+  try {
+    // `snapshot` (trazado de dibujo de Android, más fiable con Fabric) no está
+    // en los tipos instalados pero SÍ en el runtime de la librería.
+    const captureOptions = {
+      format: 'png',
+      quality: 1,
+      result: 'tmpfile',
+      snapshot: true,
+    } as Parameters<typeof ViewShot.captureRef>[1];
+    uri = await ViewShot.captureRef(viewRef as never, captureOptions);
+  } catch (err) {
+    if (__DEV__) console.warn('[monedero] export image: captureRef falló', err);
+    throw new Error(`CAPTURE_FAILED: ${err instanceof Error ? err.message : String(err)}`);
+  }
   const Sharing = await import('expo-sharing');
-  const uri = await ViewShot.captureRef(viewRef as never, { format: 'png', quality: 1 });
   if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png' });
+    await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Monedero' });
   }
 }
