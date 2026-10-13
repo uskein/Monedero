@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config'; // SSOT del bloque `test` (evita la duplicación de instancias de vite en el workspace)
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
