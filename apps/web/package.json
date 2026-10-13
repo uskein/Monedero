@@ -17,8 +17,8 @@
     "@monedero/export-contract": "workspace:*",
     "@monedero/i18n": "workspace:*",
     "@monedero/tokens": "workspace:*",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "sql.js": "^1.14.2",
     "zod": "^3.25.0",
     "zustand": "^5.0.5"
