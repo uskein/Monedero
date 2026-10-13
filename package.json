@@ -19,7 +19,7 @@
     "tokens:check": "node tools/tokens-check.mjs",
     "contract:check": "node tools/sync-contract.mjs",
     "i18n:check": "node tools/i18n-check.mjs",
-    "audit": "pnpm audit --audit-level=high"
+    "audit": "pnpm audit --prod --audit-level=critical"
   },
   "devDependencies": {
     "turbo": "^2.4.0",
@@ -31,6 +31,11 @@
     "globals": "^16.2.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "overrides": {
+      "tinypool": "^2.1.2"
+    }
   }
 }
