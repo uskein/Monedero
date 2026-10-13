@@ -28,10 +28,10 @@ const fakeSha256 = async (input: string): Promise<string> => {
 /** Cripto simulada: XOR con clave/iv + tag que DEPENDE de la clave (simula
  *  la autenticación GCM: clave equivocada → tag inválido → decrypt lanza). */
 function tagFor(key: Uint8Array): number {
-  return (0xab ^ key[0]) & 0xff;
+  return (0xab ^ (key[0] ?? 0)) & 0xff;
 }
 function xorCrypt(data: Uint8Array, key: Uint8Array, iv: Uint8Array): Uint8Array {
-  return Uint8Array.from(data, (b, i) => b ^ key[i % key.length] ^ iv[i % iv.length]);
+  return Uint8Array.from(data, (b, i) => b ^ (key[i % key.length] ?? 0) ^ (iv[i % iv.length] ?? 0));
 }
 const fakeCrypto: FileCrypto = {
   randomBytes: async (n) => Uint8Array.from({ length: n }, (_, i) => (i * 31 + 7) % 256),
@@ -62,7 +62,7 @@ const EMPTY_DATA = {
   transaction_tags: [],
   budgets: [],
   settings: [],
-} as Record<MonederoCollection, unknown[]>;
+} as Record<MonederoCollection, DbRow[]>;
 
 describe('base64 + utf8 puros', () => {
   it('base64 roundtrip con todos los bytes y bloques parciales', () => {
