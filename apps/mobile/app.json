@@ -7,6 +7,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "backgroundColor": "#F4EFE7",
     "splash": {
       "backgroundColor": "#F4EFE7",
@@ -25,7 +26,11 @@
         "USE_BIOMETRIC",
         "USE_FINGERPRINT"
       ],
-      "allowBackup": false
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2F7D5B"
+      }
     },
     "plugins": [
       "expo-sharing",
