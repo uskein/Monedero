@@ -25,9 +25,15 @@ const PASS = 'clave-maestra-1';
 /** PBKDF2 120k + sql.js WASM + migraciones/seed: esperas amplias. */
 const WAIT = { timeout: 15000 };
 
-/** Panel de cada pestaña (ambos montados; el oculto sigue consultable). */
-const dash = () => within(screen.getByLabelText('Inicio'));
-const movs = () => within(screen.getByLabelText('Movimientos'));
+/** Región de cada panel: el NavTab comparte nombre → se excluye el rol tab. */
+const panel = (name: string): ReturnType<typeof within> => {
+  const candidates = screen.getAllByLabelText(name);
+  const panelEl = candidates.find((el) => (el as { props?: { accessibilityRole?: string } }).props?.accessibilityRole !== 'tab') ?? candidates[0];
+  if (!panelEl) throw new Error('panel no encontrado');
+  return within(panelEl);
+};
+const dash = () => panel('Inicio');
+const movs = () => panel('Movimientos');
 const navTab = (name: string) => screen.getByRole('tab', { name });
 
 beforeEach(() => {

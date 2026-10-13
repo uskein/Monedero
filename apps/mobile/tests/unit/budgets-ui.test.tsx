@@ -153,7 +153,7 @@ describe('BudgetsScreen móvil — alta y edición (HU-11 · F4)', () => {
     expect(alert.props.children).toContain('Esa categoría ya tiene un tope este mes');
 
     await fireEvent.press(screen.getByRole('button', { name: 'Editar tope' })); // CTA duplicado
-    expect(screen.getByLabelText('Tope mensual').props.value).toBe('1000'); // prellenado
+    expect(screen.getByLabelText('Tope mensual').props.value).toBe('1.000'); // prellenado
     await fireEvent.changeText(screen.getByLabelText('Tope mensual'), '150000');
     await fireEvent.press(screen.getByRole('button', { name: 'Guardar tope' }));
 

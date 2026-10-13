@@ -68,7 +68,9 @@ describe('TransactionForm — dinero a centavos enteros (BP-05/HU-05/HU-18)', ()
     await renderForm(onSubmit);
     await user.type(screen.getByLabelText('Importe'), 'abc');
     await user.press(screen.getByRole('button', { name: 'Guardar movimiento' }));
-    expect(screen.getByText(/Escribe un importe válido/)).toBeTruthy();
+    // El MoneyInput en vivo no admite letras: el campo queda vacío y la
+    // validación de envío exige un importe mayor que cero.
+    expect(screen.getByText(/importe debe ser mayor que cero/)).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });

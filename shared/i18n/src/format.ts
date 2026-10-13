@@ -87,7 +87,6 @@ export function formatMoneySigned(
  * Devuelve SIEMPRE una cadena que el parser lee de vuelta igual (round-trip).
  */
 export function formatAmountLive(raw: string, currency: CurrencyCode, locale: Locale): string {
-  const decimals = decimalsFor(currency);
   const decimalSep = locale === 'es-CO' ? ',' : '.';
   const groupSep = locale === 'es-CO' ? '.' : ',';
 
@@ -97,7 +96,10 @@ export function formatAmountLive(raw: string, currency: CurrencyCode, locale: Lo
   const lastSep = Math.max(cleaned.lastIndexOf(','), cleaned.lastIndexOf('.'));
   let intDigits: string;
   let decDigits = '';
-  if (lastSep >= 0 && decimals > 0) {
+  if (lastSep >= 0) {
+    // El separador escrito por el usuario es decimal SOLO con 1–2 dígitos
+    // tras él (misma heurística que el parser — vale para CUALQUIER moneda:
+    // COP no añade decimales, pero los tipeados se conservan y round-tripan).
     const after = cleaned.slice(lastSep + 1);
     if (after.length <= 2) {
       intDigits = cleaned.slice(0, lastSep).replace(/[.,]/g, '');
@@ -112,7 +114,11 @@ export function formatAmountLive(raw: string, currency: CurrencyCode, locale: Lo
   if (intDigits === '' && decDigits === '') return '';
 
   const grouped = intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, groupSep);
-  return decDigits ? `${grouped}${decimalSep}${decDigits}` : grouped;
+  // Separador final conservado: el siguiente dígito del usuario cae en los
+  // decimales (tipeo continuo con userEvent: '18' + '.' + '5'… → '18,5'…).
+  if (decDigits) return `${grouped}${decimalSep}${decDigits}`;
+  if (lastSep >= 0 && lastSep === cleaned.length - 1) return `${grouped}${decimalSep}`;
+  return grouped;
 }
 
 /** Clave de mes 'YYYY-MM' de una fecha local (BP-03 · HU-09). */

@@ -16,9 +16,10 @@ beforeEach(() => {
 });
 
 describe('AppRoot (composición raíz)', () => {
-  it('renderiza el wordmark Monedero', async () => {
+  it('renderiza la marca mínima (tile «M» en la esquina)', async () => {
     await render(<AppRoot />);
-    expect(screen.getByText('Monedero')).toBeTruthy();
+    // S6: el wordmark completo se redujo al tile; el nombre vive en el a11y.
+    expect(screen.getByText('M')).toBeTruthy();
   });
 
   it('expone el logo con accessibilityLabel (a11y)', async () => {
@@ -26,7 +27,7 @@ describe('AppRoot (composición raíz)', () => {
     expect(screen.getByLabelText('Monedero, logotipo')).toBeTruthy();
   });
 
-  it('anuncia el copy de privacidad vía home.lead (sin strings hardcodeados)', async () => {
+  it('anuncia el copy de privacidad vía home.lead como FOOTER (sin strings hardcodeados)', async () => {
     await render(<AppRoot />);
     expect(screen.getByText(/tus datos nunca salen de tu dispositivo/)).toBeTruthy();
   });
