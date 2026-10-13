@@ -1,6 +1,7 @@
 # Certificación final — S8 (M5 · Pulido, i18n, a11y y release)
 
-> **Fecha:** 2026-10-13 · **Gate:** 🎯 Hito final (aprobación del usuario)
+> **Fecha:** 2026-10-13 · **Gate:** 🎯 Hito final
+> **Estado: ✅ CERTIFICADO — aprobado por el usuario (2026-10-13).** Los ítems manuales de §5 se validaron en dispositivo por el usuario junto con la aprobación.
 > Sprint del plan: [`PLAN_DE_SPRINTS.md`](../Orquestador/PLAN_DE_SPRINTS.md) · Estándares: [`MANIFIESTO_CALIDAD.html`](MANIFIESTO_CALIDAD.html)
 
 ## 1. Evidencia automatizada (última batería completa)
