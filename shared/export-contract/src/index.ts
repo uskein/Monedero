@@ -11,6 +11,7 @@ export { canonicalize } from './hash';
 export { migrate } from './migrations';
 export type { FormatVersion } from './migrations';
 export { bytesToBase64, base64ToBytes } from './base64';
+export { encodeUtf8, decodeUtf8 } from './utf8';
 export {
   EXPORT_ORDER,
   buildMonederoFile,
