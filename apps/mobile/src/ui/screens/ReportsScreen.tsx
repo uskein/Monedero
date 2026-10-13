@@ -44,9 +44,9 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
   const transactions = useReportsStore((s) => s.transactions);
   const init = useReportsStore((s) => s.init);
   const setMonth = useReportsStore((s) => s.setMonth);
-  const summaryRef = useRef<View>(null);
-  const [exporting, setExporting] = useState<'pdf' | 'image' | null>(null);
-  const [exportError, setExportError] = useState(false);
+  /** Ref de la GEMA de captura (tarjeta oculta), no de la visible. */
+  const captureRef = useRef<View>(null);
+  const [exporting, setExporting] = useState<'pdf' | 'image' | null>(null);  const [exportError, setExportError] = useState(false);
 
   useEffect(() => {
     void init(repo);
@@ -125,11 +125,11 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
   }
 
   async function exportImage() {
-    if (!report || !summaryRef.current) return;
+    if (!report || !captureRef.current) return;
     setExporting('image');
     setExportError(false);
     try {
-      await shareViewShot(summaryRef.current);
+      await shareViewShot(captureRef.current);
     } catch (err) {
       if (__DEV__) console.warn('[monedero] export image falló', err);
       setExportError(true);
@@ -141,8 +141,31 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
   const currentMonth = monthKeyOf(new Date());
   const previousMonth = previousMonthKey(currentMonth);
 
+  // Tarjeta-resumen (HU-13): visible en pantalla + gemela OCULTA maquetada
+  // fuera del ScrollView para la captura (en Fabric, snapshotear la tarjeta
+  // dentro del ScrollView sale en blanco; fuera de pantalla se dibuja bien).
+  const summaryCard = report ? (
+    <ReportSummaryCard
+      monthLabel={formatMonthLabel(month, locale)}
+      incomeText={money(report.incomeCents, currency)}
+      expenseText={money(report.expenseCents, currency)}
+      balanceText={money(report.balanceCents, currency)}
+      compare={{
+        income: report.incomeCents,
+        expense: report.expenseCents,
+        max: Math.max(report.incomeCents, report.expenseCents, 1),
+      }}
+      categories={report.byCategory.slice(0, 5).map((cat, i) => ({
+        name: categoryText(cat.categoryId),
+        percent: cat.percent,
+        color: donutColors(c)[i % donutColors(c).length] ?? c.primary,
+      }))}
+    />
+  ) : null;
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} accessibilityLabel={t('reports.title')}>
+    <View style={styles.screen}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} accessibilityLabel={t('reports.title')}>
       <Text style={styles.title}>{t('reports.title')}</Text>
 
       {/* Mes segmentado (BP-07 .segmented) */}
@@ -178,23 +201,7 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
       ) : (
         <>
           {/* Tarjeta-resumen con IDENTIDAD (HU-13) — misma vista que la imagen exportada */}
-          <ReportSummaryCard
-            ref={summaryRef}
-            monthLabel={formatMonthLabel(month, locale)}
-            incomeText={money(report.incomeCents, currency)}
-            expenseText={money(report.expenseCents, currency)}
-            balanceText={money(report.balanceCents, currency)}
-            compare={{
-              income: report.incomeCents,
-              expense: report.expenseCents,
-              max: Math.max(report.incomeCents, report.expenseCents, 1),
-            }}
-            categories={report.byCategory.slice(0, 5).map((cat, i) => ({
-              name: categoryText(cat.categoryId),
-              percent: cat.percent,
-              color: donutColors(c)[i % donutColors(c).length] ?? c.primary,
-            }))}
-          />
+          {summaryCard}
 
           {/* Donut (HU-13: role=image + label) + tabla alternativa visible */}
           <Card style={styles.card}>
@@ -246,6 +253,21 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
         </>
       )}
     </ScrollView>
+
+      {/* Gema de captura: gemela de la tarjeta visible, maquetada FUERA de
+          pantalla pero dibujada (el ScrollView rompe la captura en Fabric).
+          Oculta para lectores y sin eventos táctiles. */}
+      <View
+        style={styles.captureHost}
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <View ref={captureRef} collapsable={false}>
+          {summaryCard}
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -267,6 +289,10 @@ function MonthChip({ label, selected, onPress }: { label: string; selected: bool
 function makeStyles(c: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.bgBase },
+  scroll: { flex: 1 },
+  // Fuera de pantalla pero MAQUETADA: el bitmap de captura dibuja este
+  // subárbol completo (en el ScrollView, Fabric captura en blanco).
+  captureHost: { position: 'absolute', left: -10000, top: 0, width: 380 },
   content: { gap: csSpace.s4, padding: csSpace.s4 },
   title: { fontSize: 20, fontWeight: '700', color: c.textPrimary },
   monthRow: { flexDirection: 'row', gap: csSpace.s2 },
