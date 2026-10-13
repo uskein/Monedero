@@ -48,6 +48,11 @@ export class KeyVault implements KeyVaultPort {
     return this.meta !== null;
   }
 
+  /** uuid de la bóveda (para el fichero exportado, HU-14). */
+  getVaultId(): string | null {
+    return this.meta?.vaultId ?? null;
+  }
+
   async createVault(vaultId: string, passphrase: string): Promise<void> {
     if (passphrase.length < MIN_LEN) throw new DomainError('VALIDATION_FAILED', 'passphrase');
     if (this.meta) {

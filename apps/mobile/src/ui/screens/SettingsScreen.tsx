@@ -7,11 +7,13 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { Database } from 'sql.js';
 import { Ionicons } from '@expo/vector-icons';
 import { useT } from '@monedero/i18n/react';
 import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, Input } from '../design-system';
 import { useThemeColors } from '../theme';
+import { DataScreen } from './DataScreen';
 import { usePrefsStore, type ThemePreference } from '../../state/prefs.store';
 import { wipeAllData } from '../../infrastructure/db/wipe';
 import { useCategoriesStore, type CategoriesRepo } from '../../state/categories.store';
@@ -19,6 +21,9 @@ import type { Category, CategoryType } from '../../core/domain/category';
 
 export interface SettingsScreenProps {
   categories: CategoriesRepo;
+  /** Sesión sql.js + bóveda para BP-09/BP-10 (S7). */
+  db?: Database;
+  vaultId?: string | null;
 }
 
 const THEME_OPTIONS: Array<{ value: ThemePreference; key: 'settings.theme.light' | 'settings.theme.dark' | 'settings.theme.system'; icon: 'sunny' | 'moon' | 'phone-portrait' }> = [
@@ -125,14 +130,17 @@ const CURRENCY_OPTIONS = ['COP', 'USD', 'EUR'] as const;
 const SWATCH_TOKENS = ['primary', 'secondary', 'accent', 'danger'] as const;
 type SwatchToken = (typeof SWATCH_TOKENS)[number];
 
-export function SettingsScreen({ categories }: SettingsScreenProps) {
+export function SettingsScreen({ categories, db, vaultId }: SettingsScreenProps) {
   const t = useT();
   const c = useThemeColors();
   const styles = useMemo(() => makeStyles(c), [c]);
-  const [view, setView] = useState<'hub' | 'categories'>('hub');
+  const [view, setView] = useState<'hub' | 'categories' | 'data'>('hub');
 
   if (view === 'categories') {
     return <CategoriesManager repo={categories} onBack={() => setView('hub')} />;
+  }
+  if (view === 'data') {
+    return <DataScreen db={db} vaultId={vaultId} onBack={() => setView('hub')} />;
   }
 
   return (
@@ -159,6 +167,12 @@ export function SettingsScreen({ categories }: SettingsScreenProps) {
       <Card style={styles.card}>
         <Text style={styles.copy}>{t('settings.categories.copy')}</Text>
         <Button variant="secondary" label={t('settings.categories')} onPress={() => setView('categories')} />
+      </Card>
+
+      {/* S7 · datos (BP-09 export / BP-10 import) */}
+      <Card style={styles.card}>
+        <Text style={styles.cardTitle}>{t('data.title')}</Text>
+        <Button variant="secondary" label={t('data.export')} onPress={() => setView('data')} />
       </Card>
     </ScrollView>
   );

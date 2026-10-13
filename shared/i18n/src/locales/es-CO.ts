@@ -132,6 +132,28 @@ export const esCO = {
   'danger.wipe.confirm': 'Borrar todo',
   'danger.export.soon': 'Antes de borrar te ofreceríamos una copia de seguridad, pero esa función (exportar) llega en el próximo sprint.',
 
+  // ── Datos BP-08: export/import .monedero (S7 · HU-14·15·16) ──
+  'data.title': 'Datos',
+  'data.export': 'Exportar bóveda',
+  'data.export.hint': 'Genera un archivo .monedero (o .monedero.enc con contraseña) para mover tus datos a otra plataforma.',
+  'data.export.passphrase': 'Contraseña del archivo (opcional)',
+  'data.export.submit': 'Generar y compartir',
+  'data.export.done': 'Bóveda exportada y lista para compartir.',
+  'data.import': 'Importar bóveda',
+  'data.import.hint': 'Fusiona los datos del archivo con los de este dispositivo: gana siempre lo más reciente.',
+  'data.import.mode.merge': 'Fusionar',
+  'data.import.mode.replace': 'Reemplazar',
+  'data.import.replace.warning': 'Reemplazar BORRA los datos actuales de este dispositivo antes de importar.',
+  'data.import.replace.word': 'REEMPLAZAR',
+  'data.import.pick': 'Elegir archivo',
+  'data.import.passphrase': 'Contraseña del archivo',
+  'data.import.result': 'Listo: {added} añadidos · {updated} actualizados · {skipped} omitidos · {conflicts} conflictos',
+  'data.error.hash': 'El archivo está alterado o dañado (integridad).',
+  'data.error.decrypt': 'Contraseña incorrecta o archivo dañado.',
+  'data.error.format': 'Formato no compatible. ¿Necesitas actualizar la app?',
+  'data.error.passphraseRequired': 'Este archivo está cifrado: escribe su contraseña.',
+  'data.error.generic': 'No se pudo completar la operación con el archivo.',
+
   // ── Presupuestos BP-06 — HU-11·12 ──
   'budgets.title': 'Presupuestos',
   'budgets.add': 'Definir tope',

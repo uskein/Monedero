@@ -17,6 +17,8 @@ export type VaultStatus = 'boot' | 'no-vault' | 'locked' | 'unlocked';
 
 interface VaultState {
   status: VaultStatus;
+  /** uuid de la bóveda activa (HU-14: viaja en el fichero exportado). */
+  vaultId: string | null;
   /** DomainErrorCode | null — messageKey i18n en UI (nunca crudo en prod) */
   error: string | null;
   busy: boolean;
@@ -63,6 +65,7 @@ export function getVaultPort(): KeyVault | null {
 
 export const useVaultStore = create<VaultState>((set) => ({
   status: 'boot',
+  vaultId: null,
   error: null,
   busy: false,
 
@@ -77,12 +80,12 @@ export const useVaultStore = create<VaultState>((set) => ({
       await Promise.race([load, timeout]);
       const status = getVault().hasVault() ? 'locked' : 'no-vault';
       if (__DEV__) console.warn(`[monedero] vault boot → ${status}`);
-      set({ status, error: null });
+      set({ status, vaultId: getVault().getVaultId(), error: null });
     } catch {
       // Keychain ilegible o colgada (rarísimo): mejor permitir crear de nuevo
       // que quedarse en spinner eterno — espeja la semántica «no hay bóveda».
       if (__DEV__) console.warn('[monedero] vault boot → no-vault (fallo/timeout)');
-      set({ status: 'no-vault', error: 'STORAGE_UNAVAILABLE' });
+      set({ status: 'no-vault', vaultId: null, error: 'STORAGE_UNAVAILABLE' });
     }
   },
 
@@ -94,7 +97,7 @@ export const useVaultStore = create<VaultState>((set) => ({
     }
     try {
       await getVault().createVault(await randomUUID(), passphrase);
-      set({ status: 'unlocked', busy: false });
+      set({ status: 'unlocked', vaultId: getVault().getVaultId(), busy: false });
       return true;
     } catch (err) {
       set({ error: err instanceof DomainError ? err.code : 'STORAGE_UNAVAILABLE', busy: false });
@@ -110,7 +113,7 @@ export const useVaultStore = create<VaultState>((set) => ({
     }
     try {
       await getVault().unlock(passphrase);
-      set({ status: 'unlocked', busy: false });
+      set({ status: 'unlocked', vaultId: getVault().getVaultId(), busy: false });
       return true;
     } catch {
       set({ error: 'VAULT_WRONG_PASSPHRASE', busy: false });

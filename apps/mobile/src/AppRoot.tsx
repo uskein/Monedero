@@ -16,7 +16,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nProvider, useT } from '@monedero/i18n/react';
 import { csLogo, csRadius, csSpace } from '@monedero/tokens';
-import { configureVaultStorage, getVaultPort } from './state/vault.store';
+import { configureVaultStorage, getVaultPort, useVaultStore } from './state/vault.store';
 import { createSecureStoreStorage } from './infrastructure/security/secureStoreStorage';
 import { createDevRepository, type DevRepository } from './infrastructure/db/createDevRepository';
 import { VaultGate } from './ui/screens/VaultGate';
@@ -96,6 +96,8 @@ function AppShell() {
   const styles = useMemo(() => makeStyles(c), [c]);
   /** Moneda GLOBAL (HU-18) — la de Ajustes; cada pantalla puede sobre-escribir. */
   const currency = usePrefsStore((s) => s.currency);
+  /** uuid de la bóveda (HU-14: viaja en el fichero exportado). */
+  const vaultId = useVaultStore((s) => s.vaultId);
   const [tab, setTab] = useState<'home' | 'tx' | 'budgets' | 'reports' | 'settings'>('home');
   const [addSignal, setAddSignal] = useState(0);
   const [dev, setDev] = useState<DevRepository | null>(null);
@@ -148,7 +150,7 @@ function AppShell() {
         <ReportsScreen repo={dev.repo} currency={currency} />
       </View>
       <View style={[styles.panel, tab !== 'settings' && styles.hidden]}>
-        <SettingsScreen categories={dev.categories} />
+        <SettingsScreen categories={dev.categories} db={dev.db} vaultId={vaultId} />
       </View>
     </View>
   );
