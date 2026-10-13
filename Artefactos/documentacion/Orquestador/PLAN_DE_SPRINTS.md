@@ -172,7 +172,7 @@ gantt
 | S4 | M2b Dashboard | ✅ Aprobado por el usuario (🎯 hito) | 62% |
 | S5 | M3 Presupuestos | ✅ Entregado (Gate S5 certificado) | 75% |
 | S6 | M4a Reportes/ajustes | ✅ Entregado (móvil; PWA pendiente) | 87% |
-| S7 | M4b Export/Import | ✅ Entregado (F5 pendiente de validación del usuario) | 95% |
-| S8 | M5 Release | ⏳ Pendiente | 100% (🎯 certificación) |
+| S7 | M4b Export/Import | ✅ Aprobado por el usuario (🎯 F5 móvil ⇄ PWA validado) | 95% |
+| S8 | M5 Release | ✅ Entregado (certificación: `Calidad y Gobernanza/CERTIFICACION_FINAL_S8.md` — firma final pendiente) | 100% |
 
 > El % refleja valor entregado por módulo (peso acorde a HU y criticidad). El Orquestador actualizará esta tabla tras cada sprint y mantendrá `memoriaOrquestador.estadoProyecto` sincronizada.
