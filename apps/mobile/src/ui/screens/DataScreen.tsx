@@ -4,11 +4,11 @@
  * Export: passphrase opcional → .monedero(.enc) → Share nativo.
  * Import: Fusionar (LWW) o Reemplazar (palabra clave + copia local previa
  * vía snapshot) → resumen ImportSummary o error IMPORT_* mapeado a i18n.
- * Tras un import se recargan todos los stores (misma BD sql.js).
+ * Tras un import se recargan todos los stores (misma BD de sesión).
  */
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { Database } from 'sql.js';
+import type { SqlDbPort } from '../../infrastructure/db/SqlDbPort';
 import { useI18n } from '@monedero/i18n/react';
 import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, Input } from '../design-system';
@@ -22,8 +22,8 @@ import { useCategoriesStore } from '../../state/categories.store';
 import { useReportsStore } from '../../state/reports.store';
 
 export interface DataScreenProps {
-  /** BD sql.js de la sesión (AppShell la posee). */
-  db?: Database;
+  /** BD de la sesión por SqlDbPort (expo-sqlite en runtime; AppShell la posee). */
+  db?: SqlDbPort;
   /** uuid de la bóveda (KeyVault) — viaja en el fichero. */
   vaultId?: string | null;
   onBack: () => void;

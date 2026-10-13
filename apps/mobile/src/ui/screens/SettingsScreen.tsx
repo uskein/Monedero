@@ -7,7 +7,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { Database } from 'sql.js';
+import type { SqlDbPort } from '../../infrastructure/db/SqlDbPort';
 import { Ionicons } from '@expo/vector-icons';
 import { useT } from '@monedero/i18n/react';
 import { csRadius, csSpace } from '@monedero/tokens';
@@ -21,8 +21,8 @@ import type { Category, CategoryType } from '../../core/domain/category';
 
 export interface SettingsScreenProps {
   categories: CategoriesRepo;
-  /** Sesión sql.js + bóveda para BP-09/BP-10 (S7). */
-  db?: Database;
+  /** BD de la sesión (SqlDbPort) + bóveda para BP-09/BP-10 (S7). */
+  db?: SqlDbPort;
   vaultId?: string | null;
 }
 

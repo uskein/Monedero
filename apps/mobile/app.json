@@ -28,7 +28,8 @@
       "allowBackup": false
     },
     "plugins": [
-      "expo-sharing"
+      "expo-sharing",
+      "expo-sqlite"
     ]
   }
 }

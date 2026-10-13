@@ -1,11 +1,12 @@
 /**
- * VaultFile móvil (S7 · HU-14·15·16) — ExportPort/ImportPort sobre sql.js.
+ * VaultFile móvil (S7 · HU-14·15·16) — ExportPort/ImportPort sobre SqlDbPort.
  * Cripto real con @noble (PBKDF2-SHA256 120k + AES-256-GCM, misma familia
  * que la bóveda). El núcleo del formato vive en @monedero/export-contract
  * (único acoplamiento ADR-002); aquí solo hay glue de BD y archivos.
+ * La BD llega por el PUERTO SqlDbPort: expo-sqlite (runtime) o sql.js (jest)
+ * — la lógica de export/import es idéntica en ambos (D1).
  * El frontend jamás escribe SQL: la UI llama a exportVaultFile/importVaultFile.
  */
-import type { Database, SqlValue } from 'sql.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { pbkdf2 } from '@noble/hashes/pbkdf2.js';
 import { gcm } from '@noble/ciphers/aes.js';
@@ -25,6 +26,7 @@ import {
   type MonederoCollection,
   type MonederoFile,
 } from '@monedero/export-contract';
+import type { SqlDbPort } from '../db/SqlDbPort';
 import { randomBytes } from '../security/random';
 
 const TABLES = EXPORT_ORDER;
@@ -42,18 +44,15 @@ export const nobleFileCrypto: FileCrypto = {
   },
 };
 
-/** Lee una tabla completa como filas (snake_case). */
-export function readTable(db: Database, table: string): DbRow[] {
-  const first = db.exec(`SELECT * FROM ${table}`)?.[0];
-  if (!first) return [];
-  const { columns, values } = first;
-  return values.map((row) => Object.fromEntries(columns.map((col: string, i: number) => [col, row[i] ?? null])));
+/** Lee una tabla completa como filas (snake_case, nulls normalizados). */
+export async function readTable(db: SqlDbPort, table: string): Promise<DbRow[]> {
+  const rows = await db.select(`SELECT * FROM ${table}`);
+  return rows.map((row) => Object.fromEntries(Object.entries(row).map(([col, v]) => [col, v ?? null])));
 }
 
-function tableColumns(db: Database, table: string): string[] {
-  const info = db.exec(`PRAGMA table_info(${table})`)?.[0];
-  if (!info) return [];
-  return info.values.map((row) => String(row[1])); // [cid, name, type, ...]
+async function tableColumns(db: SqlDbPort, table: string): Promise<string[]> {
+  const info = await db.select<{ name?: unknown }>(`PRAGMA table_info(${table})`);
+  return info.map((row) => String(row.name));
 }
 
 export interface VaultFileMeta {
@@ -62,17 +61,15 @@ export interface VaultFileMeta {
 }
 
 /** Serializa TODA la bóveda a MonederoFile (con integrity). */
-export async function buildVaultFile(db: Database, meta: VaultFileMeta): Promise<MonederoFile> {
-  const data = Object.fromEntries(TABLES.map((t) => [t, readTable(db, t)])) as Record<
-    MonederoCollection,
-    unknown[]
-  >;
-  return buildMonederoFile(data, meta, nobleFileCrypto.sha256Hex);
+export async function buildVaultFile(db: SqlDbPort, meta: VaultFileMeta): Promise<MonederoFile> {
+  const data: [string, DbRow[]][] = [];
+  for (const t of TABLES) data.push([t, await readTable(db, t)]);
+  return buildMonederoFile(Object.fromEntries(data) as Record<MonederoCollection, unknown[]>, meta, nobleFileCrypto.sha256Hex);
 }
 
 /** Exporta la bóveda: `.monedero` plano o `.monedero.enc` cifrado (HU-14). */
 export async function exportVaultFile(
-  db: Database,
+  db: SqlDbPort,
   meta: VaultFileMeta & { passphrase?: string },
 ): Promise<{ filename: string; content: string }> {
   const file = await buildVaultFile(db, meta);
@@ -85,35 +82,39 @@ export async function exportVaultFile(
 }
 
 /** Aplica un plan a la BD en orden FK. Errores por fila → skipped. */
-export function applyMergePlan(db: Database, plan: Pick<MergePlan, 'inserts' | 'updates'>, summary: ImportSummary): void {
-  db.run('PRAGMA foreign_keys = ON');
-  const applyRows = (collection: MonederoCollection, rows: DbRow[], kind: 'insert' | 'update'): void => {
-    const columns = tableColumns(db, collection);
+export async function applyMergePlan(
+  db: SqlDbPort,
+  plan: Pick<MergePlan, 'inserts' | 'updates'>,
+  summary: ImportSummary,
+): Promise<void> {
+  await db.run('PRAGMA foreign_keys = ON');
+  const applyRows = async (collection: MonederoCollection, rows: DbRow[], kind: 'insert' | 'update'): Promise<void> => {
+    const columns = await tableColumns(db, collection);
     for (const row of rows) {
       const present = columns.filter((col) => col in row && row[col] !== undefined);
       try {
         if (kind === 'insert') {
           if (collection === 'transaction_tags') {
-            db.run(
+            await db.run(
               `INSERT OR IGNORE INTO ${collection} (transaction_id, tag_id) VALUES (?, ?)`,
               [String(row.transaction_id), String(row.tag_id)],
             );
           } else if (collection === 'settings') {
-            db.run(
+            await db.run(
               `INSERT OR REPLACE INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)`,
               [String(row.key), String(row.value_json), String(row.updated_at)],
             );
           } else {
-            db.run(
+            await db.run(
               `INSERT INTO ${collection} (${present.join(', ')}) VALUES (${present.map(() => '?').join(', ')})`,
-              present.map((col) => row[col] ?? null) as SqlValue[],
+              present.map((col) => row[col] ?? null),
             );
           }
         } else {
           const setCols = columns.filter((col) => col !== 'id' && col in row);
-          db.run(
+          await db.run(
             `UPDATE ${collection} SET ${setCols.map((c) => `${c} = ?`).join(', ')} WHERE id = ?`,
-            [...setCols.map((col) => row[col] ?? null), String(row.id)] as SqlValue[],
+            [...setCols.map((col) => row[col] ?? null), String(row.id)],
           );
         }
       } catch {
@@ -123,24 +124,24 @@ export function applyMergePlan(db: Database, plan: Pick<MergePlan, 'inserts' | '
     }
   };
 
-  db.run('PRAGMA foreign_keys = OFF'); // tolera archivos con FKs rotas por fila
+  await db.run('PRAGMA foreign_keys = OFF'); // tolera archivos con FKs rotas por fila
   try {
-    for (const step of plan.inserts) applyRows(step.collection, step.rows, 'insert');
-    for (const step of plan.updates) applyRows(step.collection, step.rows, 'update');
+    for (const step of plan.inserts) await applyRows(step.collection, step.rows, 'insert');
+    for (const step of plan.updates) await applyRows(step.collection, step.rows, 'update');
   } finally {
-    db.run('PRAGMA foreign_keys = ON');
+    await db.run('PRAGMA foreign_keys = ON');
   }
 }
 
 /** Vacía las colecciones (HU-16 reemplazar) respetando FKs (hijos primero). */
-export function wipeCollections(db: Database): void {
-  db.run('PRAGMA foreign_keys = OFF');
+export async function wipeCollections(db: SqlDbPort): Promise<void> {
+  await db.run('PRAGMA foreign_keys = OFF');
   try {
     for (const table of [...TABLES].reverse()) {
-      db.run(`DELETE FROM ${table}`);
+      await db.run(`DELETE FROM ${table}`);
     }
   } finally {
-    db.run('PRAGMA foreign_keys = ON');
+    await db.run('PRAGMA foreign_keys = ON');
   }
 }
 
@@ -153,7 +154,7 @@ export interface ImportOptions {
 
 /** Importa un `.monedero`/`.monedero.enc` (HU-15·16). Lanza con IMPORT_*. */
 export async function importVaultFile(
-  db: Database,
+  db: SqlDbPort,
   raw: string | Uint8Array,
   opts: ImportOptions,
 ): Promise<ImportSummary> {
@@ -163,22 +164,20 @@ export async function importVaultFile(
     crypto: nobleFileCrypto,
   });
 
-  const existing = Object.fromEntries(TABLES.map((t) => [t, readTable(db, t)])) as Record<
-    MonederoCollection,
-    DbRow[]
-  >;
+  const existing: Record<MonederoCollection, DbRow[]> = {} as Record<MonederoCollection, DbRow[]>;
+  for (const t of TABLES) existing[t] = await readTable(db, t);
 
   const plan =
     opts.mode === 'replace'
       ? { inserts: planReplace(file.data).inserts, updates: [], summary: planReplace(file.data).summary }
       : planMerge(file.data, existing);
 
-  if (opts.mode === 'replace') wipeCollections(db);
-  applyMergePlan(db, plan, plan.summary);
+  if (opts.mode === 'replace') await wipeCollections(db);
+  await applyMergePlan(db, plan, plan.summary);
 
   // Auditoría local (import_log es local y NUNCA se exporta).
   try {
-    db.run(
+    await db.run(
       `INSERT INTO import_log (id, source, file_hash, summary_json, imported_at)
        VALUES (?, ?, ?, ?, ?)`,
       [

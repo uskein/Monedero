@@ -27,9 +27,12 @@ module.exports = {
     '^@monedero/i18n$': '<rootDir>/../../shared/i18n/src/index.ts',
     '^@monedero/db$': '<rootDir>/../../shared/db/src/index.ts',
     '^@monedero/db/sqljs$': '<rootDir>/../../shared/db/src/sqljs.ts',
-    // El móvil corre el build asm.js en el dispositivo (Metro no resuelve
-    // node:fs del build wasm): jest ejercita el MISMO motor que Expo Go.
+    // Jest ejercita el motor sql.js vía el build asm.js (JS puro, sin WASM).
+    // El runtime ya NO lo empaqueta: en el dispositivo el motor es expo-sqlite.
     '^sql\\.js$': 'sql.js/dist/sql-asm.js',
+    // El motor por defecto de createDevRepository es expo-sqlite (nativo);
+    // en jest se resuelve al motor sql.js equivalente (mismo DevEngine).
+    '^\\.\\/sqliteEngine$': '<rootDir>/tests/helpers/engineSqlJs.ts',
   },
   // pnpm aloja paquetes bajo .pnpm/<pkg>@v/node_modules/<pkg> y Windows usa "\":
   // el patrón debe admitir ambos separadores y el prefijo .pnpm/ para no ignorarlos.

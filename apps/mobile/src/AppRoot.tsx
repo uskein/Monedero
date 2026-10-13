@@ -3,9 +3,9 @@
  * Estructura: I18nProvider → Hero (wordmark + privacidad) → VaultGate
  * (BP-01/BP-02) → AppShell con pestañas Inicio/Movimientos: AMBAS pantallas
  * montadas (la oculta con display:'none', espejo del `hidden` de la PWA) para
- * conservar el estado de cada una. El repo dev (sql.js, sustituible por
- * SQLCipher al llegar el build nativo) se crea tras desbloquear: no se toca la
- * BD con la bóveda cerrada. i18n: cero strings hardcodeados → t().
+ * conservar el estado de cada una. La sesión (expo-sqlite en memoria +
+ * snapshot cifrado) se crea tras desbloquear: no se toca la BD con la bóveda
+ * cerrada. i18n: cero strings hardcodeados → t().
  * Trazabilidad: ESTRUCTURA_DIRECTORIOS → apps/mobile/src/AppRoot.tsx ·
  * BLUEPRINTS BP-01..05 · PLAN_DE_SPRINTS 4.4 (Gate S4).
  */
@@ -107,7 +107,7 @@ function AppShell() {
     // Persistencia cifrada interina (ADR-003): el snapshot se sella con la
     // clave de bóveda (KeyVault.encryptBytes) — la clave nunca sale de ahí.
     void createDevRepository({ crypto: getVaultPort() ?? undefined }).then((d) => {
-      if (__DEV__) console.warn('[monedero] repo dev listo (sql.js asm + snapshot cifrado)');
+      if (__DEV__) console.warn('[monedero] repo listo (expo-sqlite en memoria + snapshot cifrado)');
       if (alive) setDev(d);
       else d.dispose();
     });
