@@ -48,12 +48,14 @@ export async function buildMonederoFile(
 
 /** ¿El integrity.sha256 del fichero es válido? (sin tocar datos). */
 export async function verifyMonederoIntegrity(
-  file: { integrity?: { sha256?: string } } & Record<string, unknown>,
+  file: unknown,
   sha256Hex: Sha256Hex,
 ): Promise<boolean> {
-  const expected = file.integrity?.sha256;
+  if (typeof file !== 'object' || file === null) return false;
+  const record = file as { integrity?: { sha256?: string } };
+  const expected = record.integrity?.sha256;
   if (!expected || !/^[0-9a-f]{64}$/.test(expected)) return false;
-  const actual = await sha256Hex(canonicalize(withoutIntegrity(file)));
+  const actual = await sha256Hex(canonicalize(withoutIntegrity(file as Record<string, unknown>)));
   return actual === expected;
 }
 

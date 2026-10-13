@@ -36,23 +36,23 @@ export function decodeUtf8(bytes: Uint8Array): string {
   let out = '';
   let i = 0;
   while (i < bytes.length) {
-    const b0 = bytes[i];
+    const b0 = bytes[i] ?? 0;
     let code: number;
     if (b0 < 0x80) {
       code = b0;
       i += 1;
     } else if ((b0 & 0xe0) === 0xc0) {
-      code = ((b0 & 0x1f) << 6) | (bytes[i + 1] & 0x3f);
+      code = ((b0 & 0x1f) << 6) | ((bytes[i + 1] ?? 0) & 0x3f);
       i += 2;
     } else if ((b0 & 0xf0) === 0xe0) {
-      code = ((b0 & 0x0f) << 12) | ((bytes[i + 1] & 0x3f) << 6) | (bytes[i + 2] & 0x3f);
+      code = ((b0 & 0x0f) << 12) | (((bytes[i + 1] ?? 0) & 0x3f) << 6) | ((bytes[i + 2] ?? 0) & 0x3f);
       i += 3;
     } else {
       code =
         ((b0 & 0x07) << 18) |
-        ((bytes[i + 1] & 0x3f) << 12) |
-        ((bytes[i + 2] & 0x3f) << 6) |
-        (bytes[i + 3] & 0x3f);
+        (((bytes[i + 1] ?? 0) & 0x3f) << 12) |
+        (((bytes[i + 2] ?? 0) & 0x3f) << 6) |
+        ((bytes[i + 3] ?? 0) & 0x3f);
       i += 4;
     }
     if (code > 0xffff) {
