@@ -33,7 +33,7 @@
 
 | # | Deuda | Impacto | Cuándo se resuelve |
 |---|---|---|---|
-| D1 | SQLCipher nativo pendiente de dev-build (hoy: snapshot AES-256-GCM en archivo) | Bajo — cifrado real ya activo vía archivo | Dev-build EAS |
+| D1 | ~~SQLCipher nativo~~ **Motor ejecutado (ADR-008)**: la sesión corre sobre expo-sqlite NATIVO en memoria + snapshot AES-256-GCM (cero plaintext en reposo). Falta el cifrado del fichero a nivel de fichero (SQLCipher) | Bajo — cifrado real ya activo vía snapshot | Dev-build EAS |
 | D2 | PWA sin la capa S6 (tema claro/oscuro, moneda global, reportes, zona de peligro) — entregada solo en móvil | Medio — paridad de features | Siguiente sprint de paridad |
 | D3 | Coverage ≥80% sin auditar en cada iteración (CI ya ejecuta `--coverage`) | Bajo | Revisión tras primer CI en verde |
 | D4 | Advisories sin parche upstream en toolchain Expo (2 high + 2 moderate) | Nulo en producción | Cuando Expo actualice transitive deps |
@@ -50,6 +50,6 @@
 ## 5. Certificación manual pendiente (usuario)
 
 - [ ] VoiceOver (iOS) / TalkBack (Android): recorrer Inicio · Movimientos · Presupuestos · Reportes · Ajustes
-- [ ] Arranque en frío < 1,5 s en dispositivo real (hoy: BusyIndicator durante bóveda + sql.js)
+- [ ] Arranque en frío < 1,5 s en dispositivo real (hoy: BusyIndicator durante bóveda + hidratación expo-sqlite)
 - [ ] PWA offline: instalarla, cerrar la red, recargar (service worker)
 - [ ] Smoke final: alta → presupuesto → reporte → export `.monedero` → import en la otra plataforma (F5 ya aprobado)

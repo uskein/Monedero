@@ -132,6 +132,12 @@ flowchart TB
 - **Decisión:** Vite + `vite-plugin-pwa`.
 - **Consecuencias:** ✅ build mínimo, SW simple, deploy estático. ❌ sin SSR (irrelevante para app autenticada localmente).
 
+### ADR-008: Motor de sesión móvil = expo-sqlite nativo, BD en memoria + snapshot cifrado (interino hasta SQLCipher)
+- **Contexto:** el motor interim sql.js (build asm.js, Emscripten) alcanza 294 niveles de anidamiento que el compilador de Hermes (`hermesc`) rechaza en builds release (límite duro ~1000, facebook/hermes#628) → imposible generar APK/AAB con Hermes. Además el asm.js es JS interpretado (rendimiento inferior al SQLite nativo ya aprobado en ADR-003/§2.1).
+- **Decisión:** la sesión corre sobre **expo-sqlite (SQLite nativo, Expo Go compatible)** con la BD **en memoria** (`deserializeDatabaseAsync` desde el snapshot / `:memory:` fresca). `serializeAsync()` (sqlite3_serialize) es el espejo exacto del antiguo `db.export()` de sql.js. El **snapshot AES-256-GCM con clave de bóveda** (ADR-003) sigue siendo la ÚNICA persistencia en disco: cero plaintext en reposo, semántica idéntica a la anterior. El motor queda tras el puerto `DevEngine` (runtime: expo-sqlite; jest: sql.js equivalente).
+- **Alternativas:** JSC en release (divergencia de motor dev/prod), sql.js wasm embebido en base64 (+1 MB, sigue sin cifrar el fichero), SQLCipher directo (exige dev-build propio, no corre en Expo Go).
+- **Consecuencias:** ✅ builds release con Hermes, SQLite nativo, ADR-003 íntegro, alineación con §2.1. ❌ el fichero de la BD aún no es SQLCipher a nivel de fichero (pendiente el dev-build de la deuda D1); sql.js permanece SOLO en jest (fuente de verdad de la suite).
+
 ---
 
 ## 5. Directrices de código
