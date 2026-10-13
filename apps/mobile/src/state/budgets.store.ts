@@ -19,6 +19,8 @@ export interface BudgetsRepo {
   get(categoryId: string, period: string): Promise<Budget | null>;
   listByPeriod(period: string): Promise<Budget[]>;
   upsert(input: BudgetInput): Promise<Budget>;
+  /** Borra el tope del mes (tombstone). Idempotente. */
+  remove(categoryId: string, period: string): Promise<void>;
   usage(
     categoryId: string,
     period: string,
@@ -75,6 +77,8 @@ interface BudgetsState {
     input: { categoryId: string; amountCents: number },
     opts?: { editingCategoryId?: string },
   ) => Promise<boolean>;
+  /** Elimina el tope de la categoría del periodo (tombstone) y recarga. */
+  remove: (categoryId: string) => Promise<boolean>;
   clearToast: () => void;
   clearDuplicate: () => void;
   clearFormError: () => void;
@@ -204,6 +208,19 @@ export const useBudgetsStore = create<BudgetsState>((set, get) => ({
             ? 'VALIDATION_FAILED'
             : 'STORAGE_UNAVAILABLE',
       });
+      return false;
+    }
+  },
+
+  remove: async (categoryId) => {
+    const { deps, levels } = get();
+    if (!deps) return false;
+    try {
+      await deps.budgets.remove(categoryId, deps.period ?? currentPeriod());
+      set(await loadFromRepo(deps, levels));
+      return true;
+    } catch {
+      set({ formError: 'STORAGE_UNAVAILABLE' });
       return false;
     }
   },

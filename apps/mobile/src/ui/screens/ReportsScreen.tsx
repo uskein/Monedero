@@ -16,6 +16,7 @@ import { useThemeColors, type ThemeColors } from '../theme';
 import { buildReportHtml, shareReportPdf, shareViewShot } from '../../infrastructure/export/reportExport';
 import { ReportSummaryCard } from './ReportSummaryCard';
 import { CATEGORY_NAMES } from './catalog';
+import { useCategoriesStore, type CategoriesRepo } from '../../state/categories.store';
 import { useReportsStore, type ReportsRepo } from '../../state/reports.store';
 
 const TYPE_LABEL: Record<'expense' | 'income' | 'transfer', TranslationKey> = {
@@ -31,10 +32,12 @@ function donutColors(c: ThemeColors): string[] {
 
 export interface ReportsScreenProps {
   repo: ReportsRepo;
+  /** Repo de categorías → resuelve nombres de categorías PERSONALIZADAS. */
+  categories?: CategoriesRepo;
   currency?: 'COP' | 'USD' | 'EUR';
 }
 
-export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
+export function ReportsScreen({ repo, categories, currency = 'COP' }: ReportsScreenProps) {
   const { t, money, moneySigned, locale } = useI18n();
   const c = useThemeColors();
   const styles = useMemo(() => makeStyles(c), [c]);
@@ -44,6 +47,8 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
   const transactions = useReportsStore((s) => s.transactions);
   const init = useReportsStore((s) => s.init);
   const setMonth = useReportsStore((s) => s.setMonth);
+  /** Categorías de la BD (seed + personalizadas) — init idempotente. */
+  const customCategories = useCategoriesStore((s) => s.items);
   /** Ref de la GEMA de captura (tarjeta oculta), no de la visible. */
   const captureRef = useRef<View>(null);
   const [exporting, setExporting] = useState<'pdf' | 'image' | null>(null);  const [exportError, setExportError] = useState(false);
@@ -52,8 +57,19 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
     void init(repo);
   }, [init, repo]);
 
+  useEffect(() => {
+    if (categories) void useCategoriesStore.getState().init(categories);
+  }, [categories]);
+
+  /** Nombres: seed + personalizadas (el reporte nunca muestra ids crudos). */
+  const categoryNames = useMemo(() => {
+    const names: Record<string, string> = { ...CATEGORY_NAMES };
+    for (const cat of customCategories) names[cat.id] = cat.name;
+    return names;
+  }, [customCategories]);
+
   function categoryText(categoryId: string | null): string {
-    return categoryId ? (CATEGORY_NAMES[categoryId] ?? categoryId) : t('reports.uncategorized');
+    return categoryId ? (categoryNames[categoryId] ?? categoryId) : t('reports.uncategorized');
   }
 
   async function exportPdf() {
@@ -221,7 +237,7 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
                     style={[styles.dot, { backgroundColor: donutColors(c)[i % donutColors(c).length] ?? c.primary }]}
                   />
                   <Text style={styles.legendName}>
-                    {i2.categoryId ? (CATEGORY_NAMES[i2.categoryId] ?? i2.categoryId) : t('reports.uncategorized')}
+                    {i2.categoryId ? (categoryNames[i2.categoryId] ?? i2.categoryId) : t('reports.uncategorized')}
                   </Text>
                   <Text style={styles.legendAmount}>{money(i2.amountCents, currency)}</Text>
                   <Text style={styles.muted}>{`${Math.round(i2.percent)} %`}</Text>
@@ -230,16 +246,18 @@ export function ReportsScreen({ repo, currency = 'COP' }: ReportsScreenProps) {
             </View>
           </Card>
 
-          {/* Exportación (HU-13): PDF con todo el mes + imagen de la tarjeta */}
+          {/* Exportación (HU-13): PDF con todo el mes + imagen de la tarjeta.
+              Botones en verde identidad con texto blanco (preferencia del
+              dueño de producto sobre el gris «secondary»). */}
           <View style={styles.exportRow}>
             <Button
-              variant="secondary"
+              variant="primary"
               label={exporting === 'pdf' ? t('reports.export.generating') : t('reports.export.pdf')}
               disabled={exporting !== null}
               onPress={() => void exportPdf()}
             />
             <Button
-              variant="secondary"
+              variant="primary"
               label={exporting === 'image' ? t('reports.export.generating') : t('reports.export.image')}
               disabled={exporting !== null}
               onPress={() => void exportImage()}

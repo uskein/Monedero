@@ -166,13 +166,13 @@ export function SettingsScreen({ categories, db, vaultId }: SettingsScreenProps)
       {/* HU-10 · categorías */}
       <Card style={styles.card}>
         <Text style={styles.copy}>{t('settings.categories.copy')}</Text>
-        <Button variant="secondary" label={t('settings.categories')} onPress={() => setView('categories')} />
+        <Button label={t('settings.categories')} onPress={() => setView('categories')} />
       </Card>
 
       {/* S7 · datos (BP-09 export / BP-10 import) */}
       <Card style={styles.card}>
         <Text style={styles.cardTitle}>{t('data.title')}</Text>
-        <Button variant="secondary" label={t('data.export')} onPress={() => setView('data')} />
+        <Button label={t('data.export')} onPress={() => setView('data')} />
       </Card>
     </ScrollView>
   );
@@ -419,10 +419,14 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
                           </View>
                           {/* Acciones por ICONO (el texto desbordaba); el
                               nombre accesible sigue siendo «Editar/Archivar/
-                              Eliminar + nombre» (a11y A.3 y tests intactos). */}
+                              Eliminar + nombre» (a11y A.3 y tests intactos).
+                              Tonos: editar = primario (verde + icono blanco),
+                              archivar = neutro, eliminar = peligro (+ icono
+                              blanco), como los topes de Presupuestos. */}
                           <View style={styles.rowActions}>
                             <IconButton
                               icon="create-outline"
+                              tone="primary"
                               label={`${t('categories.edit')} ${cat.name}`}
                               onPress={() => startEdit(cat)}
                             />
@@ -436,8 +440,8 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
                             />
                             <IconButton
                               icon="trash-outline"
+                              tone="danger"
                               label={`${t('common.delete')} ${cat.name}`}
-                              danger
                               onPress={() => {
                                 setRemoveFailed(false);
                                 void remove(cat.id).then((ok) => setRemoveFailed(!ok));
@@ -452,7 +456,7 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
               })}
             </View>
           )}
-          {status !== 'empty' && <Button variant="secondary" label={t('categories.add')} onPress={startCreate} />}
+          {status !== 'empty' && <Button label={t('categories.add')} onPress={startCreate} />}
         </View>
       )}
     </ScrollView>
@@ -513,29 +517,32 @@ function SwatchPicker({ value, onPick }: { value: SwatchToken; onPick: (v: Swatc
   );
 }
 
-/** Botón de acción por icono (44 dp de área táctil) con nombre accesible. */
+/** Botón de acción por icono (44 dp de área táctil) con nombre accesible.
+ *  Tonos: neutro (hundido) · primary (verde identidad + icono blanco) ·
+ *  danger (rojo sereno + icono blanco) — manual §7. */
 function IconButton({
   icon,
   label,
-  danger = false,
+  tone = 'neutral',
   onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  danger?: boolean;
+  tone?: 'neutral' | 'primary' | 'danger';
   onPress: () => void;
 }) {
   const c = useThemeColors();
   const styles = useMemo(() => makeStyles(c), [c]);
+  const filled = tone !== 'neutral';
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={6}
-      style={styles.iconBtn}
+      style={[styles.iconBtn, tone === 'primary' ? styles.iconBtnPrimary : tone === 'danger' ? styles.iconBtnDanger : null]}
     >
-      <Ionicons name={icon} size={20} color={danger ? c.danger : c.textPrimary} />
+      <Ionicons name={icon} size={20} color={filled ? c.textOnPrimary : c.textPrimary} />
     </Pressable>
   );
 }
@@ -567,6 +574,8 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       borderRadius: csRadius.pill,
       backgroundColor: c.surfaceSunken,
     },
+    iconBtnPrimary: { backgroundColor: c.primary },
+    iconBtnDanger: { backgroundColor: c.danger },
     chips: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
     hint: { fontSize: 12, color: c.textMuted },
     dangerTitle: { fontSize: 15, fontWeight: '700', color: c.danger },

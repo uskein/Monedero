@@ -103,8 +103,11 @@ describe('TransactionForm — transferencias (CHECKs del modelo)', () => {
   it('al elegir transferencia se oculta Categoría y aparece destino', async () => {
     const user = userEvent.setup();
     await renderForm();
-    expect(screen.queryByLabelText('Categoría')).toBeNull();
+    // El Select de categoría existe en gasto/ingreso…
+    expect(screen.getByLabelText('Categoría')).toBeTruthy();
     await user.press(screen.getByRole('button', { name: 'Transferencia' }));
+    // …y se OCULTA al elegir transferencia (sin categoría).
+    expect(screen.queryByLabelText('Categoría')).toBeNull();
     expect(screen.getByLabelText('Cuenta destino: Ahorro')).toBeTruthy();
   });
 });

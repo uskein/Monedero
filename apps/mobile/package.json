@@ -1,6 +1,6 @@
 {
   "name": "@monedero/mobile",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "index.js",
   "description": "Monedero móvil (iOS/Android) — Expo + RN, hexagonal light. SQLite cifrado (SQLCipher), 100% offline.",

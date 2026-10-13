@@ -55,6 +55,10 @@ function fakeBudgets(
       data.push(created);
       return created;
     },
+    async remove(categoryId: string, period: string) {
+      const idx = data.findIndex((b) => b.categoryId === categoryId && b.period === period);
+      if (idx >= 0) data.splice(idx, 1);
+    },
     async usage(categoryId, period) {
       const budget = data.find((b) => b.categoryId === categoryId && b.period === period);
       const spentCents = spentByCategory[categoryId] ?? 0;

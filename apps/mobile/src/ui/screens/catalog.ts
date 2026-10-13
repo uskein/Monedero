@@ -5,15 +5,16 @@
  */
 import type { Option } from './TransactionForm';
 
+/** Categorías seed (espejo del seed de la BD en createDevRepository). */
 export const DEFAULT_CATEGORIES: Option[] = [
-  { id: 'cat-comida', name: 'Comida' },
-  { id: 'cat-transporte', name: 'Transporte' },
-  { id: 'cat-casa', name: 'Casa' },
-  { id: 'cat-salud', name: 'Salud' },
-  { id: 'cat-ocio', name: 'Ocio' },
-  { id: 'cat-otros', name: 'Otros' },
-  { id: 'cat-salario', name: 'Salario' },
-  { id: 'cat-ingresos-otros', name: 'Otros ingresos' },
+  { id: 'cat-comida', name: 'Comida', type: 'expense' },
+  { id: 'cat-transporte', name: 'Transporte', type: 'expense' },
+  { id: 'cat-casa', name: 'Casa', type: 'expense' },
+  { id: 'cat-salud', name: 'Salud', type: 'expense' },
+  { id: 'cat-ocio', name: 'Ocio', type: 'expense' },
+  { id: 'cat-otros', name: 'Otros', type: 'expense' },
+  { id: 'cat-salario', name: 'Salario', type: 'income' },
+  { id: 'cat-ingresos-otros', name: 'Otros ingresos', type: 'income' },
 ];
 
 export const DEFAULT_ACCOUNTS: Option[] = [

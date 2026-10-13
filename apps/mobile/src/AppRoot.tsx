@@ -141,13 +141,13 @@ function AppShell() {
         />
       </View>
       <View style={[styles.panel, tab !== 'tx' && styles.hidden]}>
-        <TransactionsScreen repo={dev.repo} currency={currency} addSignal={addSignal} />
+        <TransactionsScreen repo={dev.repo} categories={dev.categories} currency={currency} addSignal={addSignal} />
       </View>
       <View style={[styles.panel, tab !== 'budgets' && styles.hidden]}>
         <BudgetsScreen budgets={dev.budgets} txRepo={dev.repo} categories={dev.categories} currency={currency} />
       </View>
       <View style={[styles.panel, tab !== 'reports' && styles.hidden]}>
-        <ReportsScreen repo={dev.repo} currency={currency} />
+        <ReportsScreen repo={dev.repo} categories={dev.categories} currency={currency} />
       </View>
       <View style={[styles.panel, tab !== 'settings' && styles.hidden]}>
         <SettingsScreen categories={dev.categories} db={dev.db} vaultId={vaultId} />

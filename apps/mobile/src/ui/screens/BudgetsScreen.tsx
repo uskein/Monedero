@@ -2,15 +2,17 @@
  * BudgetsScreen (móvil) — BP-06 · HU-11·12. Espejo de la PWA.
  * 4 estados · ProgressBar semántica (80 % accent · 100 % danger) + chip
  * «Meta alcanzada» · toast sereno budget:exceeded de 4000 ms no bloqueante ·
- * F4: slot ocupado → «editar existente». El repo se inyecta (hexagonal).
+ * F4: slot ocupado → «editar existente». Acciones por fila con IconButton
+ * circular: editar (primario) y eliminar (peligro, con confirmación Alert).
+ * El repo se inyecta (hexagonal).
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '@monedero/i18n/react';
 import { formatAmountLive } from '@monedero/i18n';
 import type { CurrencyCode } from '@monedero/i18n';
 import { csRadius, csSpace } from '@monedero/tokens';
-import { Button, Card, MoneyInput, ProgressBar, Toast } from '../design-system';
+import { Button, Card, IconButton, MoneyInput, ProgressBar, Toast } from '../design-system';
 import { useThemeColors } from '../theme';
 import { parseAmountToCents } from '../../core/domain/money';
 import { currentPeriod } from '../../core/domain/budget';
@@ -46,6 +48,7 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency: c
   const init = useBudgetsStore((s) => s.init);
   const reload = useBudgetsStore((s) => s.reload);
   const save = useBudgetsStore((s) => s.save);
+  const removeBudget = useBudgetsStore((s) => s.remove);
   const clearToast = useBudgetsStore((s) => s.clearToast);
   const clearDuplicate = useBudgetsStore((s) => s.clearDuplicate);
 
@@ -108,6 +111,25 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency: c
       setFormOpen(false);
       setEditingCategoryId(null);
     }
+  }
+
+  /** Borrado de un tope: confirmación serena antes de eliminar (HU-11). */
+  function confirmDelete(row: BudgetRow) {
+    Alert.alert(
+      t('budgets.delete.title', { name: row.categoryName }),
+      t('budgets.delete.copy'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            void removeBudget(row.categoryId);
+          },
+        },
+      ],
+      { cancelable: true },
+    );
   }
 
   return (
@@ -259,11 +281,23 @@ export function BudgetsScreen({ budgets, txRepo, categories, period, currency: c
                           <Text style={styles.chipExceededText}>{t('budgets.chip.exceeded')}</Text>
                         </View>
                       )}
-                      <Button
-                        variant="ghost"
-                        label={`${t('budgets.edit')} ${row.categoryName}`}
-                        onPress={() => startEdit(row)}
-                      />
+                      {/* Acciones por ICONO circular (fondo de color + icono
+                          blanco, manual §7): editar (primario) · eliminar
+                          (peligro, con confirmación). */}
+                      <View style={styles.rowActions}>
+                        <IconButton
+                          icon="create-outline"
+                          tone="primary"
+                          label={`${t('budgets.edit')} ${row.categoryName}`}
+                          onPress={() => startEdit(row)}
+                        />
+                        <IconButton
+                          icon="trash-outline"
+                          tone="danger"
+                          label={`${t('budgets.delete')} ${row.categoryName}`}
+                          onPress={() => confirmDelete(row)}
+                        />
+                      </View>
                     </View>
                     <ProgressBar percent={row.ratio * 100} label={`${row.categoryName} ${percent} %`} />
                     <Text style={styles.hint}>
@@ -294,6 +328,7 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
   gap: { gap: csSpace.s3 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: c.textPrimary },
   rowHeader: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s2, flexWrap: 'wrap' },
+  rowActions: { flexDirection: 'row', gap: csSpace.s2, marginLeft: 'auto' },
   rowName: { fontSize: 15, fontWeight: '600', color: c.textPrimary, flexShrink: 1 },
   chipExceeded: {
     backgroundColor: c.danger,

@@ -39,8 +39,8 @@ export class SqlBudgetRepository implements BudgetRepository {
 
   constructor(private readonly db: SqlDbPort) {}
 
-  private notify(id: string): void {
-    for (const cb of this.listeners) cb({ scope: 'budget', type: 'budget:upserted', id });
+  private notify(id: string, type: BudgetEvent['type'] = 'budget:upserted'): void {
+    for (const cb of this.listeners) cb({ scope: 'budget', type, id });
   }
 
   subscribe(cb: (e: BudgetEvent) => void): () => void {
@@ -89,6 +89,22 @@ export class SqlBudgetRepository implements BudgetRepository {
     );
     this.notify(id);
     return this.requireGet(parsed.categoryId, parsed.period);
+  }
+
+  async remove(categoryId: string, period: string): Promise<void> {
+    const rows = await this.db.select<Row>(
+      'SELECT id FROM budgets WHERE category_id = ? AND period = ?',
+      [categoryId, period],
+    );
+    const existing = rows[0];
+    if (!existing) return; // idempotente: ya no existe
+    const now = new Date().toISOString();
+    await this.db.run('UPDATE budgets SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+      now,
+      now,
+      existing.id,
+    ]);
+    this.notify(existing.id, 'budget:removed');
   }
 
   async usage(categoryId: string, period: string): Promise<{ spentCents: number; budgetCents: number; ratio: number }> {

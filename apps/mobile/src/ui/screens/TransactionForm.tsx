@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import { formatAmountLive } from '@monedero/i18n';
 import { csLogo, csRadius, csSpace } from '@monedero/tokens';
-import { Button, Input, MoneyInput } from '../design-system';
+import { Button, Input, MoneyInput, Select } from '../design-system';
 import { useThemeColors } from '../theme';
 import { parseAmountToCents } from '../../core/domain/money';
 import type { TxInput, TxType } from '../../core/domain/transaction';
@@ -20,6 +20,9 @@ import type { TxInput, TxType } from '../../core/domain/transaction';
 export interface Option {
   id: string;
   name: string;
+  /** Tipo real de la categoría (BD sembrada + personalizadas). Opcional
+   *  para los callers estáticos sin tipo (fallback por id conocidos). */
+  type?: 'expense' | 'income';
 }
 
 export interface TransactionFormProps {
@@ -65,8 +68,15 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
       ? t('tx.form.error.toAccount')
       : undefined;
 
-  const visibleCategories =
-    type === 'income' ? categories.filter((c) => c.id === 'cat-salario' || c.id === 'cat-ingresos-otros') : categories.filter((c) => c.id !== 'cat-salario' && c.id !== 'cat-ingresos-otros');
+  /** Categorías por TIPO real (incluye las personalizadas de la BD); el
+   *  fallback por id solo aplica a opciones estáticas sin `type`. */
+  const INCOME_DEFAULT_IDS = new Set(['cat-salario', 'cat-ingresos-otros']);
+  const visibleCategories = categories.filter((cat) => {
+    if (type === 'income') {
+      return cat.type ? cat.type === 'income' : INCOME_DEFAULT_IDS.has(cat.id);
+    }
+    return cat.type ? cat.type === 'expense' : !INCOME_DEFAULT_IDS.has(cat.id);
+  });
 
   function submit() {
     setTouched(true);
@@ -120,14 +130,14 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
       <Input label={t('tx.form.payee')} value={payee} onValueChange={setPayee} placeholder={t('tx.form.payee.placeholder')} disabled={busy} />
 
       {type !== 'transfer' && (
-        <>
-          <Text style={styles.label}>{t('tx.form.category')}</Text>
-          <View style={styles.row}>
-            {visibleCategories.map((c) => (
-              <Chip key={c.id} label={c.name} selected={categoryId === c.id} onPress={() => setCategoryId(categoryId === c.id ? null : c.id)} />
-            ))}
-          </View>
-        </>
+        <Select
+          label={t('tx.form.category')}
+          options={visibleCategories}
+          value={categoryId}
+          onChange={setCategoryId}
+          placeholder={t('tx.form.category.none')}
+          disabled={busy}
+        />
       )}
 
       <Text style={styles.label}>{t('tx.form.account')}</Text>

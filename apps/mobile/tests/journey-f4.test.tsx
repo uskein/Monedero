@@ -35,12 +35,13 @@ const budgets = () => panel('Presupuestos');
 const movs = () => panel('Movimientos');
 const navTab = (name: string) => screen.getByRole('tab', { name });
 
-/** Gasto en Comida vía BP-05 (chip del catálogo sembrado 'cat-comida'). */
+/** Gasto en Comida vía BP-05 (Select del catálogo sembrado 'cat-comida'). */
 async function addExpenseInComida(amount: string, concept: string, cta: string): Promise<void> {
   await fireEvent.press(await movs().findByRole('button', { name: cta }, WAIT));
   await fireEvent.changeText(movs().getByLabelText('Importe'), amount);
   await fireEvent.changeText(movs().getByLabelText('Concepto'), concept);
-  await fireEvent.press(movs().getByRole('button', { name: 'Comida' }));
+  await fireEvent.press(movs().getByLabelText('Categoría')); // abre el Select
+  await fireEvent.press(movs().getByRole('button', { name: 'Comida' })); // opción del sheet
   await fireEvent.press(movs().getByRole('button', { name: 'Guardar movimiento' }));
   expect(await movs().findByText(concept, {}, WAIT)).toBeTruthy();
 }

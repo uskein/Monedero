@@ -9,7 +9,7 @@ export type Unsubscribe = () => void;
 
 export type BudgetEvent = {
   scope: 'budget';
-  type: 'budget:upserted';
+  type: 'budget:upserted' | 'budget:removed';
   id: string;
 };
 
@@ -18,6 +18,11 @@ export interface BudgetRepository {
   /** Topes del mes (BP-06 lista). */
   listByPeriod(period: string): Promise<Budget[]>;
   upsert(input: BudgetInput): Promise<Budget>;
+  /**
+   * Elimina (borrado lógico) el tope de la categoría en el periodo.
+   * Usado por la UI de Presupuestos para borrar topes registrados.
+   */
+  remove(categoryId: string, period: string): Promise<void>;
   /** Gasto acumado del mes en la categoría + tope y ratio (HU-12). */
   usage(categoryId: string, period: string): Promise<{ spentCents: number; budgetCents: number; ratio: number }>;
   subscribe(cb: (e: BudgetEvent) => void): Unsubscribe;
