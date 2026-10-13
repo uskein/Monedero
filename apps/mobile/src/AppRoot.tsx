@@ -63,7 +63,7 @@ function Shell() {
     <SafeAreaView style={styles.root}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       {/* Marca mínima en la esquina: el protagonismo es de la app. */}
-      <View style={styles.header} accessibilityRole="image" accessibilityLabel="Monedero, logotipo">
+      <View style={styles.header} accessibilityRole="image" accessibilityLabel={t('brand.logo.label')}>
         <View style={styles.tile}>
           <Text style={styles.tileLetter}>M</Text>
         </View>

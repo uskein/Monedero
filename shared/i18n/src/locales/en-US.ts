@@ -84,6 +84,7 @@ export const enUS: Dictionary = {
   'tx.list.undo.cta': 'Undo',
   'tx.list.search': 'Search by concept or note',
   'tx.list.count': '{count} transactions',
+  'tx.list.loadMore': 'Load more ({remaining} left)',
 
   'settings.title': 'Settings',
   'settings.subtitle': 'Organize Monedero your way.',
@@ -123,6 +124,7 @@ export const enUS: Dictionary = {
   'danger.wipe.confirm': 'Delete everything',
   'danger.export.soon': 'Before deleting we would offer a backup, but that feature (export) arrives in the next sprint.',
 
+  'brand.logo.label': 'Monedero, logo',
   'data.title': 'Data',
   'data.export': 'Export vault',
   'data.export.hint': 'Generates a .monedero file (or .monedero.enc with a password) to move your data to another platform.',

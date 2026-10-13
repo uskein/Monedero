@@ -90,6 +90,7 @@ export const esCO = {
   'tx.list.undo.cta': 'Deshacer',
   'tx.list.search': 'Buscar por concepto o nota',
   'tx.list.count': '{count} movimientos',
+  'tx.list.loadMore': 'Cargar más ({remaining} restantes)',
 
   // ── Ajustes BP-08 (raíz) + sub Categorías — HU-10 ──
   'settings.title': 'Ajustes',
@@ -133,6 +134,7 @@ export const esCO = {
   'danger.export.soon': 'Antes de borrar te ofreceríamos una copia de seguridad, pero esa función (exportar) llega en el próximo sprint.',
 
   // ── Datos BP-08: export/import .monedero (S7 · HU-14·15·16) ──
+  'brand.logo.label': 'Monedero, logotipo',
   'data.title': 'Datos',
   'data.export': 'Exportar bóveda',
   'data.export.hint': 'Genera un archivo .monedero (o .monedero.enc con contraseña) para mover tus datos a otra plataforma.',

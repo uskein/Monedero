@@ -19,6 +19,9 @@ import type { Transaction, TxType } from '../../core/domain/transaction';
 import type { TxListStatus } from '../../state/transactions.store';
 
 const UNDO_MS = 4000;
+/** Ventana de render incremental: sin virtualización (filas simples) y con
+ *  listas grandes la pantalla solo pinta PAGE_SIZE filas a la vez. */
+const PAGE_SIZE = 30;
 const TYPES = [null, 'expense', 'income'] as const satisfies ReadonlyArray<TxType | null>;
 const TYPE_LABEL: Record<'expense' | 'income', TranslationKey> = {
   expense: 'tx.type.expense',
@@ -72,6 +75,7 @@ export function TransactionList({
   const styles = useMemo(() => makeStyles(c), [c]);
   const [filterType, setFilterType] = useState<TxType | null>(null);
   const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     if (!lastDeletedId) return;
@@ -127,12 +131,22 @@ export function TransactionList({
             key={tt ?? 'all'}
             label={tt === null ? t('tx.list.filter.all') : t(TYPE_LABEL[tt])}
             selected={filterType === tt}
-            onPress={() => setFilterType(tt)}
+            onPress={() => {
+              setFilterType(tt);
+              setVisibleCount(PAGE_SIZE);
+            }}
           />
         ))}
       </View>
 
-      <Input label={t('tx.list.search')} value={search} onValueChange={setSearch} />
+      <Input
+        label={t('tx.list.search')}
+        value={search}
+        onValueChange={(value) => {
+          setSearch(value);
+          setVisibleCount(PAGE_SIZE);
+        }}
+      />
 
       <Text accessibilityLiveRegion="polite" style={styles.muted}>
         {t('tx.list.count').replace('{count}', String(visible.length))}
@@ -143,7 +157,7 @@ export function TransactionList({
       {/* Filas simples (NO FlatList): la pantalla es un ScrollView y anidar
           VirtualizedLists rompe el windowing (aviso de RN). Los datos son
           locales y el virtualizado no aportaba. */}
-      {visible.map((item) => {
+      {visible.slice(0, visibleCount).map((item) => {
         const categoryName = item.categoryId
           ? (categoryNames[item.categoryId] ?? item.categoryId)
           : item.type === 'transfer'
@@ -181,6 +195,13 @@ export function TransactionList({
             </View>
           );
         })}
+      {visible.length > visibleCount ? (
+        <Button
+          label={t('tx.list.loadMore').replace('{remaining}', String(visible.length - visibleCount))}
+          variant="secondary"
+          onPress={() => setVisibleCount((count) => count + PAGE_SIZE)}
+        />
+      ) : null}
     </View>
   );
 }
