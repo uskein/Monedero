@@ -78,6 +78,8 @@ interface KeyVaultPort {
    *  con la clave maestra encapsulada — la clave NUNCA sale de la bóveda. */
   encryptBytes(data: Uint8Array): Promise<Uint8Array>;
   decryptBytes(payload: Uint8Array): Promise<Uint8Array>;
+  /** Borrado total (HU-19/F6): metadatos SecureStore + zeroize. */
+  delete(): Promise<void>;
 }
 interface CryptoPort {                     // SQLCipher móvil · WebCrypto PWA
   encrypt(plain: Uint8Array): Promise<Uint8Array>;

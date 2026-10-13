@@ -101,4 +101,15 @@ export class KeyVault implements KeyVaultPort {
     if (!this.key) throw new DomainError('VALIDATION_FAILED', 'vault');
     return decrypt(payload, this.key);
   }
+
+  /** Borrado total (HU-19/F6): metadatos fuera + clave a ceros. */
+  async delete(): Promise<void> {
+    this.lock();
+    await Promise.all([
+      this.storage.removeItem(KEYS.salt),
+      this.storage.removeItem(KEYS.verifier),
+      this.storage.removeItem(KEYS.id),
+    ]);
+    this.meta = null;
+  }
 }

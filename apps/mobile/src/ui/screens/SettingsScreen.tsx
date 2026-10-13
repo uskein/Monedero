@@ -13,6 +13,7 @@ import { csRadius, csSpace } from '@monedero/tokens';
 import { Button, Card, Input } from '../design-system';
 import { useThemeColors } from '../theme';
 import { usePrefsStore, type ThemePreference } from '../../state/prefs.store';
+import { wipeAllData } from '../../infrastructure/db/wipe';
 import { useCategoriesStore, type CategoriesRepo } from '../../state/categories.store';
 import type { Category, CategoryType } from '../../core/domain/category';
 
@@ -25,6 +26,98 @@ const THEME_OPTIONS: Array<{ value: ThemePreference; key: 'settings.theme.light'
   { value: 'dark', key: 'settings.theme.dark', icon: 'moon' },
   { value: 'system', key: 'settings.theme.system', icon: 'phone-portrait' },
 ];
+
+/**
+ * Zona de peligro (HU-19 · F6): botón ghost ROJO (nunca primario) → escribir
+ * la palabra clave → doble confirmación → wipe total → Onboarding.
+ * Ofrece export antes (S7: se explica que llega en el próximo sprint).
+ */
+function DangerZoneCard({ styles }: { styles: ReturnType<typeof makeStyles> }) {
+  const t = useT();
+  const [stage, setStage] = useState<'idle' | 'typed' | 'final'>('idle');
+  const [word, setWord] = useState('');
+  const [busy, setBusy] = useState(false);
+  const required = t('danger.wipe.word');
+  const wordOk = word.trim().toUpperCase() === required.toUpperCase();
+
+  if (stage === 'idle') {
+    return (
+      <Card style={styles.card}>
+        <Text style={styles.dangerTitle}>{t('danger.title')}</Text>
+        <Text style={styles.copy}>{t('danger.copy')}</Text>
+        <Button variant="ghost" label={t('danger.wipe')} onPress={() => setStage('typed')} />
+      </Card>
+    );
+  }
+
+  if (stage === 'typed') {
+    return (
+      <Card style={styles.card}>
+        <Text style={styles.dangerTitle}>{t('danger.title')}</Text>
+        <Text style={styles.copy}>{t('danger.copy')}</Text>
+        <Text style={styles.copy}>{t('danger.export.soon')}</Text>
+        <Input
+          label={required}
+          value={word}
+          onValueChange={setWord}
+          placeholder={required}
+          disabled={busy}
+        />
+        <Text style={styles.hint}>{t('danger.wipe.hint', { word: required })}</Text>
+        <View style={styles.rowActions}>
+          <Button
+            variant="ghost"
+            label={t('danger.wipe')}
+            disabled={!wordOk || busy}
+            onPress={() => setStage('final')}
+          />
+          <Button
+            variant="ghost"
+            label={t('common.cancel')}
+            disabled={busy}
+            onPress={() => {
+              setWord('');
+              setStage('idle');
+            }}
+          />
+        </View>
+      </Card>
+    );
+  }
+
+  return (
+    <Card style={styles.card}>
+      <Text accessibilityRole="alert" style={styles.dangerTitle}>
+        {t('danger.wipe.title')}
+      </Text>
+      <Text style={styles.copy}>{t('danger.copy')}</Text>
+      <View style={styles.rowActions}>
+        <Button
+          variant="ghost"
+          label={t('danger.wipe.confirm')}
+          disabled={busy}
+          onPress={() => {
+            setBusy(true);
+            void wipeAllData().finally(() => {
+              // Tras el wipe la bóveda re-arranca en Onboarding; este árbol
+              // se desmonta. El estado local deja de importar.
+              setBusy(false);
+            });
+          }}
+        />
+        <Button
+          variant="ghost"
+          label={t('common.cancel')}
+          disabled={busy}
+          onPress={() => {
+            setWord('');
+            setStage('idle');
+          }}
+        />
+      </View>
+    </Card>
+  );
+}
 
 const CURRENCY_OPTIONS = ['COP', 'USD', 'EUR'] as const;
 
@@ -58,6 +151,9 @@ export function SettingsScreen({ categories }: SettingsScreenProps) {
 
       {/* HU-18 · moneda global */}
       <CurrencyCard styles={styles} />
+
+      {/* HU-19 · F6 · zona de peligro */}
+      <DangerZoneCard styles={styles} />
 
       {/* HU-10 · categorías */}
       <Card style={styles.card}>
@@ -458,6 +554,8 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       backgroundColor: c.surfaceSunken,
     },
     chips: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
+    hint: { fontSize: 12, color: c.textMuted },
+    dangerTitle: { fontSize: 15, fontWeight: '700', color: c.danger },
     chip: {
       flexDirection: 'row',
       alignItems: 'center',

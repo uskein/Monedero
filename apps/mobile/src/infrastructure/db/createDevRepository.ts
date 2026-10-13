@@ -86,8 +86,15 @@ export interface DevRepository {
   categoryNames: Record<string, string>;
   /** Fuerza un guardado del snapshot (además del autoguardado). */
   persist: () => Promise<void>;
-  /** Desuscribe eventos y hace un guardado final (al desmontar el shell). */
-  dispose: () => void;
+  /** Desuscribe eventos y hace un guardado final (al desmontar el shell).
+   *  `saveFinal=false` para el BORRADO TOTAL (HU-19): no recrear el snapshot. */
+  dispose: (saveFinal?: boolean) => void;
+}
+
+/** Repo dev activa (para el borrado total F6 desde Ajustes). */
+let activeDev: DevRepository | null = null;
+export function getActiveDevRepository(): DevRepository | null {
+  return activeDev;
 }
 
 const PERSIST_DEBOUNCE_MS = 400;
@@ -156,20 +163,33 @@ export async function createDevRepository(opts: DevRepositoryOptions = {}): Prom
         })
       : null;
 
-  return {
+  let disposed = false;
+  const dev: DevRepository = {
     repo,
     categories,
     budgets,
     db,
     categoryNames: CATEGORY_NAMES,
     persist,
-    dispose: () => {
+    dispose: (saveFinal = true) => {
+      if (disposed) return; // idempotente (wipe + desmontaje del shell)
+      disposed = true;
       unsubscribe.forEach((off) => off());
       appStateSub?.remove();
       if (timer) clearTimeout(timer);
-      void persist(); // guardado final al desmontar
+      if (saveFinal) void persist(); // guardado final al desmontar
+      else {
+        try {
+          db.close();
+        } catch {
+          // ya cerrada
+        }
+      }
+      if (activeDev === dev) activeDev = null;
     },
   };
+  activeDev = dev;
+  return dev;
 }
 
 export { CATEGORY_NAMES };

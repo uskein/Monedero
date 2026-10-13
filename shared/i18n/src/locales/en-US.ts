@@ -114,6 +114,15 @@ export const enUS: Dictionary = {
   'settings.theme.dark': 'Dark',
   'settings.theme.system': 'System',
 
+  'danger.title': 'Danger zone',
+  'danger.copy': 'This deletes EVERYTHING on this device: transactions, limits, categories and the vault. It cannot be undone.',
+  'danger.wipe': 'Delete all data',
+  'danger.wipe.word': 'DELETE',
+  'danger.wipe.hint': 'Type “{word}” to enable the button.',
+  'danger.wipe.title': 'Delete forever?',
+  'danger.wipe.confirm': 'Delete everything',
+  'danger.export.soon': 'Before deleting we would offer a backup, but that feature (export) arrives in the next sprint.',
+
   'budgets.title': 'Budgets',
   'budgets.add': 'Set limit',
   'budgets.form.category': 'Category',

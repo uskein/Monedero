@@ -122,6 +122,16 @@ export const esCO = {
   'settings.theme.dark': 'Oscuro',
   'settings.theme.system': 'Sistema',
 
+  // ── Zona de peligro BP-08 · HU-19 (F6) ──
+  'danger.title': 'Zona de peligro',
+  'danger.copy': 'Esto elimina TODO de este dispositivo: movimientos, topes, categorías y la bóveda. No se puede deshacer.',
+  'danger.wipe': 'Borrar todos los datos',
+  'danger.wipe.word': 'BORRAR',
+  'danger.wipe.hint': 'Escribe «{word}» para habilitar el botón.',
+  'danger.wipe.title': '¿Borrar definitivamente?',
+  'danger.wipe.confirm': 'Borrar todo',
+  'danger.export.soon': 'Antes de borrar te ofreceríamos una copia de seguridad, pero esa función (exportar) llega en el próximo sprint.',
+
   // ── Presupuestos BP-06 — HU-11·12 ──
   'budgets.title': 'Presupuestos',
   'budgets.add': 'Definir tope',

@@ -27,4 +27,7 @@ export interface KeyVaultPort {
   encryptBytes(data: Uint8Array): Promise<Uint8Array>;
   /** Descifra bytes (GCM autentica: clave incorrecta o corrupción → lanza). */
   decryptBytes(payload: Uint8Array): Promise<Uint8Array>;
+  /** BORRADO TOTAL de la bóveda (HU-19/F6): metadatos del almacenamiento
+   *  fuera + zeroize de la clave en memoria. */
+  delete(): Promise<void>;
 }
