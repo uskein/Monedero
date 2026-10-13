@@ -1,0 +1,63 @@
+# Release · tag vX.Y.Z → PWA (Cloudflare Pages) + móvil (EAS Build/Submit)
+# (GUIA_DEVOPS_SEGURIDAD §3.2). Secretos requeridos en GitHub:
+#   CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID  → Pages deploy
+#   EXPO_TOKEN                                     → EAS Build/Submit
+# Store credentials (App Store Connect .p8 / Play service account) se
+# gestionan vía `eas credentials` (cifrados en EAS), NO en el repo.
+name: release · pwa + móvil
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # GitHub Release
+
+jobs:
+  web:
+    name: PWA → Cloudflare Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Compuertas previas al despliegue
+        run: |
+          pnpm tokens:check
+          pnpm contract:check
+          pnpm i18n:check
+          pnpm --filter @monedero/web typecheck
+          pnpm --filter @monedero/web lint
+      - name: Build PWA
+        run: pnpm --filter @monedero/web build
+      - name: Deploy Cloudflare Pages (producción)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/web/dist --project-name=monedero --branch=main
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/web/dist/**
+          generate_release_notes: true
+
+  mobile:
+    name: móvil → EAS Build + Submit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: EAS Build (production, ambas tiendas)
+        working-directory: apps/mobile
+        run: eas build --platform all --profile production --non-interactive --no-wait
+      - name: EAS Submit (App Store + Google Play)
+        working-directory: apps/mobile
+        run: eas submit --platform all --profile production --non-interactive --no-wait

@@ -1,0 +1,73 @@
+# PR · Quality Gate (GUIA_DEVOPS_SEGURIDAD §3.1)
+# Falla el PR si viola cualquier compuerta: tokens (SSOT), contrato .monedero,
+# paridad i18n, typecheck, lint, tests + coverage (≥70% código de negocio)
+# y audit high/critical.
+name: pr · quality gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: gates compartidas (tokens · contrato · i18n · audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # versión desde packageManager (pnpm@10)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Tokens (coherencia SSOT visual --cs-*)
+        run: pnpm tokens:check
+      - name: Contrato .monedero (único acoplamiento ADR-002)
+        run: pnpm contract:check
+      - name: i18n (paridad es-CO ⇄ en-US, cero hardcode)
+        run: pnpm i18n:check
+      - name: Audit (CVE high/critical)
+        run: pnpm audit --audit-level=high
+
+  mobile:
+    name: mobile (typecheck · lint · jest+coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --filter @monedero/mobile typecheck
+      - name: Lint
+        run: pnpm --filter @monedero/mobile lint
+      - name: Unit + integration (Jest + RNTL, coverage)
+        run: pnpm --filter @monedero/mobile exec jest --coverage
+
+  web:
+    name: web (typecheck · lint · vitest+coverage · axe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --filter @monedero/web typecheck
+      - name: Lint
+        run: pnpm --filter @monedero/web lint
+      - name: Unit + UI (Vitest + Testing Library, coverage)
+        run: pnpm --filter @monedero/web exec vitest run --coverage
+      - name: a11y (axe-core: design system + app real)
+        run: pnpm --filter @monedero/web exec vitest run tests/design-system-a11y.test.tsx tests/app-a11y.test.tsx
