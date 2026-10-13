@@ -12,3 +12,13 @@ createRoot(container).render(
     <App />
   </StrictMode>,
 );
+
+// Offline-first (S8): solo en build de producción; en dev HMR no lo necesita.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err: unknown) => {
+      // Sin SW la app sigue funcionando online: nunca romper el arranque.
+      console.warn('[monedero] service worker no registrado', err);
+    });
+  });
+}
