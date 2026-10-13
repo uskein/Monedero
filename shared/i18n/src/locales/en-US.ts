@@ -125,4 +125,12 @@ export const enUS: Dictionary = {
   'budgets.chip.exceeded': 'Limit reached',
   'budgets.toast.warn': 'Close to your limit in {name}: {percent} % of the month.',
   'budgets.toast.exceeded': 'Your limit in {name} is reached ({percent} % of the month). Review calmly.',
+
+  'reports.title': 'Reports',
+  'reports.chart': 'Expenses by category this month',
+  'reports.total': 'Total expenses',
+  'reports.empty.title': 'No expenses this month',
+  'reports.empty.copy': 'Your monthly report will appear once you record expenses.',
+  'reports.error': 'Could not generate the report.',
+  'reports.uncategorized': 'Uncategorized',
 };

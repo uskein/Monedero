@@ -25,6 +25,7 @@ import { BusyIndicator } from './ui/design-system';
 import { DashboardScreen } from './ui/screens/DashboardScreen';
 import { TransactionsScreen } from './ui/screens/TransactionsScreen';
 import { BudgetsScreen } from './ui/screens/BudgetsScreen';
+import { ReportsScreen } from './ui/screens/ReportsScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
 
 // Raíz de composición: el puerto de la bóveda se inyecta al cargar el módulo,
@@ -79,7 +80,7 @@ function Shell() {
  */
 function AppShell() {
   const t = useT();
-  const [tab, setTab] = useState<'home' | 'tx' | 'budgets' | 'settings'>('home');
+  const [tab, setTab] = useState<'home' | 'tx' | 'budgets' | 'reports' | 'settings'>('home');
   const [addSignal, setAddSignal] = useState(0);
   const [dev, setDev] = useState<DevRepository | null>(null);
 
@@ -107,6 +108,7 @@ function AppShell() {
         <NavTab icon="home" label={t('home.title')} selected={tab === 'home'} onPress={() => setTab('home')} />
         <NavTab icon="receipt" label={t('tx.list.title')} selected={tab === 'tx'} onPress={() => setTab('tx')} />
         <NavTab icon="wallet" label={t('budgets.title')} selected={tab === 'budgets'} onPress={() => setTab('budgets')} />
+        <NavTab icon="pie-chart" label={t('reports.title')} selected={tab === 'reports'} onPress={() => setTab('reports')} />
         <NavTab icon="settings" label={t('settings.title')} selected={tab === 'settings'} onPress={() => setTab('settings')} />
       </View>
       <View style={[styles.panel, tab !== 'home' && styles.hidden]}>
@@ -124,6 +126,9 @@ function AppShell() {
       </View>
       <View style={[styles.panel, tab !== 'budgets' && styles.hidden]}>
         <BudgetsScreen budgets={dev.budgets} txRepo={dev.repo} categories={dev.categories} />
+      </View>
+      <View style={[styles.panel, tab !== 'reports' && styles.hidden]}>
+        <ReportsScreen repo={dev.repo} />
       </View>
       <View style={[styles.panel, tab !== 'settings' && styles.hidden]}>
         <SettingsScreen categories={dev.categories} />

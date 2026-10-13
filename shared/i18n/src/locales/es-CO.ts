@@ -133,6 +133,15 @@ export const esCO = {
   'budgets.chip.exceeded': 'Meta alcanzada',
   'budgets.toast.warn': 'Vas cerca de tu tope en {name}: {percent} % del mes.',
   'budgets.toast.exceeded': 'Tu tope en {name} se cumplió ({percent} % del mes). Revisa con calma.',
+
+  // ── Reportes BP-07 — HU-13 ──
+  'reports.title': 'Reportes',
+  'reports.chart': 'Gastos del mes por categoría',
+  'reports.total': 'Total de gastos',
+  'reports.empty.title': 'Sin gastos este mes',
+  'reports.empty.copy': 'Cuando registres gastos aparecerá tu reporte mensual.',
+  'reports.error': 'No se pudo generar el reporte.',
+  'reports.uncategorized': 'Sin categoría',
 } as const;
 
 export type TranslationKey = keyof typeof esCO;

@@ -7,15 +7,17 @@
 import { Button } from './Button';
 import { BusyIndicator } from './BusyIndicator';
 import { Card } from './Card';
+import { DonutChart } from './DonutChart';
 import { Input } from './Input';
 import { MoneyInput } from './MoneyInput';
 import { ProgressBar } from './ProgressBar';
 import { Toast } from './Toast';
 
-export { Button, BusyIndicator, Card, Input, MoneyInput, ProgressBar, Toast };
+export { Button, BusyIndicator, Card, DonutChart, Input, MoneyInput, ProgressBar, Toast };
 export type { ButtonProps, ButtonVariant } from './Button';
 export type { BusyIndicatorProps } from './BusyIndicator';
 export type { CardProps } from './Card';
+export type { DonutChartProps, DonutSegment } from './DonutChart';
 export type { InputProps } from './Input';
 export type { MoneyInputProps } from './MoneyInput';
 export type { ProgressBarProps } from './ProgressBar';
