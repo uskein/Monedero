@@ -171,7 +171,7 @@ gantt
 | S3 | M2a Movimientos | ✅ Entregado | 50% |
 | S4 | M2b Dashboard | ✅ Aprobado por el usuario (🎯 hito) | 62% |
 | S5 | M3 Presupuestos | ✅ Entregado (Gate S5 certificado) | 75% |
-| S6 | M4a Reportes/ajustes | ⏳ Siguiente | 87% |
+| S6 | M4a Reportes/ajustes | ✅ Entregado (móvil; PWA pendiente) | 87% |
 | S7 | M4b Export/Import | ⏳ Pendiente | 95% |
 | S8 | M5 Release | ⏳ Pendiente | 100% (🎯 certificación) |
 
