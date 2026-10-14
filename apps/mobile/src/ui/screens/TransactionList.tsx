@@ -11,9 +11,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
+import { monthKeyOf, previousMonthKey } from '@monedero/i18n';
+import { parseAmountToCents } from '../../core/domain/money';
 import type { TranslationKey } from '@monedero/i18n';
 import { csRadius, csSpace } from '@monedero/tokens';
-import { Button, Input } from '../design-system';
+import { Button, Input, Select, type SelectOption } from '../design-system';
 import { useThemeColors } from '../theme';
 import type { Transaction, TxType } from '../../core/domain/transaction';
 import type { TxListStatus } from '../../state/transactions.store';
@@ -40,6 +42,8 @@ export interface TransactionListProps {
   lastDeletedId: string | null;
   currency: 'COP' | 'USD' | 'EUR';
   categoryNames: Record<string, string>;
+  /** Opciones con icono/color para el filtro de categoría (v0.3.0). */
+  categoryOptions?: SelectOption[];
   onRetry: () => void;
   onDelete: (id: string) => void;
   onUndo: () => void;
@@ -64,6 +68,7 @@ export function TransactionList({
   lastDeletedId,
   currency,
   categoryNames,
+  categoryOptions,
   onRetry,
   onDelete,
   onUndo,
@@ -75,6 +80,11 @@ export function TransactionList({
   const styles = useMemo(() => makeStyles(c), [c]);
   const [filterType, setFilterType] = useState<TxType | null>(null);
   const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [filterMonth, setFilterMonth] = useState<string | null>(null);
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+  const [showMore, setShowMore] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
@@ -113,6 +123,10 @@ export function TransactionList({
     );
   }
 
+  const currentMonth = monthKeyOf(new Date());
+  const minCents = minAmount.trim() === '' ? null : parseAmountToCents(minAmount);
+  const maxCents = maxAmount.trim() === '' ? null : parseAmountToCents(maxAmount);
+
   const visible = items.filter((tx) => {
     if (filterType && tx.type !== filterType) return false;
     if (search.trim() !== '') {
@@ -120,8 +134,21 @@ export function TransactionList({
       const hay = `${tx.payee ?? ''} ${tx.note ?? ''}`.toLowerCase();
       if (!hay.includes(term)) return false;
     }
+    if (filterCategory && tx.categoryId !== filterCategory) return false;
+    if (filterMonth && tx.date.slice(0, 7) !== filterMonth) return false;
+    if (minCents !== null && tx.amountCents < minCents) return false;
+    if (maxCents !== null && tx.amountCents > maxCents) return false;
     return true;
   });
+
+  const hasMoreFilters =
+    filterCategory !== null || filterMonth !== null || minAmount.trim() !== '' || maxAmount.trim() !== '';
+
+  const monthChips: Array<{ key: string; label: string; value: string | null }> = [
+    { key: 'all', label: t('tx.filter.month.all'), value: null },
+    { key: 'current', label: t('tx.filter.month.current'), value: currentMonth },
+    { key: 'previous', label: t('tx.filter.month.previous'), value: previousMonthKey(currentMonth) },
+  ];
 
   return (
     <View style={styles.list}>
@@ -147,6 +174,88 @@ export function TransactionList({
           setVisibleCount(PAGE_SIZE);
         }}
       />
+
+      <View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: showMore }}
+          accessibilityLabel={t('tx.filter.more')}
+          onPress={() => setShowMore((v) => !v)}
+          style={styles.moreBtn}
+        >
+          <Ionicons name="funnel-outline" size={16} color={c.textPrimary} />
+          <Text style={styles.moreLabel}>{t('tx.filter.more')}</Text>
+          {hasMoreFilters ? <View style={styles.moreDot} accessibility-hidden="true" /> : null}
+          <Ionicons name={showMore ? 'chevron-up' : 'chevron-down'} size={16} color={c.textMuted} />
+        </Pressable>
+
+        {showMore ? (
+          <View style={styles.morePanel}>
+            {categoryOptions ? (
+              <Select
+                label={t('tx.form.category')}
+                options={categoryOptions}
+                value={filterCategory}
+                onChange={(id) => {
+                  setFilterCategory(id);
+                  setVisibleCount(PAGE_SIZE);
+                }}
+                placeholder={t('tx.filter.category.all')}
+              />
+            ) : null}
+
+            <Text style={styles.moreSubLabel}>{t('tx.filter.month')}</Text>
+            <View style={styles.row}>
+              {monthChips.map((chip) => (
+                <FilterChip
+                  key={chip.key}
+                  label={chip.label}
+                  selected={filterMonth === chip.value}
+                  onPress={() => {
+                    setFilterMonth(chip.value);
+                    setVisibleCount(PAGE_SIZE);
+                  }}
+                />
+              ))}
+            </View>
+
+            <View style={styles.amountRow}>
+              <View style={styles.amountCell}>
+                <Input
+                  label={t('tx.filter.amount.min')}
+                  value={minAmount}
+                  onValueChange={(v) => {
+                    setMinAmount(v);
+                    setVisibleCount(PAGE_SIZE);
+                  }}
+                />
+              </View>
+              <View style={styles.amountCell}>
+                <Input
+                  label={t('tx.filter.amount.max')}
+                  value={maxAmount}
+                  onValueChange={(v) => {
+                    setMaxAmount(v);
+                    setVisibleCount(PAGE_SIZE);
+                  }}
+                />
+              </View>
+            </View>
+
+            <Button
+              variant="ghost"
+              label={t('tx.filter.clear')}
+              onPress={() => {
+                setFilterCategory(null);
+                setFilterMonth(null);
+                setMinAmount('');
+                setMaxAmount('');
+                setVisibleCount(PAGE_SIZE);
+              }}
+            />
+          </View>
+        ) : null}
+      </View>
 
       <Text accessibilityLiveRegion="polite" style={styles.muted}>
         {t('tx.list.count').replace('{count}', String(visible.length))}
@@ -235,6 +344,19 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
     center: { alignItems: 'center', gap: csSpace.s3, paddingVertical: csSpace.s6 },
     row: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
     muted: { fontSize: 12, color: c.textMuted },
+    moreBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: csSpace.s2,
+      minHeight: 44,
+      paddingHorizontal: csSpace.s2,
+    },
+    moreLabel: { fontSize: 14, fontWeight: '600', color: c.textPrimary },
+    moreDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: c.primary },
+    morePanel: { gap: csSpace.s3, paddingBottom: csSpace.s2 },
+    moreSubLabel: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    amountRow: { flexDirection: 'row', gap: csSpace.s3 },
+    amountCell: { flex: 1 },
     error: { fontSize: 14, color: c.danger, textAlign: 'center' },
     emptyTitle: { fontFamily: 'Fraunces', fontWeight: '700', fontSize: 18, color: c.textPrimary },
     chip: {

@@ -12,10 +12,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useT } from '@monedero/i18n/react';
 import { csRadius, csSpace } from '@monedero/tokens';
 import { useThemeColors } from '../theme';
+import { glyphFor } from '../icons';
 
 export interface SelectOption {
   id: string;
   name: string;
+  /** Icono Ionicons + color de categoría (v0.3.0) — opcionales. */
+  icon?: string;
+  color?: string;
 }
 
 export interface SelectProps {
@@ -72,6 +76,13 @@ export function Select({
         >
           {selected ? selected.name : placeholder}
         </Text>
+        {selected?.icon ? (
+          <Ionicons
+            name={glyphFor(selected.icon)}
+            size={18}
+            color={selected.color ?? c.primary}
+          />
+        ) : null}
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={c.textMuted} />
       </Pressable>
       {error ? (
@@ -104,6 +115,14 @@ export function Select({
                   onPress={() => pick(o.id)}
                   style={[styles.option, isSel && styles.optionSelected]}
                 >
+                  {o.icon ? (
+                    <Ionicons
+                      accessibility-hidden="true"
+                      name={glyphFor(o.icon)}
+                      size={18}
+                      color={o.color ?? c.textPrimary}
+                    />
+                  ) : null}
                   <Text style={[styles.optionLabel, isSel && styles.optionLabelSelected]}>{o.name}</Text>
                   {isSel ? <Ionicons name="checkmark" size={18} color={c.primary} /> : null}
                 </Pressable>

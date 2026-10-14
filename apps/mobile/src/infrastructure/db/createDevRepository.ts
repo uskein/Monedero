@@ -22,6 +22,7 @@ import type { SqlDbPort } from './SqlDbPort';
 import { SqlTransactionRepository } from './tx.repo.sql';
 import { SqlCategoryRepository } from './category.repo.sql';
 import { SqlBudgetRepository } from './budget.repo.sql';
+import { SqlRecurrenceRepository } from './recurrence.repo.sql';
 import { createFileSystemSnapshotStorage, type SnapshotStorage } from './snapshotStorage';
 
 const NOW = '2026-10-11T00:00:00.000Z';
@@ -93,6 +94,7 @@ export interface DevRepository {
   repo: SqlTransactionRepository;
   categories: SqlCategoryRepository;
   budgets: SqlBudgetRepository;
+  recurrences: SqlRecurrenceRepository;
   db: DevDatabase;
   categoryNames: Record<string, string>;
   /** Fuerza un guardado del snapshot (además del autoguardado). */
@@ -145,6 +147,7 @@ export async function createDevRepository(opts: DevRepositoryOptions = {}): Prom
   const repo = new SqlTransactionRepository(db);
   const categories = new SqlCategoryRepository(db);
   const budgets = new SqlBudgetRepository(db);
+  const recurrences = new SqlRecurrenceRepository(db);
 
   const persist = async (): Promise<void> => {
     if (!crypto || !storage) return;
@@ -165,7 +168,15 @@ export async function createDevRepository(opts: DevRepositoryOptions = {}): Prom
     }, PERSIST_DEBOUNCE_MS);
   };
 
-  const unsubscribe = autoSave && crypto && storage ? [repo.subscribe(schedule), categories.subscribe(schedule), budgets.subscribe(schedule)] : [];
+  const unsubscribe =
+    autoSave && crypto && storage
+      ? [
+          repo.subscribe(schedule),
+          categories.subscribe(schedule),
+          budgets.subscribe(schedule),
+          recurrences.subscribe(schedule),
+        ]
+      : [];
   const appStateSub =
     autoSave && crypto && storage
       ? AppState.addEventListener('change', (state) => {
@@ -178,6 +189,7 @@ export async function createDevRepository(opts: DevRepositoryOptions = {}): Prom
     repo,
     categories,
     budgets,
+    recurrences,
     db,
     categoryNames: CATEGORY_NAMES,
     persist,

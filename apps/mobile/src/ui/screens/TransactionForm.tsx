@@ -7,7 +7,7 @@
  * iconos. Copy i18n vía useT() — cero strings hardcodeados (gate i18n:check).
  */
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '@monedero/i18n/react';
 import { formatAmountLive } from '@monedero/i18n';
@@ -23,7 +23,16 @@ export interface Option {
   /** Tipo real de la categoría (BD sembrada + personalizadas). Opcional
    *  para los callers estáticos sin tipo (fallback por id conocidos). */
   type?: 'expense' | 'income';
+  /** Icono y color de la categoría (v0.3.0) para el Select. */
+  icon?: string;
+  color?: string;
 }
+
+/** Días 1..28 (mes seguro) — números, sin traducción. */
+const DAY_OPTIONS = Array.from({ length: 28 }, (_, i) => ({
+  id: String(i + 1),
+  name: String(i + 1),
+}));
 
 export interface TransactionFormProps {
   categories: Option[];
@@ -31,7 +40,9 @@ export interface TransactionFormProps {
   currency: 'COP' | 'USD' | 'EUR';
   busy?: boolean;
   error?: string | null;
-  onSubmit: (input: TxInput) => void;
+  /** El 2.º argumento pide crear una mensualidad (v0.3.0) — el caller la
+   *  persiste SOLO tras confirmar el alta del movimiento (money-critical). */
+  onSubmit: (input: TxInput, recurrence?: { dayOfMonth: number }) => void;
 }
 
 const TYPES: TxType[] = ['expense', 'income', 'transfer'];
@@ -55,6 +66,8 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? '');
   const [toAccountId, setToAccountId] = useState('');
   const [touched, setTouched] = useState(false);
+  const [repeat, setRepeat] = useState(false);
+  const [repeatDay, setRepeatDay] = useState(() => Math.min(new Date().getDate(), 28));
 
   const cents = parseAmountToCents(amount);
   const amountError =
@@ -82,17 +95,20 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
     setTouched(true);
     if (cents === null || cents <= 0) return;
     if (type === 'transfer' && (toAccountId === '' || toAccountId === accountId)) return;
-    onSubmit({
-      type,
-      amountCents: cents,
-      currency,
-      date,
-      accountId,
-      toAccountId: type === 'transfer' ? toAccountId : null,
-      categoryId: type === 'transfer' ? null : categoryId,
-      payee: payee.trim() === '' ? undefined : payee.trim(),
-      note: note.trim() === '' ? undefined : note.trim(),
-    });
+    onSubmit(
+      {
+        type,
+        amountCents: cents,
+        currency,
+        date,
+        accountId,
+        toAccountId: type === 'transfer' ? toAccountId : null,
+        categoryId: type === 'transfer' ? null : categoryId,
+        payee: payee.trim() === '' ? undefined : payee.trim(),
+        note: note.trim() === '' ? undefined : note.trim(),
+      },
+      repeat && type !== 'transfer' ? { dayOfMonth: repeatDay } : undefined,
+    );
   }
 
   return (
@@ -173,6 +189,37 @@ export function TransactionForm({ categories, accounts, currency, busy = false, 
 
       <Input label={t('tx.form.note')} value={note} onValueChange={setNote} disabled={busy} />
 
+      {/* Mensualidad (v0.3.0): el usuario la ACTIVA y confirma — solo se
+          propone a partir del mes siguiente (el alta actual se siembra). */}
+      {type !== 'transfer' && (
+        <View style={styles.repeatWrap}>
+          <View style={styles.repeatRow}>
+            <Switch
+              value={repeat}
+              onValueChange={setRepeat}
+              disabled={busy}
+              accessibilityLabel={t('tx.form.repeat')}
+              trackColor={{ false: c.surfaceSunken, true: c.primary }}
+              thumbColor={repeat ? c.surface : c.textMuted}
+              ios_backgroundColor={c.surfaceSunken}
+            />
+            <Text style={styles.repeatLabel}>{t('tx.form.repeat')}</Text>
+          </View>
+          {repeat ? (
+            <Select
+              label={t('tx.form.repeat.day')}
+              options={DAY_OPTIONS}
+              value={String(repeatDay)}
+              onChange={(id) => {
+                if (id) setRepeatDay(Number(id));
+              }}
+              placeholder={t('tx.form.repeat.day')}
+              disabled={busy}
+            />
+          ) : null}
+        </View>
+      )}
+
       {error ? (
         <Text style={styles.error} accessibilityRole="alert">
           {t('common.error.generic')}
@@ -250,5 +297,8 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
     chipLabel: { fontSize: 14, color: c.textPrimary, flexShrink: 1 },
     chipLabelSelected: { color: c.textOnPrimary, fontWeight: '600' },
     error: { fontSize: 13, color: c.danger },
+    repeatWrap: { gap: csSpace.s2, marginTop: csSpace.s2 },
+    repeatRow: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3 },
+    repeatLabel: { fontSize: 14, fontWeight: '600', color: c.textPrimary, flex: 1 },
   });
 }

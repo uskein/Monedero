@@ -141,7 +141,13 @@ function AppShell() {
         />
       </View>
       <View style={[styles.panel, tab !== 'tx' && styles.hidden]}>
-        <TransactionsScreen repo={dev.repo} categories={dev.categories} currency={currency} addSignal={addSignal} />
+        <TransactionsScreen
+          repo={dev.repo}
+          categories={dev.categories}
+          recurrences={dev.recurrences}
+          currency={currency}
+          addSignal={addSignal}
+        />
       </View>
       <View style={[styles.panel, tab !== 'budgets' && styles.hidden]}>
         <BudgetsScreen budgets={dev.budgets} txRepo={dev.repo} categories={dev.categories} currency={currency} />

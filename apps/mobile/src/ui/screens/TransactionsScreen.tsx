@@ -13,22 +13,33 @@ import { Button } from '../design-system';
 import { useThemeColors } from '../theme';
 import { TransactionForm, type Option } from './TransactionForm';
 import { TransactionList } from './TransactionList';
+import { RecurringList } from './RecurringList';
 import { CATEGORY_NAMES, DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES } from './catalog';
 import { useTransactionsStore } from '../../state/transactions.store';
 import { useCategoriesStore, type CategoriesRepo } from '../../state/categories.store';
+import { useRecurrencesStore } from '../../state/recurrences.store';
 import type { TransactionRepository } from '../../core/ports/TransactionRepository';
+import type { RecurrenceRepository } from '../../core/ports/RecurrenceRepository';
 import type { TxInput } from '../../core/domain/transaction';
 
 export interface TransactionsScreenProps {
   repo: TransactionRepository;
   /** Repo de categorías → alta con las personalizadas (HU-10 ⇄ HU-05). */
   categories?: CategoriesRepo;
+  /** Repo de mensualidades (v0.3.0) → tarjeta de propuestas + alta sembrada. */
+  recurrences?: RecurrenceRepository;
   currency?: 'COP' | 'USD' | 'EUR';
   /** Señal del CTA del dashboard (BP-03→BP-05): al incrementarse, abre el alta. */
   addSignal?: number;
 }
 
-export function TransactionsScreen({ repo, categories, currency = 'COP', addSignal = 0 }: TransactionsScreenProps) {
+export function TransactionsScreen({
+  repo,
+  categories,
+  recurrences,
+  currency = 'COP',
+  addSignal = 0,
+}: TransactionsScreenProps) {
   const t = useT();
   const c = useThemeColors();
   const styles = useMemo(() => makeStyles(c), [c]);
@@ -55,15 +66,21 @@ export function TransactionsScreen({ repo, categories, currency = 'COP', addSign
     if (categories) void useCategoriesStore.getState().init(categories);
   }, [categories]);
 
+  /** Mensualidades (v0.3.0): init idempotente con el repo de movimientos. */
+  useEffect(() => {
+    if (recurrences) void useRecurrencesStore.getState().init(recurrences, repo);
+  }, [recurrences, repo]);
+
   useEffect(() => {
     if (addSignal > 0) setShowForm(true);
   }, [addSignal]);
 
-  /** Opciones del picker: seed + personalizadas (dedup por id, la BD gana). */
+  /** Opciones del picker: seed + personalizadas (dedup por id, la BD gana).
+   *  v0.3.0: las personalizadas llevan icono + color a la lista del Select. */
   const categoryOptions: Option[] = useMemo(() => {
     const merged = new Map<string, Option>(DEFAULT_CATEGORIES.map((cat) => [cat.id, cat]));
     for (const cat of customCategories) {
-      if (!cat.deletedAt) merged.set(cat.id, { id: cat.id, name: cat.name, type: cat.type });
+      if (!cat.deletedAt) merged.set(cat.id, { id: cat.id, name: cat.name, type: cat.type, icon: cat.icon, color: cat.color });
     }
     return [...merged.values()];
   }, [customCategories]);
@@ -75,9 +92,26 @@ export function TransactionsScreen({ repo, categories, currency = 'COP', addSign
     return names;
   }, [customCategories]);
 
-  async function handleSubmit(input: TxInput) {
+  /** Alta + si pidió mensualidad, se siembra SOLO tras confirmar el alta. */
+  async function handleSubmit(input: TxInput, recurrence?: { dayOfMonth: number }) {
     const ok = await add(input);
-    if (ok) setShowForm(false);
+    if (!ok) return;
+    if (recurrence && input.type !== 'transfer') {
+      await useRecurrencesStore.getState().createSeeded(
+        {
+          type: input.type,
+          amountCents: input.amountCents,
+          currency: input.currency,
+          accountId: input.accountId,
+          categoryId: input.categoryId ?? null,
+          payee: input.payee,
+          note: input.note,
+          dayOfMonth: recurrence.dayOfMonth,
+        },
+        input.date.slice(0, 7),
+      );
+    }
+    setShowForm(false);
   }
 
   return (
@@ -88,13 +122,15 @@ export function TransactionsScreen({ repo, categories, currency = 'COP', addSign
             categories={categoryOptions}
             accounts={DEFAULT_ACCOUNTS}
             currency={currency}
-            onSubmit={(input) => void handleSubmit(input)}
+            onSubmit={(input, recurrence) => void handleSubmit(input, recurrence)}
           />
           <Button label={t('common.cancel')} variant="ghost" onPress={() => setShowForm(false)} />
         </View>
       ) : status === 'empty' ? null : (
         <Button label={t('tx.form.title')} onPress={() => setShowForm(true)} />
       )}
+
+      {!showForm && <RecurringList categoryNames={categoryNames} />}
 
       {!showForm && (
         <TransactionList
@@ -104,6 +140,7 @@ export function TransactionsScreen({ repo, categories, currency = 'COP', addSign
           lastDeletedId={lastDeletedId}
           currency={currency}
           categoryNames={categoryNames}
+          categoryOptions={categoryOptions}
           onRetry={() => void reload()}
           onDelete={(id) => void remove(id)}
           onUndo={() => void undoDelete()}

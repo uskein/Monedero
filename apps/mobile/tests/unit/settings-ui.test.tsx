@@ -200,6 +200,6 @@ describe('CategoriesManager móvil — alta/edición (HU-10)', () => {
     await fireEvent.press(await screen.findByRole('button', { name: 'Nueva categoría' }));
     // RN no marca accessible en contenedores con rol de grupo: se consulta por label.
     expect(screen.getByLabelText('Color')).toBeTruthy();
-    expect(screen.getAllByRole('radio')).toHaveLength(6); // 2 chips de tipo + 4 swatches
+    expect(screen.getAllByRole('radio')).toHaveLength(18); // 2 chips de tipo + 4 swatches + 12 iconos
   });
 });

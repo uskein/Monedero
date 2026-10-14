@@ -38,6 +38,7 @@ describe('TransactionForm — dinero a centavos enteros (BP-05/HU-05/HU-18)', ()
     await user.press(screen.getByRole('button', { name: 'Guardar movimiento' }));
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ amountCents: 1850000, type: 'expense', currency: 'COP' }),
+      undefined,
     );
   });
 
@@ -47,7 +48,7 @@ describe('TransactionForm — dinero a centavos enteros (BP-05/HU-05/HU-18)', ()
     await renderForm(onSubmit);
     await user.type(screen.getByLabelText('Importe'), '18.500,50');
     await user.press(screen.getByRole('button', { name: 'Guardar movimiento' }));
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ amountCents: 1850050 }));
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ amountCents: 1850050 }), undefined);
     expect(Number.isInteger(onSubmit.mock.calls[0][0].amountCents)).toBe(true);
   });
 
@@ -97,6 +98,7 @@ describe('TransactionForm — transferencias (CHECKs del modelo)', () => {
     await user.press(screen.getByRole('button', { name: 'Guardar movimiento' }));
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ type: 'transfer', toAccountId: 'acc-ahorro', categoryId: null }),
+      undefined,
     );
   });
 

@@ -11,13 +11,21 @@ import type { SqlDbPort } from '../../infrastructure/db/SqlDbPort';
 import { Ionicons } from '@expo/vector-icons';
 import { useT } from '@monedero/i18n/react';
 import { csRadius, csSpace } from '@monedero/tokens';
-import { Button, Card, Input } from '../design-system';
+import { Button, Card, Input, BusyIndicator } from '../design-system';
 import { useThemeColors } from '../theme';
+import { glyphFor } from '../icons';
 import { DataScreen } from './DataScreen';
 import { usePrefsStore, type ThemePreference } from '../../state/prefs.store';
 import { wipeAllData } from '../../infrastructure/db/wipe';
 import { useCategoriesStore, type CategoriesRepo } from '../../state/categories.store';
 import type { Category, CategoryType } from '../../core/domain/category';
+import {
+  biometricAvailable,
+  biometricDeclined,
+  biometricEnabled,
+  clearBiometricDecline,
+  disableBiometric,
+} from '../../infrastructure/security/biometric';
 
 export interface SettingsScreenProps {
   categories: CategoriesRepo;
@@ -126,6 +134,73 @@ function DangerZoneCard({ styles }: { styles: ReturnType<typeof makeStyles> }) {
 
 const CURRENCY_OPTIONS = ['COP', 'USD', 'EUR'] as const;
 
+/**
+ * Tarjeta «Desbloqueo con huella» (v0.3.0): muestra el estado y permite
+ * DESACTIVAR (borra la passphrase guardada) o reabrir la oferta si antes
+ * se rechazó. La ACTIVACIÓN ocurre desde la oferta tras desbloquear con
+ * contraseña (allí la passphrase está validada). Sin hardware/enrolado →
+ * no se pinta.
+ */
+function BiometricCard({ styles }: { styles: ReturnType<typeof makeStyles> }) {
+  const t = useT();
+  const [state, setState] = useState<{ available: boolean; enabled: boolean; declined: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      const available = await biometricAvailable();
+      if (!available) {
+        setState({ available: false, enabled: false, declined: false });
+        return;
+      }
+      const [enabled, declined] = await Promise.all([biometricEnabled(), biometricDeclined()]);
+      setState({ available: true, enabled, declined });
+    })();
+  }, []);
+
+  if (!state?.available) return null;
+
+  const statusText = state.enabled
+    ? t('vault.bio.card.on')
+    : state.declined
+      ? t('vault.bio.card.declined')
+      : t('vault.bio.card.off');
+
+  return (
+    <Card style={styles.card}>
+      <Text style={styles.cardTitle}>{t('vault.bio.card.title')}</Text>
+      <Text style={styles.copy}>{statusText}</Text>
+      {busy ? (
+        <BusyIndicator label={t('common.loading')} />
+      ) : state.enabled ? (
+        <Button
+          variant="ghost"
+          label={t('vault.bio.disable')}
+          onPress={() => {
+            setBusy(true);
+            void disableBiometric().finally(() => {
+              setState((s) => (s ? { ...s, enabled: false } : s));
+              setBusy(false);
+            });
+          }}
+        />
+      ) : state.declined ? (
+        <Button
+          variant="ghost"
+          label={t('vault.bio.reoffer')}
+          onPress={() => {
+            setBusy(true);
+            void clearBiometricDecline().finally(() => {
+              setState((s) => (s ? { ...s, declined: false } : s));
+              setBusy(false);
+            });
+          }}
+        />
+      ) : null}
+    </Card>
+  );
+}
+
 /** Paleta restringida a tokens --cs-* (criterio HU-10). */
 const SWATCH_TOKENS = ['primary', 'secondary', 'accent', 'danger'] as const;
 type SwatchToken = (typeof SWATCH_TOKENS)[number];
@@ -159,6 +234,9 @@ export function SettingsScreen({ categories, db, vaultId }: SettingsScreenProps)
 
       {/* HU-18 · moneda global */}
       <CurrencyCard styles={styles} />
+
+      {/* v0.3.0 · desbloqueo con huella (opt-in, solo con hardware) */}
+      <BiometricCard styles={styles} />
 
       {/* HU-19 · F6 · zona de peligro */}
       <DangerZoneCard styles={styles} />
@@ -262,6 +340,8 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
   const [type, setType] = useState<CategoryType>('expense');
   const [swatch, setSwatch] = useState<SwatchToken>('primary');
   const [colorDirty, setColorDirty] = useState(false);
+  const [icon, setIcon] = useState('pricetag');
+  const [iconDirty, setIconDirty] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [removeFailed, setRemoveFailed] = useState(false);
 
@@ -278,6 +358,8 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
     setType('expense');
     setSwatch('primary');
     setColorDirty(false);
+    setIcon('pricetag');
+    setIconDirty(false);
     setNameError(null);
   }
 
@@ -297,6 +379,8 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
     const match = (Object.keys(palette) as SwatchToken[]).find((k) => palette[k] === category.color);
     setSwatch(match ?? 'primary');
     setColorDirty(false);
+    setIcon(glyphFor(category.icon));
+    setIconDirty(false);
     setNameError(null);
   }
 
@@ -316,8 +400,11 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
     const color = palette[swatch];
     const ok =
       mode === 'edit' && editing
-        ? await update(editing.id, colorDirty ? { name: trimmed, color } : { name: trimmed })
-        : await create({ name: trimmed, type, color });
+        ? await update(
+            editing.id,
+            { name: trimmed, ...(colorDirty ? { color } : {}), ...(iconDirty ? { icon } : {}) },
+          )
+        : await create({ name: trimmed, type, color, icon });
     if (ok) {
       setMode('list');
       setEditing(null);
@@ -368,6 +455,13 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
               setColorDirty(true);
             }}
           />
+          <IconPicker
+            value={icon}
+            onPick={(v) => {
+              setIcon(v);
+              setIconDirty(true);
+            }}
+          />
           {formErrorMessage && (
             <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.errorText}>
               {formErrorMessage}
@@ -413,8 +507,10 @@ export function CategoriesManager({ repo, onBack }: { repo: CategoriesRepo; onBa
                           <View style={styles.rowMain}>
                             <View
                               accessibility-hidden="true"
-                              style={[styles.dot, { backgroundColor: swatchColorFor(cat.color, c) }]}
-                            />
+                              style={[styles.iconTile, { backgroundColor: swatchColorFor(cat.color, c) }]}
+                            >
+                              <Ionicons name={glyphFor(cat.icon)} size={16} color={c.textOnPrimary} />
+                            </View>
                             <Text style={styles.rowName}>{cat.name}</Text>
                           </View>
                           {/* Acciones por ICONO (el texto desbordaba); el
@@ -547,6 +643,45 @@ function IconButton({
   );
 }
 
+/** Paleta fija de iconos Ionicons para categorías (identidad visual §9). */
+const CATEGORY_ICONS = [
+  'pricetag',
+  'restaurant',
+  'bus',
+  'home',
+  'fitness',
+  'game-controller',
+  'cash',
+  'wallet',
+  'paw',
+  'shirt',
+  'school',
+  'gift',
+] as const;
+
+/** Selector de icono (radiogroup) — 12 iconos fijos, valor guardado en BD. */
+function IconPicker({ value, onPick }: { value: string; onPick: (v: string) => void }) {
+  const t = useT();
+  const c = useThemeColors();
+  const styles = useMemo(() => makeStyles(c), [c]);
+  return (
+    <View accessibilityRole="radiogroup" accessibilityLabel={t('categories.form.icon')} style={styles.iconGrid}>
+      {CATEGORY_ICONS.map((icon) => (
+        <Pressable
+          key={icon}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: value === icon }}
+          accessibilityLabel={icon}
+          onPress={() => onPick(icon)}
+          style={[styles.iconSwatch, value === icon && styles.iconSwatchSelected]}
+        >
+          <Ionicons name={icon} size={20} color={value === icon ? c.textOnPrimary : c.textPrimary} />
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 /** Estilos temáticos: se recrean al cambiar el tema (SSOT csColors/Dark). */
 function makeStyles(c: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
@@ -564,6 +699,24 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
     rowChild: { paddingLeft: csSpace.s4 },
     rowMain: { flexDirection: 'row', alignItems: 'center', gap: csSpace.s3, minHeight: 40, flexShrink: 1 },
     dot: { width: 12, height: 12, borderRadius: 6, flexShrink: 0 },
+    iconTile: {
+      width: 28,
+      height: 28,
+      borderRadius: csRadius.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2 },
+    iconSwatch: {
+      width: 44,
+      height: 44,
+      borderRadius: csRadius.pill,
+      backgroundColor: c.surfaceSunken,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    iconSwatchSelected: { backgroundColor: c.primary },
     rowName: { fontSize: 15, color: c.textPrimary, flexShrink: 1 },
     rowActions: { flexDirection: 'row', flexWrap: 'wrap', gap: csSpace.s2, marginTop: csSpace.s1 },
     iconBtn: {
