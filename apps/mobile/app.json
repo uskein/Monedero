@@ -2,7 +2,7 @@
   "expo": {
     "name": "Monedero",
     "slug": "monedero",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "scheme": "monedero",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -22,6 +22,7 @@
     },
     "android": {
       "package": "app.monedero.local",
+      "versionCode": 2,
       "permissions": [
         "USE_BIOMETRIC",
         "USE_FINGERPRINT"
@@ -34,7 +35,9 @@
     },
     "plugins": [
       "expo-sharing",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-local-authentication",
+      "./plugins/withAbiSplits"
     ]
   }
 }
