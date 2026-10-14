@@ -121,12 +121,16 @@ export function Onboarding({ onCreate }: OnboardingProps) {
             />
             <View style={styles.actions}>
               <Button variant="secondary" label={t('common.back')} disabled={busy} onPress={() => setStep(1)} />
-              {busy ? (
-                <BusyIndicator label={t('vault.onboarding.busy')} copy={t('vault.busy.copy')} />
-              ) : (
+              {!busy && (
                 <Button label={t('vault.onboarding.finish')} disabled={busy} onPress={() => void finish()} />
               )}
             </View>
+            {/* BusyIndicator FUERA de la fila de acciones: es un bloque
+                vertical (tile + label + copy) y dentro de flexDirection:'row'
+                se aplastaba y distorsionaba. Fuera, igual que en VaultGate. */}
+            {busy && (
+              <BusyIndicator label={t('vault.onboarding.busy')} copy={t('vault.busy.copy')} />
+            )}
           </View>
         )}
       </Card>
