@@ -61,6 +61,7 @@ const EMPTY_DATA = {
   tags: [],
   transaction_tags: [],
   budgets: [],
+  recurrences: [],
   settings: [],
 } as Record<MonederoCollection, DbRow[]>;
 

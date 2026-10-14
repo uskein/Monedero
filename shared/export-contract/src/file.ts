@@ -20,6 +20,7 @@ export const EXPORT_ORDER: MonederoCollection[] = [
   'tags',
   'transactions',
   'budgets',
+  'recurrences',
   'transaction_tags',
 ];
 

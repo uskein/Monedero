@@ -7,7 +7,7 @@
 /** Versión de formato soportada por este contrato. */
 export const FORMAT_VERSION = 1 as const;
 
-/** Colecciones exportables (8 tablas; import_log es local y NO se exporta). */
+/** Colecciones exportables (9 tablas; import_log es local y NO se exporta). */
 export type MonederoCollection =
   | 'accounts'
   | 'categories'
@@ -15,6 +15,7 @@ export type MonederoCollection =
   | 'tags'
   | 'transaction_tags'
   | 'budgets'
+  | 'recurrences'
   | 'settings';
 
 export interface MonederoFile {

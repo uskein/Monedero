@@ -3,7 +3,7 @@
  * SSOT: MODELO_DE_DATOS.md. Móvil importa SOLO este módulo (SQLCipher adapter
  * propio en infrastructure/); la PWA puede importar también '@monedero/db/sqljs'.
  */
-export { MIGRATIONS, SQL_001_INIT, LATEST_VERSION, type Migration } from './migrations';
+export { MIGRATIONS, SQL_001_INIT, SQL_003_RECURRENCES, LATEST_VERSION, type Migration } from './migrations';
 export {
   runMigrations,
   assertValidMigrations,
@@ -11,7 +11,7 @@ export {
   type MigrationResult,
 } from './runner';
 
-/** Tablas del esquema v1 (8) — usado por gates y tests de integridad. */
+/** Tablas del esquema (9 desde la migración 003) — gates y tests de integridad. */
 export const SCHEMA_TABLES_V1 = [
   'accounts',
   'categories',
@@ -19,6 +19,7 @@ export const SCHEMA_TABLES_V1 = [
   'tags',
   'transaction_tags',
   'budgets',
+  'recurrences',
   'settings',
   'import_log',
 ] as const;

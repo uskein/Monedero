@@ -117,10 +117,34 @@ CREATE UNIQUE INDEX ux_categories_name
   ON categories(name COLLATE NOCASE) WHERE deleted_at IS NULL;
 `;
 
+/** 003 — Movimientos recurrentes (gastos/ingresos fijos) con generación
+ *  bajo CONFIRMACIÓN del usuario (la app propone, nunca inventa filas). */
+export const SQL_003_RECURRENCES = `
+CREATE TABLE recurrences (
+  id                    TEXT PRIMARY KEY,
+  type                  TEXT NOT NULL CHECK (type IN ('expense','income')),
+  amount_cents          INTEGER NOT NULL CHECK (amount_cents > 0),
+  currency              TEXT NOT NULL DEFAULT 'EUR' CHECK (length(currency) = 3),
+  account_id            TEXT NOT NULL REFERENCES accounts(id),
+  category_id           TEXT REFERENCES categories(id),
+  payee                 TEXT CHECK (length(payee) <= 120),
+  note                  TEXT CHECK (length(note) <= 1000),
+  day_of_month          INTEGER NOT NULL CHECK (day_of_month >= 1 AND day_of_month <= 28),
+  active                INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+  last_generated_period TEXT CHECK (last_generated_period GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]'),
+  created_at            TEXT NOT NULL,
+  updated_at            TEXT NOT NULL,
+  deleted_at            TEXT
+);
+CREATE INDEX idx_recurrences_active ON recurrences(active) WHERE deleted_at IS NULL;
+CREATE INDEX idx_recurrences_generated ON recurrences(last_generated_period);
+`;
+
 /** Lista ordenada por versión (forward-only). */
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: '001_init', sql: SQL_001_INIT },
   { version: 2, name: '002_categories_name_unique', sql: SQL_002_CATEGORIES_NAME_UNIQUE },
+  { version: 3, name: '003_recurrences', sql: SQL_003_RECURRENCES },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;

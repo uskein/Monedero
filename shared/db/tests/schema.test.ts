@@ -33,14 +33,14 @@ beforeAll(() => {
 });
 
 describe('runner de migraciones (MODELO §6)', () => {
-  it('aplica 001_init y 002 y fija user_version = 2', async () => {
+  it('aplica 001_init, 002 y 003 y fija user_version = 3', async () => {
     const db = freshDb();
     const result = await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
     expect(result.from).toBe(0);
-    expect(result.to).toBe(2);
-    expect(result.applied).toEqual(['001_init', '002_categories_name_unique']);
+    expect(result.to).toBe(3);
+    expect(result.applied).toEqual(['001_init', '002_categories_name_unique', '003_recurrences']);
     const version = db.exec('PRAGMA user_version');
-    expect(Number(version[0]?.values[0]?.[0])).toBe(2);
+    expect(Number(version[0]?.values[0]?.[0])).toBe(3);
   });
 
   it('es idempotente: re-ejecutar no vuelve a aplicar nada', async () => {
@@ -48,7 +48,7 @@ describe('runner de migraciones (MODELO §6)', () => {
     await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
     const second = await runMigrations(sqlJsMigrationExecutor(db), MIGRATIONS);
     expect(second.applied).toEqual([]);
-    expect(second.to).toBe(2);
+    expect(second.to).toBe(3);
   });
 
   it('falla transaccional: script inválido deja la BD SIN cambios (sin tablas a medias)', async () => {
@@ -83,13 +83,13 @@ describe('runner de migraciones (MODELO §6)', () => {
   });
 });
 
-describe('esquema v1 — 8 tablas (MODELO §3)', () => {
+describe('esquema v1 — 9 tablas (MODELO §3 + 003 recurrences)', () => {
   let db: Database;
   beforeAll(async () => {
     db = await migratedDb();
   });
 
-  it('crea exactamente las 8 tablas del modelo', () => {
+  it('crea exactamente las 9 tablas del modelo', () => {
     const res = db.exec(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
     );
@@ -209,6 +209,19 @@ describe('paridad SQL embebido ↔ fichero .sql (gate de divergencia)', () => {
         .replace(/\s+/g, ' ')
         .trim();
     expect(normalize(MIGRATIONS[1]!.sql)).toBe(normalize(fileSql));
+  });
+
+  it('SQL_003_RECURRENCES es idéntico a su fichero .sql', () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+    const fileSql = readFileSync(join(root, 'sql/003_recurrences.sql'), 'utf8');
+    const normalize = (s: string) =>
+      s
+        .split('\n')
+        .filter((l) => !l.trim().startsWith('--'))
+        .join('\n')
+        .replace(/\s+/g, ' ')
+        .trim();
+    expect(normalize(MIGRATIONS[2]!.sql)).toBe(normalize(fileSql));
   });
 
   it('LATEST_VERSION coincide con la última migración', () => {
