@@ -72,5 +72,5 @@ jobs:
         run: pnpm --filter @monedero/web lint
       - name: Unit + UI (Vitest + Testing Library, coverage)
         run: pnpm --filter @monedero/web exec vitest run --coverage
-      - name: a11y (axe-core: design system + app real)
+      - name: "a11y (axe-core: design system + app real)"
         run: pnpm --filter @monedero/web exec vitest run tests/design-system-a11y.test.tsx tests/app-a11y.test.tsx
