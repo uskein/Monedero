@@ -631,8 +631,8 @@ Monedero/
 
 | Métrica | Valor |
 |---|---|
-| Commits | **89** |
-| Ficheros versionados | **295** |
+| Commits | **94** |
+| Ficheros versionados | **294** |
 | LOC (TS · TSX · SQL · CSS) | **~22 400** |
 | Suites de test | **52** |
 | Tests | **498** |
@@ -865,7 +865,7 @@ Lee [`CONTRIBUTING.md`](CONTRIBUTING.md). Respeta las 8 reglas innegociables y t
 **Hecho con 🧱 capas, 🔒 cifrado y ☕ determinismo.**
 
 ```
-89 commits · 498 tests · 0 backends · 0 telemetrías · 100 % verde
+94 commits · 498 tests · 0 backends · 0 telemetrías · 100 % verde
 ```
 
 </div>
