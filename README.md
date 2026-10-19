@@ -38,9 +38,8 @@
 
 ---
 
-<a name="tldr"></a>
 
-## ⏱️ TL;DR
+<h2 id="tldr">⏱️ TL;DR</h2>
 
 **Monedero** es un gestor de finanzas personales que vive **íntegramente en tu dispositivo**.
 
@@ -68,9 +67,8 @@ pnpm dev:web      # → http://localhost:5173
 
 ---
 
-<a name="manifiesto-de-privacidad"></a>
 
-## 🛡️ Manifiesto de privacidad
+<h2 id="manifiesto-de-privacidad">🛡️ Manifiesto de privacidad</h2>
 
 > *«Soberanía» es el primer pilar del Design System. No es un feature: es la arquitectura.*
 
@@ -107,9 +105,8 @@ Todo lo demás es independiente: una app puede vivir sin la otra, con arquitectu
 
 ---
 
-<a name="funcionalidades"></a>
 
-## ✨ Funcionalidades
+<h2 id="funcionalidades">✨ Funcionalidades</h2>
 
 ### 10 pantallas · 20 historias de usuario · 4 estados obligatorios por vista
 
@@ -157,9 +154,8 @@ Roles y labels ARIA, foco visible, `prefers-reduced-motion`, contraste verificad
 
 ---
 
-<a name="dos-apps-un-contrato"></a>
 
-## 📱 vs 🌐 Dos apps, un contrato
+<h2 id="dos-apps-un-contrato">📱 vs 🌐 Dos apps, un contrato</h2>
 
 El [ADR-002](https://github.com/uskein/Monedero/blob/main/Artefactos/documentacion/Arquitectura/README_ARQUITECTURA.md) decide —con aprobación explícita del usuario— que **no se comparte UI entre plataformas**. Cada app usa el patrón natural de su ecosistema.
 
@@ -178,9 +174,8 @@ El [ADR-002](https://github.com/uskein/Monedero/blob/main/Artefactos/documentaci
 
 ---
 
-<a name="stack-tecnologico"></a>
 
-## 🧱 Stack tecnológico
+<h2 id="stack-tecnologico">🧱 Stack tecnológico</h2>
 
 ### Móvil — `apps/mobile`
 
@@ -225,9 +220,8 @@ El [ADR-002](https://github.com/uskein/Monedero/blob/main/Artefactos/documentaci
 
 ---
 
-<a name="arquitectura"></a>
 
-## 🏗️ Arquitectura
+<h2 id="arquitectura">🏗️ Arquitectura</h2>
 
 ### Monorepo pnpm + Turborepo
 
@@ -308,9 +302,8 @@ apps/web/src/
 
 ---
 
-<a name="modelo-de-datos"></a>
 
-## 🗄️ Modelo de datos
+<h2 id="modelo-de-datos">🗄️ Modelo de datos</h2>
 
 **8 tablas · 3 migraciones · money en enteros.**
 
@@ -347,9 +340,8 @@ apps/web/src/
 
 ---
 
-<a name="contrato-monedero"></a>
 
-## 📦 El contrato `.monedero`
+<h2 id="contrato-monedero">📦 El contrato <code>.monedero</code></h2>
 
 El **único** mecanismo de intercambio entre plataformas. Versionado, validado, cifrado y con hash verificable.
 
@@ -396,9 +388,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 
 ---
 
-<a name="seguridad"></a>
 
-## 🔐 Seguridad
+<h2 id="seguridad">🔐 Seguridad</h2>
 
 ### Modelo de custodia
 
@@ -433,9 +424,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 
 ---
 
-<a name="identidad-visual-clay-serenity"></a>
 
-## 🎨 Identidad visual — Clay Serenity
+<h2 id="identidad-visual-clay-serenity">🎨 Identidad visual — Clay Serenity</h2>
 
 **Claymorphism terroso con lenguaje editorial.** Arcilla moldeada y papel artesanal: superficies con volumen, tacto y calidez.
 
@@ -491,9 +481,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 
 ---
 
-<a name="i18n-y-accesibilidad"></a>
 
-## 🌍 i18n y accesibilidad
+<h2 id="i18n-y-accesibilidad">🌍 i18n y accesibilidad</h2>
 
 ### Internacionalización
 
@@ -516,9 +505,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 
 ---
 
-<a name="tests-y-puertas-de-calidad"></a>
 
-## 🧪 Tests y puertas de calidad
+<h2 id="tests-y-puertas-de-calidad">🧪 Tests y puertas de calidad</h2>
 
 ### El número actual
 
@@ -550,9 +538,8 @@ Mínimo **≥70 %** en código de negocio, con **TDD estricto** en las rutas de 
 
 ---
 
-<a name="cicd-y-despliegue"></a>
 
-## 🚀 CI/CD y despliegue
+<h2 id="cicd-y-despliegue">🚀 CI/CD y despliegue</h2>
 
 ### `pr.yml` — Quality gate en cada Pull Request
 
@@ -589,9 +576,8 @@ ejecutar-pwa.bat     :: Vite dev server → la PWA en el navegador
 
 ---
 
-<a name="estructura-del-repositorio"></a>
 
-## 🌳 Estructura del repositorio
+<h2 id="estructura-del-repositorio">🌳 Estructura del repositorio</h2>
 
 ```
 Monedero/
@@ -657,9 +643,8 @@ Monedero/
 
 ---
 
-<a name="hoja-de-ruta-y-sprints"></a>
 
-## 🗺️ Hoja de ruta y sprints
+<h2 id="hoja-de-ruta-y-sprints">🗺️ Hoja de ruta y sprints</h2>
 
 **Plan completo en [`PLAN_DE_SPRINTS.md`](Artefactos/documentacion/Orquestador/PLAN_DE_SPRINTS.md).**
 
@@ -703,9 +688,8 @@ gantt
 
 ---
 
-<a name="adrs"></a>
 
-## 📐 ADRs — decisiones de arquitectura
+<h2 id="adrs">📐 ADRs — decisiones de arquitectura</h2>
 
 Cada decisión tiene contexto, alternativas descartadas y consecuencias asumidas. Fuente: [`README_ARQUITECTURA.md`](Artefactos/documentacion/Arquitectura/README_ARQUITECTURA.md).
 
@@ -724,9 +708,8 @@ Cada decisión tiene contexto, alternativas descartadas y consecuencias asumidas
 
 ---
 
-<a name="deuda-tecnica"></a>
 
-## 🧾 Deuda técnica conocida
+<h2 id="deuda-tecnica">🧾 Deuda técnica conocida</h2>
 
 Honesta, trazable y fechada. No se esconde nada.
 
@@ -741,9 +724,8 @@ Honesta, trazable y fechada. No se esconde nada.
 
 ---
 
-<a name="documentacion"></a>
 
-## 📚 Documentación
+<h2 id="documentacion">📚 Documentación</h2>
 
 La documentación **es** el proyecto. Vive en [`Artefactos/documentacion/`](Artefactos/documentacion) y es la fuente de verdad.
 
@@ -779,9 +761,8 @@ La documentación **es** el proyecto. Vive en [`Artefactos/documentacion/`](Arte
 
 ---
 
-<a name="contribuir"></a>
 
-## 🤝 Contribuir
+<h2 id="contribuir">🤝 Contribuir</h2>
 
 Lee [`CONTRIBUTING.md`](CONTRIBUTING.md) antes de abrir un PR.
 
@@ -818,9 +799,8 @@ pnpm tokens:check && pnpm i18n:check && pnpm contract:check
 
 ---
 
-<a name="licencia"></a>
 
-## 📜 Licencia
+<h2 id="licencia">📜 Licencia</h2>
 
 **Proyecto privado — desarrollado por y para [Uskein](https://github.com/uskein).**
 
@@ -832,9 +812,8 @@ Si quieres reutilizar alguna parte —el design system *Clay Serenity*, los toke
 
 ---
 
-<a name="faq"></a>
 
-## ❓ FAQ
+<h2 id="faq">❓ FAQ</h2>
 
 **¿Hay que crear cuenta?**
 No. Ni en la app, ni en GitHub, ni en ningún sitio. El primer arranque es crear la bóveda.
@@ -865,9 +844,8 @@ Lee [`CONTRIBUTING.md`](CONTRIBUTING.md). Respeta las 8 reglas innegociables y t
 
 ---
 
-<a name="otros-proyectos"></a>
 
-## 🧭 Otros proyectos
+<h2 id="otros-proyectos">🧭 Otros proyectos</h2>
 
 | Proyecto | Qué es |
 |---|---|
