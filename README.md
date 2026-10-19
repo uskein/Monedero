@@ -24,19 +24,21 @@
 
 | # | Sección | # | Sección |
 |---|---|---|---|
-| 1 | [TL;DR](#-tldr) | 12 | [🧪 Tests y puertas de calidad](#-tests-y-puertas-de-calidad) |
-| 2 | [🛡️ Manifiesto de privacidad](#️-manifiesto-de-privacidad) | 13 | [🚀 CI/CD y despliegue](#-cicd-y-despliegue) |
-| 3 | [✨ Funcionalidades](#-funcionalidades) | 14 | [🌳 Estructura del repositorio](#-estructura-del-repositorio) |
-| 4 | [📱 vs 🌐 Dos apps, un contrato](#-vs-🌐-dos-apps-un-contrato) | 15 | [🗺️ Hoja de ruta y sprints](#️-hoja-de-ruta-y-sprints) |
-| 5 | [🧱 Stack tecnológico](#-stack-tecnológico) | 16 | [📐 ADRs — decisiones de arquitectura](#-adrs--decisiones-de-arquitectura) |
-| 6 | [🏗️ Arquitectura](#️-arquitectura) | 17 | [🧾 Deuda técnica conocida](#-deuda-técnica-conocida) |
-| 7 | [🗄️ Modelo de datos](#️-modelo-de-datos) | 18 | [📚 Documentación](#-documentación) |
-| 8 | [📦 El contrato `.monedero`](#-el-contrato-monedero) | 19 | [🤝 Contribuir](#-contribuir) |
-| 9 | [🔐 Seguridad](#-seguridad) | 20 | [📜 Licencia](#-licencia) |
-| 10 | [🎨 Identidad visual — Clay Serenity](#-identidad-visual--clay-serenity) | 21 | [❓ FAQ](#-faq) |
-| 11 | [🌍 i18n y accesibilidad](#-i18n-y-accesibilidad) | 22 | [🧭 Otros proyectos](#-otros-proyectos) |
+| 1 | [⏱️ TL;DR](#tldr) | 12 | [🧪 Tests y puertas de calidad](#tests-y-puertas-de-calidad) |
+| 2 | [🛡️ Manifiesto de privacidad](#manifiesto-de-privacidad) | 13 | [🚀 CI/CD y despliegue](#cicd-y-despliegue) |
+| 3 | [✨ Funcionalidades](#funcionalidades) | 14 | [🌳 Estructura del repositorio](#estructura-del-repositorio) |
+| 4 | [📱 vs 🌐 Dos apps, un contrato](#dos-apps-un-contrato) | 15 | [🗺️ Hoja de ruta y sprints](#hoja-de-ruta-y-sprints) |
+| 5 | [🧱 Stack tecnológico](#stack-tecnologico) | 16 | [📐 ADRs — decisiones de arquitectura](#adrs) |
+| 6 | [🏗️ Arquitectura](#arquitectura) | 17 | [🧾 Deuda técnica conocida](#deuda-tecnica) |
+| 7 | [🗄️ Modelo de datos](#modelo-de-datos) | 18 | [📚 Documentación](#documentacion) |
+| 8 | [📦 El contrato `.monedero`](#contrato-monedero) | 19 | [🤝 Contribuir](#contribuir) |
+| 9 | [🔐 Seguridad](#seguridad) | 20 | [📜 Licencia](#licencia) |
+| 10 | [🎨 Identidad visual — Clay Serenity](#identidad-visual-clay-serenity) | 21 | [❓ FAQ](#faq) |
+| 11 | [🌍 i18n y accesibilidad](#i18n-y-accesibilidad) | 22 | [🧭 Otros proyectos](#otros-proyectos) |
 
 ---
+
+<a name="tldr"></a>
 
 ## ⏱️ TL;DR
 
@@ -65,6 +67,8 @@ pnpm dev:web      # → http://localhost:5173
 ```
 
 ---
+
+<a name="manifiesto-de-privacidad"></a>
 
 ## 🛡️ Manifiesto de privacidad
 
@@ -99,9 +103,11 @@ Dos aplicaciones, dos arquitecturas distintas, **un único punto de contacto**: 
    🌐 PWA     ──── import ────┘
 ```
 
-Todo lo demás es independiente: una app puede vivir sin la otra, con arquitecturas que se optimizan para su ecosistema. Esto está decidido y documentado en el [ADR-002](#-adrs--decisiones-de-arquitectura).
+Todo lo demás es independiente: una app puede vivir sin la otra, con arquitecturas que se optimizan para su ecosistema. Esto está decidido y documentado en el [ADR-002](#adrs).
 
 ---
+
+<a name="funcionalidades"></a>
 
 ## ✨ Funcionalidades
 
@@ -151,6 +157,8 @@ Roles y labels ARIA, foco visible, `prefers-reduced-motion`, contraste verificad
 
 ---
 
+<a name="dos-apps-un-contrato"></a>
+
 ## 📱 vs 🌐 Dos apps, un contrato
 
 El [ADR-002](https://github.com/uskein/Monedero/blob/main/Artefactos/documentacion/Arquitectura/README_ARQUITECTURA.md) decide —con aprobación explícita del usuario— que **no se comparte UI entre plataformas**. Cada app usa el patrón natural de su ecosistema.
@@ -169,6 +177,8 @@ El [ADR-002](https://github.com/uskein/Monedero/blob/main/Artefactos/documentaci
 > **¿Por qué no RN Web compartido?** Porque el coste de mantener dos implementaciones del Design System se paga **con una SSOT + `tokens:check`**, mientras que compartir código de UI entre RN y DOM genera una abstracción más pobre que dos implementaciones honestas. Decisión documentada, con consecuencias asumidas.
 
 ---
+
+<a name="stack-tecnologico"></a>
 
 ## 🧱 Stack tecnológico
 
@@ -214,6 +224,8 @@ El [ADR-002](https://github.com/uskein/Monedero/blob/main/Artefactos/documentaci
 | **Raíz** | pnpm 10 + Turborepo 2 · TypeScript 5.8 · ESLint 9 (flat config) · Prettier 3 |
 
 ---
+
+<a name="arquitectura"></a>
 
 ## 🏗️ Arquitectura
 
@@ -296,6 +308,8 @@ apps/web/src/
 
 ---
 
+<a name="modelo-de-datos"></a>
+
 ## 🗄️ Modelo de datos
 
 **8 tablas · 3 migraciones · money en enteros.**
@@ -332,6 +346,8 @@ apps/web/src/
 | 003 | `shared/db/sql/003_recurrences.sql` | Modelo de recurrencias |
 
 ---
+
+<a name="contrato-monedero"></a>
 
 ## 📦 El contrato `.monedero`
 
@@ -380,6 +396,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 
 ---
 
+<a name="seguridad"></a>
+
 ## 🔐 Seguridad
 
 ### Modelo de custodia
@@ -414,6 +432,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 - ⚠️ **La UI advierte** de esto: la pérdida de passphrase = pérdida de datos. No es un descuido, es una consecuencia de que el usuario es su propio custodio.
 
 ---
+
+<a name="identidad-visual-clay-serenity"></a>
 
 ## 🎨 Identidad visual — Clay Serenity
 
@@ -471,6 +491,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 
 ---
 
+<a name="i18n-y-accesibilidad"></a>
+
 ## 🌍 i18n y accesibilidad
 
 ### Internacionalización
@@ -493,6 +515,8 @@ Determinista, simple y auditable. `ImportSummary` reporta exactamente qué se in
 | Automatizado | **axe-core** en CI sobre el design system **y sobre la app real** (onboarding, app desbloqueada, ajustes) — 3/3 sin violaciones |
 
 ---
+
+<a name="tests-y-puertas-de-calidad"></a>
 
 ## 🧪 Tests y puertas de calidad
 
@@ -525,6 +549,8 @@ pnpm contract:check   # sincronización del contrato .monedero (ADR-002)
 Mínimo **≥70 %** en código de negocio, con **TDD estricto** en las rutas de dinero (`amountCents`, merge LWW, evaluación de presupuestos, cripto de la bóveda).
 
 ---
+
+<a name="cicd-y-despliegue"></a>
 
 ## 🚀 CI/CD y despliegue
 
@@ -562,6 +588,8 @@ ejecutar-pwa.bat     :: Vite dev server → la PWA en el navegador
 ```
 
 ---
+
+<a name="estructura-del-repositorio"></a>
 
 ## 🌳 Estructura del repositorio
 
@@ -629,6 +657,8 @@ Monedero/
 
 ---
 
+<a name="hoja-de-ruta-y-sprints"></a>
+
 ## 🗺️ Hoja de ruta y sprints
 
 **Plan completo en [`PLAN_DE_SPRINTS.md`](Artefactos/documentacion/Orquestador/PLAN_DE_SPRINTS.md).**
@@ -673,6 +703,8 @@ gantt
 
 ---
 
+<a name="adrs"></a>
+
 ## 📐 ADRs — decisiones de arquitectura
 
 Cada decisión tiene contexto, alternativas descartadas y consecuencias asumidas. Fuente: [`README_ARQUITECTURA.md`](Artefactos/documentacion/Arquitectura/README_ARQUITECTURA.md).
@@ -692,6 +724,8 @@ Cada decisión tiene contexto, alternativas descartadas y consecuencias asumidas
 
 ---
 
+<a name="deuda-tecnica"></a>
+
 ## 🧾 Deuda técnica conocida
 
 Honesta, trazable y fechada. No se esconde nada.
@@ -706,6 +740,8 @@ Honesta, trazable y fechada. No se esconde nada.
 | **D6** | Secrets de CI/CD sin configurar en GitHub | Bloquea el release automático | Acción del usuario |
 
 ---
+
+<a name="documentacion"></a>
 
 ## 📚 Documentación
 
@@ -742,6 +778,8 @@ La documentación **es** el proyecto. Vive en [`Artefactos/documentacion/`](Arte
 > Ábrelos directamente en el navegador — son HTML autocontenidos, sin build.
 
 ---
+
+<a name="contribuir"></a>
 
 ## 🤝 Contribuir
 
@@ -780,6 +818,8 @@ pnpm tokens:check && pnpm i18n:check && pnpm contract:check
 
 ---
 
+<a name="licencia"></a>
+
 ## 📜 Licencia
 
 **Proyecto privado — desarrollado por y para [Uskein](https://github.com/uskein).**
@@ -791,6 +831,8 @@ Si quieres reutilizar alguna parte —el design system *Clay Serenity*, los toke
 > El código de terceros mantiene su licencia original (Expo, React Native, Zod, Vitest, Fraunces bajo SIL OFL 1.1, etc.).
 
 ---
+
+<a name="faq"></a>
 
 ## ❓ FAQ
 
@@ -822,6 +864,8 @@ Porque SQLCipher no existe en browser. En móvil se usa SQLite nativo con snapsh
 Lee [`CONTRIBUTING.md`](CONTRIBUTING.md). Respeta las 8 reglas innegociables y todas las gates deben estar en verde.
 
 ---
+
+<a name="otros-proyectos"></a>
 
 ## 🧭 Otros proyectos
 
